@@ -1,0 +1,148 @@
+<meta charset="UTF-8"/>
+{% extends "base.html" %}
+{% load restaurante_extras %}
+{% load staticfiles %}
+{%block titulo%}{{title}}{%endblock%}
+
+{%block top%}
+		{% if request.session.nome%}
+			<h1>{{request.session.nome}}</h1>
+			<a href="/jasmine/logout/"><h2>Sair</h2></a>
+		{%endif%}
+{%endblock%}
+
+{%block menu%}
+	{% if request.session.menu%}
+		{%for item in request.session.menu%}
+			{% if item == 'RELATÓRIOS' %}
+				<li>
+					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
+						<div class="item-menu-selec">
+							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
+							<p>{{item}}</p>
+						</div>
+					</a>
+				</li>
+			{%else%}
+				<li> 
+					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
+						<div class="item-menu">
+							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
+							<p>{{item}}</p>
+						</div>
+					</a>
+				</li>
+			{%endif%}
+		{%endfor%}
+	{%endif%}
+{%endblock%}
+
+{%block conteudo%}
+	{% if not request.session.userl %}
+		<meta http-equiv="refresh" content="0; url=/login/">
+	{%else%}		
+		<div class="cartao print">
+			<img src="{% static 'images/ticket.png' %}" alt="" width="70"/>
+			<h1>Tickets Disponíveis Para Hoje</h1>
+			<br>
+			<div class="navegation_bar">
+				<a href="/restaurante/relatorios">Relatórios</a>
+				<a href="/restaurante/relatorioticketsdia">Relatório Tickets</a>
+			</div>
+			<br>
+			{% if tickets %}
+				<div class="tab-rel">
+					<table id="minhaTabela">				
+						<thead>
+							<tr>
+								<th><b>Gerado Dia</b></td>
+								<th><b>Aluno</b></td>
+								<th><b>Ticket</b></td>
+								<th><b>Rótulo</b></td>
+							</tr>
+						</thead>				
+						<tbody>
+							{%for item in tickets%}
+								<tr>
+									<td>{{item.data_criacao|convert_datetime}}</td>
+									<td>{{item.id_aluno.id_pessoa}}</td>
+									<td>{{item.id}}</td>
+									<td>{{item.rotulo}}</td>
+								</tr>
+							{%endfor%}
+						</tbody>
+					</table>
+			    </div>
+			    
+			    <script>
+			        $(document).ready(function () {
+			            $('#minhaTabela').DataTable({
+			            	"bPaginate": true,
+			            	"bLengthChange": true,
+			            	"bFilter": true,
+			            	"bInfo": true,
+			            	"bAutoWidth": true,
+			                "language": {
+			                    "sEmptyTable": "Nenhum registro encontrado",
+			                    "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
+			                    "sInfoEmpty": "Mostrando 0 até 0 de 0 registros",
+			                    "sInfoFiltered": "(Filtrados de _MAX_ registros)",
+			                    "sInfoThousands": ".",
+			                    "sLengthMenu": "_MENU_ resultados por página",
+			                    "sLoadingRecords": "Carregando...",
+			                    "sProcessing": "Processando...",
+			                    "sZeroRecords": "Nenhum registro encontrado",
+			                    "sSearch": "Pesquisar",
+			                    "oPaginate": {
+		                        "sNext": "»",
+		                        "sPrevious": "«",
+		                        "sFirst": "Primeiro",
+		                        "sLast": "Último"
+			                    }
+			                },
+			            });
+			        });
+				</script> 
+				<br>
+				<p id="direita">O total de tickets é: <b>{{tickets|length}}</b></p>
+			{% endif%}
+		</div>
+		
+		<div class="action-container">
+	        <a onclick="window.print();">
+		        <div class="fab-container" tooltip="Salvar em PDF">
+		            <div class="fab" id="root"><span></span>
+		            	
+		            </div>
+		        </div>
+	        </a>
+	        <a href="/restaurante/pdfvendas/" class="fab-container" tooltip="Salvar em PDF">
+		        <div class="fab" id="point"><span></span>
+	            </div>
+	        </a>
+	        <a href="#" class="fab-container" tooltip="Topo">
+	            <div class="fab" id="fence"><span></span>
+	            </div>
+	        </a>
+	    </div>
+	{%endif%}
+	
+	<script>
+		function mostrarocultar(mostrar, ocultar){
+			$("#"+mostrar).show(500);
+			document.getElementById(ocultar).style.display = "none";
+		}
+		function ocultarmostrar(mostrar, ocultar){
+			$("#"+ocultar).hide(500);
+			$("#"+mostrar).show(500);
+		}
+		function  mostrar(ID){
+			document.getElementById(ID).style.display = "block";
+		
+		}
+		function  ocultar(ID){
+			document.getElementById(ID).style.display = "none";
+			$("#"+ID).hide("slow");
+		}
+	</script>
+{%endblock%}

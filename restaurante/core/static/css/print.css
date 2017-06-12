@@ -1,0 +1,153 @@
+body {
+    margin:0; 
+    padding:0;
+    line-height: 1.4em;
+    font: 12pt Georgia, "Times New Roman", Times, serif;
+    color: #000;
+}
+
+@page {
+    margin: 0.5cm;
+    size:landscape;
+}
+
+.wrap { 
+    width: 100%;
+    margin: 0; 
+    float: none !important; 
+}
+   
+.cartao{
+	background: #ffffff;
+	width: 100%;
+	box-shadow: none;
+	border: none;
+	min-height: 250px;
+	padding-: 0px;
+	margin: 0px;
+	border-radius: none;
+	display: inline-block;
+	page-break-before: always;
+}
+
+.cartao img{
+	border-radius: 50%;
+	width: 70px;
+	margin: 10px;
+}
+
+.cartao h1{
+	text-align: center;
+	font-weight: lighter;
+	margin-left: 50px;
+	margin-top: -70px;
+}
+
+.cartao p{
+	margin: 10px;
+	font-family: segoe ui;
+	line-height: 1.4em;
+	font-size: 1.2em;
+}
+
+.cartao table{
+	margin: 15px;
+    padding: 10px;
+    width: 97%;
+}
+
+.cartao td {
+	text-align: left;
+	padding: 2px;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+.cartao a {
+	text-decoration:none;
+	color: #000000;
+}
+
+.cartao td + td, th +td{
+  text-align: right;
+}
+
+div.bar-top, .header, .footer, .menu, .fab, .card_noprinter{
+	display: none; 
+}
+
+.card{
+	width:350px;
+	background: #ffffff;
+	box-shadow: none;
+	margin: 0px;
+	padding: 0px;
+	border: none;
+	border-radius: none;
+	padding-top: 50px;
+	display: inline-block;
+}
+
+.card img{
+	border-radius: 50%;
+	width: 70px;
+	margin: 10px;
+}
+
+.card h1{
+	font-size: 26px;
+	text-align: center;
+	font-weight: lighter;
+	margin-left: 50px;
+	margin-top: -70px;
+}
+
+.card p{
+	margin: 10px;
+	font-family: segoe ui;
+	line-height: 1.4em;
+	font-size: 1.2em;
+}
+
+.card table{
+    margin: 15px;
+    padding: 10px;
+    width: 87%;
+	font-family: segoe ui;
+}
+
+.card td {
+	border: none;
+	text-align: left;
+	padding: 2px;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+.card td + td, th +td{
+	text-align: right;
+}
+
+.card a {
+	text-decoration:none;
+	color: #000000;
+}
+
+.conteiner-geral{
+	background: #000000;
+	box-shadow: none;
+	margin: 0px;
+	padding: 0px;
+	border: none;
+	border-radius: none;
+}
+
+table{		
+	width: 50%;
+}
+
+.wrap { 
+	width: 100%; 
+	margin: 0; 
+	float: none !important;
+}

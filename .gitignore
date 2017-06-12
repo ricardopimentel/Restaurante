@@ -1,0 +1,4 @@
+.Restaurante/
+.idea/
+db.sqlite3
+.env

@@ -1,0 +1,117 @@
+{% load restaurante_extras %}
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="pdfkit-orientation" content="Landscape"/>
+		<meta charset="UTF-8"/>
+		<title>{%block titulo%}{{title}}{%endblock%}</title>
+		<style>
+			.header_content{
+				width: 100%;
+				border: 1px solid #f2f2f2;
+				border-radius: 6px;
+			}
+			
+			.header_content table{
+				width: 100%;
+			}
+			
+			#right{
+				text-align: right;
+			}
+			
+			#center{
+				text-align: center;
+			}
+
+		    h1{
+		    	text-align: center;
+		    }
+		    
+		    table{
+		    	text-align: center;
+		    	width: 100%;
+		    }
+		    
+		    .content table {
+			    border-collapse: collapse;
+			    width: 100%;
+			    background: aqua;
+			}
+			
+			.content th, td {
+			    text-align: left;
+			    padding: 8px;
+			}
+			
+			.content tr:nth-child(even){background-color: #f2f2f2}
+			
+			.content th {
+			    background-color: #4CAF50;
+			    color: white;
+			}
+		    
+		</style>
+	</head>
+	
+	<body>
+		<div class="header_content">
+		   	<table class="content">
+		   		<tbody>
+		   			<tr>
+						<td> <img alt="" src="{{base_dir}}/core/static/images/IFTO.jpg"> </td>
+				    	<td id="right"> <p id="direita">{% now "j" %} de {% now "F"%} de {%now "Y"%} às {%now "H:i" %}</p> </td>
+				    </tr>
+				</tbody>
+		   	</table>
+		</div>
+	
+		<!-- Conteúdo -->
+		<div class="container-geral">
+			<h1>Relatório de Vendas</h1>
+			<div class="conteiner-right">
+				<table class="content">
+					<thead>
+						<tr>
+							<th><b>Data</b></td>
+							<th><b>Aluno</b></td>
+							<th><b>Ticket</b></td>
+							<th><b>Preço</b></td>
+						</tr>
+					</thead>				
+					<tbody>
+						{%for item in venda%}
+							<tr>
+								<td>{{item.data|convert_datetime}}</td>
+								<td>{{item.id_ticket.id_aluno.id_pessoa}}</td>
+								<td>{{item.id_ticket.id}}</td>
+								<td>{{item.valor|real}}</td>
+							</tr>
+						{%endfor%}
+					</tbody>
+				</table>
+				<br>
+				
+				<p style="font-size: 20px" id="direita">O total gasto no período de {{datainicial}} a {{datafinal}} é:   <b style="font-size: 30px">   {{soma|real}}</b></p>
+			</div>
+			
+			<div>
+				<br>
+				<br>
+				<h1>Filtros Utilizados:</h1>
+				<br>
+				<table>
+		    		<tbody>
+		    			<tr>
+							<td id="center"> <p><b>Aluno</b></p> </td>
+					    </tr>
+					    <tr>
+							<td id="center"> <p>{%if aluno%}{{aluno.id_pessoa.nome}}{%else%}Todos{%endif%}</p> </td>
+					    </tr>
+					</tbody>
+	    		</table>
+		    	<br>
+			</div>
+		</div>
+	</body>
+</html>

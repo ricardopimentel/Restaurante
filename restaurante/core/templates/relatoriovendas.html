@@ -1,0 +1,199 @@
+<meta charset="UTF-8"/>
+{% extends "base.html" %}
+{% load restaurante_extras %}
+{% load staticfiles %}
+{%block titulo%}{{title}}{%endblock%}
+
+{%block top%}
+		{% if request.session.nome%}
+			<h1>{{request.session.nome}}</h1>
+			<a href="/jasmine/logout/"><h2>Sair</h2></a>
+		{%endif%}
+{%endblock%}
+
+{%block menu%}
+	{% if request.session.menu%}
+		{%for item in request.session.menu%}
+			{% if item == 'RELATÓRIOS' %}
+				<li>
+					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
+						<div class="item-menu-selec">
+							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
+							<p>{{item}}</p>
+						</div>
+					</a>
+				</li>
+			{%else%}
+				<li> 
+					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
+						<div class="item-menu">
+							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
+							<p>{{item}}</p>
+						</div>
+					</a>
+				</li>
+			{%endif%}
+		{%endfor%}
+	{%endif%}
+{%endblock%}
+
+{%block conteudo%}
+	{% if not request.session.userl %}
+		<meta http-equiv="refresh" content="0; url=/login/">
+	{%else%}
+		<div class="limit">
+			<div class="card_noprinter">
+				<div id="show" class="show">
+					<div class="card_noprinter_cab">
+						<a onclick="mostrarocultar('hide', 'show')">
+							<img src="{% static 'images/filter.png' %}" border="0" onmouseover="this.src='{% static 'images/filterexpand.png' %}'" onmouseout="this.src='{% static 'images/filter.png' %}'">
+						</a>
+					</div>
+				</div>
+				<div id="hide" class="hide">
+					<div class="card_noprinter_cab">
+						<a onclick="ocultarmostrar('show', 'hide')">
+							<img src="{% static 'images/filter.png' %}" border="0" onmouseover="this.src='{% static 'images/filterecolhe.png' %}'" onmouseout="this.src='{% static 'images/filter.png' %}'">
+						</a>
+						<h1>Filtros</h1>
+					</div>
+					<div class="formulario">
+						<form method="post" action="/restaurante/relatoriovendas/">
+							{% if err %}
+								<div class="Erro-form">
+									<p>{{err}}</p>
+								</div>
+							{% endif %}
+							<h5>Data Inicial: <br><input type="date" id="data-inicial" name="data-inicial" value="{{inicial}}"/></h5>
+							<h5>Data Final: <br><input type="date" id="data-final" name="data-final" value="{{final}}"/></h5>
+							<h5>Aluno: <br>
+								<select size="1" name="aluno-selecionado">
+									<option value=" ">Todos</option>
+									{%for item in alunos%}
+										<option {%if item.id == alunoenviado|to_int%}selected="selected"{%endif%} value="{{item.id}}">{{item.id_pessoa}}</option>
+									{%endfor%}
+								</select>
+							</h5>
+							<h5><input type="submit" id="botao" name="commit" value="Pesquisar"></h5>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="cartao print">
+			<img src="{% static 'images/dinheiro.png' %}" alt="" width="70"/>
+			{% if datainicial and datafinal %}
+				<h1>Vendas no período de {{datainicial|convert_date}} a {{datafinal|convert_date}}</h1>
+			{% else %}
+				<h1>Relatório de Vendas</h1>
+			{% endif%}
+			<br>
+			<div class="navegation_bar">
+				<a href="/restaurante/relatorios">Relatórios</a>
+				<a href="/restaurante/relatoriovendas">Relatório Vendas</a>
+			</div>
+			<br>
+			{% if venda %}
+				<div class="tab-rel">
+					<table id="minhaTabela">				
+						<thead>
+							<tr>
+								<th><b>Data</b></td>
+								<th><b>Aluno</b></td>
+								<th><b>Ticket</b></td>
+								<th><b>Preço</b></td>
+							</tr>
+						</thead>				
+						<tbody>
+							{%for item in venda%}
+								<tr>
+									<td>{{item.data|convert_datetime}}</td>
+									<td>{{item.id_ticket.id_aluno.id_pessoa}}</td>
+									<td>{{item.id_ticket.id}}</td>
+									<td>{{item.valor|real}}</td>
+								</tr>
+							{%endfor%}
+						</tbody>
+					</table>
+			    </div>
+			    
+			    <script>
+			        $(document).ready(function () {
+			            $('#minhaTabela').DataTable({
+			            	"bPaginate": true,
+			            	"bLengthChange": true,
+			            	"bFilter": true,
+			            	"bInfo": true,
+			            	"bAutoWidth": true,
+			                "language": {
+			                    "sEmptyTable": "Nenhum registro encontrado",
+			                    "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
+			                    "sInfoEmpty": "Mostrando 0 até 0 de 0 registros",
+			                    "sInfoFiltered": "(Filtrados de _MAX_ registros)",
+			                    "sInfoThousands": ".",
+			                    "sLengthMenu": "_MENU_ resultados por página",
+			                    "sLoadingRecords": "Carregando...",
+			                    "sProcessing": "Processando...",
+			                    "sZeroRecords": "Nenhum registro encontrado",
+			                    "sSearch": "Pesquisar",
+			                    "oPaginate": {
+		                        "sNext": "»",
+		                        "sPrevious": "«",
+		                        "sFirst": "Primeiro",
+		                        "sLast": "Último"
+			                    }
+			                },
+			            });
+			        });
+				</script> 
+				<br>
+				<p id="direita">O total gasto no periodo é <b>{{soma|real}}</b></p>
+			{% endif%}
+		</div>
+		
+		<div class="action-container">
+	        <a onclick="window.print();">
+		        <div class="fab-container" tooltip="Salvar em PDF">
+		            <div class="fab" id="root"><span></span>
+		            	
+		            </div>
+		        </div>
+	        </a>
+	        <a href="/restaurante/pdfvendas/" class="fab-container" tooltip="Salvar em PDF">
+		        <div class="fab" id="point"><span></span>
+	            </div>
+	        </a>
+	        <a href="#" class="fab-container" tooltip="Topo">
+	            <div class="fab" id="fence"><span></span>
+	            </div>
+	        </a>
+	    </div>
+	{%endif%}
+	
+	<script>
+		function mostrarocultar(mostrar, ocultar){
+			$("#"+mostrar).show(500);
+			document.getElementById(ocultar).style.display = "none";
+		}
+		function ocultarmostrar(mostrar, ocultar){
+			$("#"+ocultar).hide(500);
+			$("#"+mostrar).show(500);
+		}
+		function  mostrar(ID){
+			document.getElementById(ID).style.display = "block";
+		
+		}
+		function  ocultar(ID){
+			document.getElementById(ID).style.display = "none";
+			$("#"+ID).hide("slow");
+		}
+	</script>
+	
+	{% if err %}
+		<script type="text/javascript">
+			console.log(mostrarocultar.call( 'contexto', 'hide', 'show' ));
+		</script>
+	{%endif%}
+	
+{%endblock%}

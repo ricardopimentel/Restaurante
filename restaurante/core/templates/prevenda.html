@@ -1,0 +1,51 @@
+<meta charset="UTF-8"/>
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load restaurante_extras %}
+{% load pagination_tags %}
+{%block titulo%}{{title}}{%endblock%}
+
+{%block top%}
+	{% if request.session.nome %}
+		<h1>{{request.session.nome}}</h1>
+		<a href="/restaurante/logout"><h2>Sair</h2></a>
+	{%else%}
+		<h1>Faça Login</h1>
+	{%endif%}
+{%endblock%}
+
+{%block menu%}
+	{% if request.session.menu%}
+		{%for item in request.session.menu%}
+			{% if item == itemselec %}
+				<li> 
+					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
+						<div class="item-menu-selec">
+							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
+							<p>{{item}}</p>
+						</div>
+					</a>
+				</li>
+			{%else%}
+				<li> 
+					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
+						<div class="item-menu">
+							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
+							<p>{{item}}</p>
+						</div>
+					</a>
+				</li>
+			{%endif%}
+		{%endfor%}
+	{%endif%}
+{%endblock%}
+	
+{%block conteudo%}
+	{%if request.session.usertip == 'aluno'%}
+		<div class="cartao">
+			<img src="/restaurante/static/images/ticket.png" alt="">
+			<h1>Tiquetes Disponíveis</h1>
+	{%endif%}
+	
+{%endblock%}
+
