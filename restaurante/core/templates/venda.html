@@ -8,7 +8,7 @@
 {%block top%}
 	{% if request.session.nome %}
 		<h1>{{request.session.nome}}</h1>
-		<a href="/restaurante/logout"><h2>Sair</h2></a>
+		<a href="{% url 'Logout' %}"><h2>Sair</h2></a>
 	{%else%}
 		<h1>Faça Login</h1>
 	{%endif%}
@@ -27,13 +27,28 @@
 					</a>
 				</li>
 			{%else%}
-				<li> 
-					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-						<div class="item-menu">
-							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-							<p>{{item}}</p>
-						</div>
-					</a>
+				<li>
+                    {% if item == 'logo' %}
+                        <div id="hidemenu">
+                            <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
+                        </div>
+                    {% elif item == 'sair' %}
+                        <div id="hidemenusair">
+                            {% if request.session.nome %}
+                                <h1>{{request.session.nome}}</h1>
+                                <a href="{% url 'Logout' %}"><h2>Sair</h2></a>
+                            {%else%}
+                                <h1>Faça Login</h1>
+                            {%endif%}
+                        </div>
+                    {% else %}
+                        <a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
+                            <div class="item-menu">
+                                <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
+                                <p>{{item}}</p>
+                            </div>
+                        </a>
+                    {% endif %}
 				</li>
 			{%endif%}
 		{%endfor%}
@@ -42,6 +57,19 @@
 
 {%block conteudo%}
 	{%if request.session.usertip == 'admin'%}
+
+        {% if step == 'notprato' %}
+			<div class="card">
+				<img src="/restaurante/static/images/comida.png" alt="" width="70">
+				<h1>Pratos</h1>
+				<br>
+				<div class="navegation_bar">
+					<a href="javascript:window.history.go(-1)">Voltar</a>
+				</div>
+                <p>Não há pratos cadastrados</p>
+                <a href="">Cadastrar Prato</a>
+			</div>
+		{%endif%}
 	
 		{% if step == 'fim' %}
 			<div class="card">
@@ -51,11 +79,11 @@
 				<div class="navegation_bar">
 					<a href="javascript:window.history.go(-1)">Voltar</a>
 				</div>
-				<div class="formulario">			
-					<form id="frm" method="post" action="/restaurante/venda/{{aluno.id}}/{{ticket}}/{{1}}"> {%csrf_token%}
+				<div class="formulario">
+					<form id="frm" method="post" action="{% url 'Vender' id_pessoa=dados.pessoa.usuario %}"> {%csrf_token%}
 						<p style="text-align: center">Descrição da Venda</p>
-						<p style="text-align: left"><b>Aluno: </b>{{aluno.id_pessoa.nome}}</p>
-						<p style="text-align: left"><b>Ticket: </b>{{ticket}}</p>
+						<p style="text-align: left"><b>Aluno: </b>{{dados.pessoa.nome}}</p>
+                        <p style="text-align: left"><b>ID Aluno: </b><input style="display: none" type="text" id="id_aluno" name="id_aluno" value="{{dados.aluno.id}}"/>{{dados.aluno.id}}</p>
 						<p style="text-align: left"><b>Data: </b>{{data}}</p>
 						<p style="text-align: left"><b>Prato: </b>{{prato.descricao}}</p>
 						<p style="text-align: left"><b>Valor: </b>{{prato.preco}}</p>
@@ -77,7 +105,7 @@
 					<div class="progressao-rotulo">
 						<h1>Pratos</h1>
 					</div>
-					<p id="nome-aluno"">{{nome.id_pessoa.nome}}</p>
+					<p id="nome-aluno">{{nome.id_pessoa.nome}}</p>
 					<div class="navegation_bar">
 						<a href="javascript:window.history.go(-1)">Voltar</a>
 					</div>
@@ -139,35 +167,90 @@
 				<div class="progressao-rotulo">
 					<h1>Alunos</h1>
 				</div>
-				<br><br>
-				<div class="navegation_bar">
-					<a href="javascript:window.history.go(-1)">Voltar</a>
-				</div>
-				{% autopaginate alunos 4 %}
-					{%for aluno in alunos%}
-						<div class="list_card">
-							<a href="/restaurante/venda/{{aluno.id}}/***ticket***/***prato***">
-								<li>
-									<table>
-										<tbody>
-											<tr>
-												<td><b>NOME</b></td>
-												<td><b>ID</b></td>
-											</tr>
-											
-											<tr>
-												<td>{{aluno.id_pessoa.nome}}</td>
-												<td>{{aluno.id}}</td>
-											</tr>
-										</tbody>
-									</table>
-								</li>
-							</a>
-						</div>
-					{%endfor%}
-				{% paginate %}
+				<div class="card-progressao-container">
+                    <div class="navegation_bar">
+                        <a href="javascript:window.history.go(-1)">Voltar</a>
+                    </div>
+                    <table id="minhaTabela">
+                        <thead>
+                            <tr id="tr-no-shadow">
+                                <th>Nome</th>
+                                <th>CPF</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {%for aluno in alunos%}
+                                <tr>
+                                    <td id="td-vermelho"><a href="{% url 'Vender' id_pessoa=aluno.cpf %}">{{ aluno.nome }}</a></td>
+                                    <td><a href="{% url 'Vender' id_pessoa=aluno.cpf %}">{{ aluno.cpf }}</a></td>
+                                </tr>
+                            {%endfor%}
+                        </tbody>
+                    </table>
+                </div>
 			</div>
+            <script>
+                $(document).ready(function () {
+                    $('#minhaTabela').DataTable({
+                        "bPaginate": true,
+                        "bLengthChange": false,
+                        "bFilter": true,
+                        "bInfo": true,
+                        "bAutoWidth": true,
+                        "language": {
+                            "sEmptyTable": "Nenhum registro encontrado",
+                            "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
+                            "sInfoEmpty": "Mostrando 0 até 0 de 0 registros",
+                            "sInfoFiltered": "(Filtrados de _MAX_ registros)",
+                            "sInfoThousands": ".",
+                            "sLengthMenu": "_MENU_ resultados por página",
+                            "sLoadingRecords": "Carregando...",
+                            "sProcessing": "Processando...",
+                            "sZeroRecords": "Nenhum registro encontrado",
+                            "sSearch": "Pesquisar",
+                            "oPaginate": {
+                            "sNext": "»",
+                            "sPrevious": "«",
+                            "sFirst": "Primeiro",
+                            "sLast": "Último"
+                            }
+                        },
+                    });
+                });
+            </script>
 		{%endif%}
 	{%endif%}
+
+    <script>
+        function mostrarocultar(mostrar, ocultar){
+            $("#"+mostrar).show(500);
+            document.getElementById(ocultar).style.display = "none";
+        }
+        function ocultarmostrar(mostrar, ocultar){
+            $("#"+ocultar).hide(500);
+            $("#"+mostrar).show(500);
+        }
+        function  mostrar(ID){
+            document.getElementById(ID).style.display = "block";
+
+        }
+        function  ocultar(ID){
+            document.getElementById(ID).style.display = "none";
+            $("#"+ID).hide("slow");
+        }
+    </script>
+
+    {% if messages %}
+        <div class="msg-popup-container">
+            {% for message in messages %}
+                <div id="{{ forloop.counter0 }}" class="msg-popup {{ message.tags }}">
+                    <img src="{% static 'images/'%}{{ message.tags }}.png" alt="" width="70" height="70"/>
+                    <p>{{ message }}</p>
+                    <a onclick="ocultar('{{ forloop.counter0 }}')">x</a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
 {%endblock%}
 

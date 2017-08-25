@@ -8,6 +8,7 @@
 		<link rel="icon" href="{% static 'images/favicon.ico' %}" />
 		<title>{%block titulo%}{%endblock%}</title>
 		<link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <link rel="stylesheet" media = "print" href="{% static 'css/print.css' %}">
 		<script language="JavaScript" type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.0/jquery.min.js"></script>
 		
 		<link rel="stylesheet" href="{% static 'css/jquery.dataTables.min.css' %}">
@@ -26,12 +27,15 @@
 			{%endblock%}
 		</div>
 		
-		<a href="/restaurante/">
+		<a id="header" href="/restaurante/">
 			<div class="header">
-				<img alt="" src="{% static 'images/IFTO.jpg' %}">
+
 			</div>
+            <div class="header-container-img">
+                <img alt="" src="{% static 'images/if.png' %}">
+            </div>
 		</a>
-		<div class="menu">
+		<div id="menu" class="menu">
 			<input type="checkbox" id="control-nav" />
 			<label for="control-nav" class="control-nav"></label>
 			<label for="control-nav" class="control-nav-close"></label>
@@ -39,7 +43,7 @@
 				<nav>
 					<ul>
 						{%block menu%}
-						
+
 						{%endblock%}
 					</ul>
 				</nav>
@@ -56,4 +60,17 @@
 			CGTI - IFTO - Campus de Paraíso do Tocantins
 		</div>
 	</body>
+
+    <script>
+		$(function(){
+			var nav = $('#menu');
+			$(window).scroll(function () {
+				if ($(this).scrollTop() > 140) {
+					nav.addClass("menu-fixo");
+				} else {
+					nav.removeClass("menu-fixo");
+				}
+			});
+		});
+	</script>
 </html>

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 
 import os
 from decouple import config
+from dj_database_url import parse as dburl
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'restaurante.core',
+    'restaurante.relatorios',
     'pagination_bootstrap',
     'django.contrib.sites',
     'django.contrib.redirects',
@@ -80,16 +82,10 @@ WSGI_APPLICATION = 'restaurante.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
+default_dburl = 'sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')
 DATABASES = {
-     'default': {
-         'ENGINE': 'django.db.backends.mysql',
-         'NAME': 'restaurante',
-         'USER': 'root', #DIGITE USUARIO DO BANCO
-         'PASSWORD': 'root', #DIGITE SENHA DO BANCO
-         'HOST': 'localhost',
-         'PORT': '3306'
-         }
-     }
+    'default': config('DATABASE_URL', default=default_dburl, cast=dburl),
+}
 
 
 # Password validation
@@ -135,3 +131,5 @@ DATE_INPUT_FORMATS = (
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/restaurante/static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')

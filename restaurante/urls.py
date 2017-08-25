@@ -20,4 +20,5 @@ from django.contrib import admin
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
 	url(r'^restaurante/', include('restaurante.core.urls')),
+    url(r'^restaurante/relatorios/', include('restaurante.relatorios.urls')),
 ]

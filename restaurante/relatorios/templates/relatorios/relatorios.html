@@ -1,24 +1,22 @@
 <meta charset="UTF-8"/>
 {% extends "base.html" %}
-{% load staticfiles %}
 {% load restaurante_extras %}
+{% load staticfiles %}
 {% load pagination_tags %}
 {%block titulo%}{{title}}{%endblock%}
 
 {%block top%}
-	{% if request.session.nome %}
-		<h1>{{request.session.nome}}</h1>
-		<a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-	{%else%}
-		<h1>Faça Login</h1>
-	{%endif%}
+	{% if request.session.nome%}
+			<h1>{{request.session.nome}}</h1>
+			<a href="{% url 'Logout' %}"><h2>Sair</h2></a>
+		{%endif%}
 {%endblock%}
 
 {%block menu%}
 	{% if request.session.menu%}
 		{%for item in request.session.menu%}
 			{% if item == itemselec %}
-				<li> 
+				<li>
 					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
 						<div class="item-menu-selec">
 							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
@@ -54,68 +52,29 @@
 		{%endfor%}
 	{%endif%}
 {%endblock%}
-	
+
 {%block conteudo%}
-	{%if request.session.usertip == 'aluno'%}
-		<div class="card">
-			<img src="/restaurante/static/images/ticket.png" alt="">
-			<h1>Tiquetes Disponíveis</h1>
-			<br>
-			{% autopaginate tickets 4 %}
-				{%for item in tickets%}
-					<div class="list_card">
-						<li>
-							<table>
-								<tbody>
-									<tr>
-										<td><b>DATA</b></td>
-										<td><b>ID</b></td>
-										<td><b>STATUS</b></td>
-									</tr>
-									<tr>
-										<td>{{item.data_criacao|convert_datetime}}</td>
-										<td>{{item.id}}</td>
-										<td>{{item.status}}</td>
-									</tr>
-								</tbody>
-							</table>
-						</li>
-					</div>
-				{%endfor%}
-			{% paginate %}
-			<br>
-			<p>{{dia}}</p>
-		</div>
-		
-		<div class="card">
-			<img src="/restaurante/static/images/user.png" alt="">
-			<h1>Dados do Aluno</h1>
-			<br>
-			<p><b>CPF:</b> {{request.session.userl}}</p>
-			<p><b>Nome:</b> {{request.session.nome}}</p>
-			<p><b>E-mail:</b> {{request.session.mail}}</p>
-			<p><b>Curso:</b> {{request.session.curso}}</p>
-		</div>
-		
-		<div class="fab-bottom-single-container">
-			<div class="tooltip">
-				<a href="/restaurante/geraticket/">
-					<div class="fab-bottom-single">
-						<img alt="" src="{% static 'images/add24.png' %}">
-					</div>
-				</a>
-				<span class="tooltiptext">Gerar Tiquetes</span>
-			</div>
-		</div>
+	{% if not request.session.userl %}
+		<meta http-equiv="refresh" content="0; url=/login/">
 	{%else%}
-		<div class="card">
-			<img src="/restaurante/static/images/user.png" alt="">
-			<h1>Opções</h1>
+		<div class="cartao">
+			<img src="{% static 'images/relatorio.png' %}" alt="" width="70"/>
+			<h1>Relatórios</h1>
 			<br>
-			<a href="{% url 'Venda' %}">Vendas</a>
-            <br><br>
-            <a href="{% url 'Relatorios' %}">Relatórios</a>
+			<div class="navegation_bar">
+				<a href="{% url 'Relatorios' %}">Relatórios</a>
+			</div>
+			
+			<div class="box-file">
+				<div class="box_folder">
+					<a href="{% url 'RelatorioVendas' %}" title="Abrir Relatório de Vendas">
+						<div class="folder">
+							<br><img src="{% static 'images/dinheiro.png' %}" alt="" />
+						</div>
+						<p>Rel. Vendas Realizadas</p>
+					</a>
+				</div>
+			</div>
 		</div>
 	{%endif%}
 {%endblock%}
-

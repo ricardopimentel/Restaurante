@@ -46,9 +46,9 @@ class LoginForm(forms.Form):
                 if(ret.find(str('G_PSO_SERVIDORES')) > -1):
                     self.request.session['usertip'] = 'admin'
                     # Preparar menu admin
-                    self.request.session['menu'] = ['HOME', 'RELATÓRIOS', 'ADMINISTRAÇÃO', 'AJUDA']
-                    self.request.session['url'] = ['restaurante/', 'restaurante/relatorios/', 'restaurante/', 'restaurante/']
-                    self.request.session['img'] = ['home24.png', 'relatorio24.png', 'admin24.png', 'ajuda24.png']
+                    self.request.session['menu'] = ['logo', 'HOME', 'RELATÓRIOS', 'ADMINISTRAÇÃO', 'AJUDA', 'sair']
+                    self.request.session['url'] = ['restaurante/', 'restaurante/', 'restaurante/relatorios/', 'restaurante/', 'restaurante/', '']
+                    self.request.session['img'] = ['if.png', 'home24.png', 'relatorio24.png', 'admin24.png', 'ajuda24.png', '']
                     #logou então, adicionar os dados do usuário na sessão
                     self.request.session['userl'] = usuario
                     self.request.session['nome'] = result['displayName'].title()

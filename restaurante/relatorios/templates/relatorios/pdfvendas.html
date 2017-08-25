@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta name="pdfkit-orientation" content="Landscape"/>
+		<meta name="pdfkit-orientation" content="portrait"/>
 		<meta charset="UTF-8"/>
 		<title>{%block titulo%}{{title}}{%endblock%}</title>
 		<style>
@@ -45,12 +45,20 @@
 			}
 			
 			.content tr:nth-child(even){background-color: #f2f2f2}
+
+            .content tr{
+                page-break-inside: avoid;
+            }
 			
 			.content th {
 			    background-color: #4CAF50;
 			    color: white;
 			}
-		    
+
+		    .content thead {
+                display: table-header-group
+            }
+
 		</style>
 	</head>
 	
@@ -73,26 +81,26 @@
 				<table class="content">
 					<thead>
 						<tr>
-							<th><b>Data</b></td>
-							<th><b>Aluno</b></td>
-							<th><b>Ticket</b></td>
-							<th><b>Preço</b></td>
+							<th><b>Data</b></th>
+							<th><b>Aluno</b></th>
+							<th><b>CPF</b></th>
+							<th><b>Preço</b></th>
 						</tr>
 					</thead>				
 					<tbody>
 						{%for item in venda%}
 							<tr>
 								<td>{{item.data|convert_datetime}}</td>
-								<td>{{item.id_ticket.id_aluno.id_pessoa}}</td>
-								<td>{{item.id_ticket.id}}</td>
-								<td>{{item.valor|real}}</td>
+                                <td>{{item.id_aluno.id_pessoa|title}}</td>
+                                <td>{{item.id_aluno.id_pessoa.usuario}}</td>
+                                <td>{{item.valor|real}}</td>
 							</tr>
 						{%endfor%}
 					</tbody>
 				</table>
 				<br>
 				
-				<p style="font-size: 20px" id="direita">O total gasto no período de {{datainicial}} a {{datafinal}} é:   <b style="font-size: 30px">   {{soma|real}}</b></p>
+				<p style="font-size: 20px" id="direita">O total gasto no período de {{datainicial|convert_date}} a {{datafinal|convert_date}} é:   <b style="font-size: 30px">   {{soma|real}}</b></p>
 			</div>
 			
 			<div>
@@ -103,10 +111,14 @@
 				<table>
 		    		<tbody>
 		    			<tr>
+                            <td id="center"> <p><b>Data Inicial</b></p> </td>
+                            <td id="center"> <p><b>Data Final</b></p> </td>
 							<td id="center"> <p><b>Aluno</b></p> </td>
 					    </tr>
 					    <tr>
-							<td id="center"> <p>{%if aluno%}{{aluno.id_pessoa.nome}}{%else%}Todos{%endif%}</p> </td>
+                            <td id="center"> <p>{{datainicial|convert_date}}</p> </td>
+                            <td id="center"> <p>{{datafinal|convert_date}}</p> </td>
+							<td id="center"> <p>{%if aluno%}{{aluno.id_pessoa.nome|title}}{%else%}Todos{%endif%}</p> </td>
 					    </tr>
 					</tbody>
 	    		</table>

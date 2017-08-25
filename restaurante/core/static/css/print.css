@@ -23,9 +23,8 @@ body {
 	box-shadow: none;
 	border: none;
 	min-height: 250px;
-	padding-: 0px;
+	padding: 0px;
 	margin: 0px;
-	border-radius: none;
 	display: inline-block;
 	page-break-before: always;
 }
@@ -72,7 +71,7 @@ body {
   text-align: right;
 }
 
-div.bar-top, .header, .footer, .menu, .fab, .card_noprinter{
+div.bar-top, .header, .footer, .menu, .fab, .card_noprinter, .header-container-img{
 	display: none; 
 }
 
@@ -83,7 +82,6 @@ div.bar-top, .header, .footer, .menu, .fab, .card_noprinter{
 	margin: 0px;
 	padding: 0px;
 	border: none;
-	border-radius: none;
 	padding-top: 50px;
 	display: inline-block;
 }
@@ -133,13 +131,12 @@ div.bar-top, .header, .footer, .menu, .fab, .card_noprinter{
 	color: #000000;
 }
 
-.conteiner-geral{
-	background: #000000;
+.container-geral{
 	box-shadow: none;
 	margin: 0px;
 	padding: 0px;
 	border: none;
-	border-radius: none;
+    top: 0px;
 }
 
 table{		
