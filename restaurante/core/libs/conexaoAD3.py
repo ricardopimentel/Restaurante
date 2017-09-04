@@ -54,7 +54,6 @@ class conexaoAD(object):
 
 
     def ListaAlunos(self):
-        print('cheguei até aqui')
         try:
             with Connection(Server(self.endservidor, use_ssl=True),
                             auto_bind=AUTO_BIND_NO_TLS,
@@ -67,8 +66,6 @@ class conexaoAD(object):
                          get_operational_attributes=False)
 
             res = (c.response)
-            print('retorno')
-            print(res)
             return res
         except:
             print('excessão')
