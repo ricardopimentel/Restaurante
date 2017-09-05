@@ -3,7 +3,6 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, resolve_url as r
 from django.views.decorators.csrf import csrf_exempt
 
-from restaurante.core.forms import LoginForm
 import sys
 
 from restaurante.core.libs.conexaoAD3 import conexaoAD

@@ -3,11 +3,18 @@ from django.shortcuts import render, redirect, resolve_url as r
 
 
 # Create your views here.
-from restaurante.core.forms import LoginForm
+from restaurante.acesso.forms import LoginForm
+from restaurante.administracao.models import config
 from restaurante.core.models import pessoa, administrador
 
 
 def Login(request):
+    try:
+        conf = config.objects.get(id=1)
+        dominio = conf.dominio
+    except:
+        return redirect(r('ConfigInicial'))
+
     # Se vier algo pelo post significa que houve requisição
     if request.method == 'POST':
         # Cria uma instancia do formulario com os dados vindos do request POST:
@@ -21,7 +28,6 @@ def Login(request):
                     # Pessoa cadastrada, abrir página inicial
                     return redirect(r('Home'))
             except:
-                print(sys.exc_info())
                 # Pessoa não cadastrada - Fazer cadastro
                 pessoaobj = pessoa(nome=request.session['nome'], usuario=request.session['userl'], status=True)
                 pessoaobj.save()

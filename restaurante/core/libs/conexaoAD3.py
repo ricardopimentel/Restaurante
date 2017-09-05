@@ -3,29 +3,35 @@ import sys
 from ldap3 import Server, Connection, AUTO_BIND_NO_TLS, SUBTREE, ALL_ATTRIBUTES
 from ldap3.core.exceptions import LDAPInvalidCredentialsResult
 
+from restaurante.administracao.models import config
+
+
 class conexaoAD(object):
-    
-    def __init__(self, username, password, base):
+
+    def __init__(self, username, password):
         try:
+            conf = config.objects.get(id=1)
             self.username = username
             self.password = password
-            self.base = base
-            self.dominio = 'ifto.local'
-            self.endservidor = '10.9.10.12'
+            self.base = config.base
+            self.dominio = conf.dominio
+            self.endservidor = conf.endservidor
+            self.filter = conf.filter
         except:
             self.username = username
             self.password = password
-            self.base = base
+            self.base = ''
             self.dominio = ''
             self.endservidor = ''
-            
+            self.felter = ''
+
         # servidor ad
         self.LDAP_SERVER = 'ldap://%s' % self.endservidor
         # nome completo do usuario no AD
-        self.LDAP_USERNAME = self.username+ '@'+ self.dominio
+        self.LDAP_USERNAME = self.username + '@' + self.dominio
         # sua senha
         self.LDAP_PASSWORD = self.password
-        
+
     def Login(self):
         try:
             with Connection(Server(self.endservidor, use_ssl=True),
@@ -33,14 +39,15 @@ class conexaoAD(object):
                             read_only=True,
                             check_names=True,
                             user=self.LDAP_USERNAME, password=self.password) as c:
-                user_filter = '(name=%s)' % self.username
-                c.search(search_base=self.base, search_filter=user_filter, search_scope=SUBTREE, attributes=['description', 'mail', 'sAMAccountName', 'displayName', 'memberof'], get_operational_attributes=False)
+                user_filter = '(&' + self.filter + '(|(name=%s)))' % self.username
+                print(user_filter)
+                c.search(search_base=self.base, search_filter=user_filter, search_scope=SUBTREE,
+                         attributes=['displayName', 'memberof'], get_operational_attributes=False)
 
-            #print(c.response_to_json())
-            #print(c.result)
+            # print(c.response_to_json())
+            # print(c.result)
             res = (c.response)
-            print(res)
-            if res:
+            if 'searchResEntry' in str(res):
                 return res[0]['attributes']
             else:
                 return 'o'  # Usuario fora do escopo permitido
@@ -97,25 +104,22 @@ class conexaoAD(object):
                 print(sys.exc_info())
                 return 'n'  # Servidor não encotrado
 
-    def PrimeiroLogin(self, Username, Password, Dominio, Endservidor):
+    def PrimeiroLogin(self, Username, Password, Dominio, Endservidor, Filtro):
         # servidor ad
         LDAP_SERVER = 'ldap://%s' % Endservidor
         # nome completo do usuario no AD
-        LDAP_USERNAME = Username+ '@'+ Dominio
-        # sua senha
-        LDAP_PASSWORD = Password
-        
+        LDAP_USERNAME = Username + '@' + Dominio
+
         try:
-            with Connection(Server(self.endservidor, use_ssl=True),
+            with Connection(Server(Endservidor, use_ssl=True),
                             auto_bind=AUTO_BIND_NO_TLS,
                             read_only=True,
                             check_names=True,
-                            user=self.LDAP_USERNAME, password=self.password) as c:
-                user_filter = '(name=%s)' % self.username
-                c.search(search_base=self.base, search_filter=user_filter, search_scope=SUBTREE, attributes=['displayName', 'memberof'], get_operational_attributes=False)
+                            user=LDAP_USERNAME, password=Password) as c:
+                user_filter = '(&' + Filtro + '(name=%s)' % Username
+                c.search(search_base=self.base, search_filter=user_filter, search_scope=SUBTREE,
+                         attributes=['displayName', 'memberof'], get_operational_attributes=False)
 
-            #print(c.response_to_json())
-            #print(c.result)
             res = (c.response)
             print(res)
             if res:

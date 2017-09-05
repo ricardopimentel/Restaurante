@@ -1,0 +1,49 @@
+<meta charset="UTF-8"/>
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load restaurante_extras %}
+{%block titulo%}{{title}}{%endblock%}
+
+{%block top%}
+	<h1>Configuração Incompleta</h1>
+{%endblock%}
+
+{%block menu%}
+	{% if request.session.menu%}
+		{%for item in request.session.menu%}
+			{% if item == itemselec %}
+				<li> 
+					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
+						<div class="item-menu-selec">
+							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
+							<p>{{item}}</p>
+						</div>
+					</a>
+				</li>
+			{%else%}
+				<li> 
+					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
+						<div class="item-menu">
+							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
+							<p>{{item}}</p>
+						</div>
+					</a>
+				</li>
+			{%endif%}
+		{%endfor%}
+	{%endif%}
+{%endblock%}
+
+{%block conteudo%}
+	<div class="card">
+		<img src="{% static 'images/shared-folder.png' %}" alt="" />
+		<h1>Configurações Iniciais</h1>
+		<h4>Desculpe, nós detectamos que alguns dados importantes estão faltando.</h4>
+		<div class="formulario">
+			<form method="post" action="{% url 'ConfigInicial' %}"> {%csrf_token%}
+		 		{{form.as_p}}
+			   	<p><input type="submit" name="commit" value="Salvar" id="botao" ></p>
+			</form>
+		</div>
+	</div>
+{%endblock%}

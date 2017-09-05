@@ -2,7 +2,6 @@
 
 from django import forms
 from restaurante.core.libs.conexaoAD3 import conexaoAD
-from django.contrib.admin.widgets import AdminDateWidget
 
 class LoginForm(forms.Form):
     usuario = forms.CharField(label="", max_length=20, widget=forms.TextInput(attrs={'placeholder': 'Login'}))
@@ -16,11 +15,9 @@ class LoginForm(forms.Form):
         cleaned_data = self.cleaned_data
         usuario = cleaned_data.get("usuario")
         senha = cleaned_data.get("senha")
-        ou = 'DC=ifto, DC=local'
         
         if usuario and senha:
-            # Cria Conexão LDAP ou = 'OU=ca-paraiso, OU=reitoria, OU=ifto, DC=ifto, DC=local'
-            c = conexaoAD(usuario, senha, ou)
+            c = conexaoAD(usuario, senha)
             result = c.Login() #tenta login no ldap
             if(result == ('i')): # Credenciais invalidas
                 # Adiciona erro na validação do formulário
@@ -47,7 +44,7 @@ class LoginForm(forms.Form):
                     self.request.session['usertip'] = 'admin'
                     # Preparar menu admin
                     self.request.session['menu'] = ['logo', 'HOME', 'RELATÓRIOS', 'ADMINISTRAÇÃO', 'AJUDA', 'sair']
-                    self.request.session['url'] = ['restaurante/', 'restaurante/', 'restaurante/relatorios/', 'restaurante/', 'restaurante/', '']
+                    self.request.session['url'] = ['restaurante/', 'restaurante/', 'restaurante/relatorios/', 'restaurante/administracao', 'restaurante/', '']
                     self.request.session['img'] = ['if.png', 'home24.png', 'relatorio24.png', 'admin24.png', 'ajuda24.png', '']
                     #logou então, adicionar os dados do usuário na sessão
                     self.request.session['userl'] = usuario
