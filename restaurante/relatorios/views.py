@@ -10,7 +10,7 @@ from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_exempt
 
 
-from restaurante.core.models import aluno, venda
+from restaurante.core.models import alunos, venda
 from restaurante.relatorios.forms import RelatorioVendasForm
 
 
@@ -84,7 +84,7 @@ def PdfVendas(request):
             data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59'],
             id_aluno=campo_aluno
         )
-        alunoobj = aluno.objects.get(id=campo_aluno)
+        alunoobj = alunos.objects.get(id=campo_aluno)
 
     # Somar valor das vendas no periodo
     for vend in vd:

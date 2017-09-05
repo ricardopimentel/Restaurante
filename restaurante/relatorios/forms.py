@@ -1,9 +1,11 @@
 from django import forms
-from restaurante.core.models import aluno
+
+from restaurante.core.models import alunos
+
 
 class RelatorioVendasForm(forms.Form):
     CHOICES = [(-1, 'Todos')]
-    alunoobj = aluno.objects.all()
+    alunoobj = alunos.objects.all()
     for al in alunoobj:
         CHOICES.append((al.id, str(al.id_pessoa).title()))
 

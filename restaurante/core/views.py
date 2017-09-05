@@ -7,7 +7,7 @@ from restaurante.core.forms import LoginForm
 import sys
 
 from restaurante.core.libs.conexaoAD3 import conexaoAD
-from restaurante.core.models import pessoa, aluno, admin, prato, usuariorestaurante, venda
+from restaurante.core.models import pessoa, alunos, admin, prato, usuariorestaurante, venda
 from django.db import connection
 import datetime
 
@@ -46,7 +46,7 @@ def Home(request):
                     pessoaobj.save()
                     # Verificar tipo de usuário
                     if(request.session['usertip'] == 'aluno'): # Cadastrar Aluno
-                        alunoobj = aluno(id_pessoa=pessoaobj)
+                        alunoobj = alunos(id_pessoa=pessoaobj)
                         alunoobj.save()
                     elif(request.session['usertip'] == 'admin'): # Cadastrar Admin
                         adminobj = admin(id_pessoa=pessoaobj)
@@ -152,7 +152,7 @@ def SalvaAluno(id):
     pessoaobj = pessoa(nome=nomealuno, usuario=id, status=True)
     pessoaobj.save()
 
-    alunoobj = aluno(id_pessoa=pessoaobj)
+    alunoobj = alunos(id_pessoa=pessoaobj)
     alunoobj.save()
 
     return {'pessoa': pessoaobj, 'aluno': alunoobj}
@@ -167,7 +167,7 @@ def ExistePratoCadastrado(id):
 
 def ExisteAlunoCadastrado(id_pessoa):
     try:
-        dados = aluno.objects.select_related('id_pessoa').get(id_pessoa__usuario=id_pessoa)
+        dados = alunos.objects.select_related('id_pessoa').get(id_pessoa__usuario=id_pessoa)
         return {'pessoa': dados.id_pessoa, 'aluno': dados}
     except:
         return False
@@ -178,7 +178,7 @@ def SalvarVenda(request, id_aluno, id_prato):
 
     pratoobj = prato.objects.get(id=id_prato)
     usuariorestauranteobj = usuariorestaurante.objects.select_related('id_pessoa').get(id_pessoa__usuario=str(request.session['userl']))
-    alunoobj = aluno.objects.get(id=id_aluno)
+    alunoobj = alunos.objects.get(id=id_aluno)
 
     vendaobj = venda(data=data, valor=pratoobj.preco, id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj)
     vendaobj.save()

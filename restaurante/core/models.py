@@ -12,8 +12,8 @@ class pessoa (models.Model):
     def __str__(self):
         return str(self.nome)
 
-class aluno (models.Model):
-    id_pessoa = models.ForeignKey(pessoa)
+class alunos (models.Model):
+    id_pessoa = models.ForeignKey("pessoa")
 
 
     def __str__(self):
@@ -21,7 +21,7 @@ class aluno (models.Model):
 
 
 class admin (models.Model):
-    id_pessoa = models.ForeignKey(pessoa)
+    id_pessoa = models.ForeignKey("pessoa")
 
 
     def __str__(self):
@@ -29,7 +29,7 @@ class admin (models.Model):
 
 
 class usuariorestaurante (models.Model):
-    id_pessoa = models.ForeignKey(pessoa)
+    id_pessoa = models.ForeignKey("pessoa")
 
 
     def __str__(self):
@@ -47,4 +47,13 @@ class venda (models.Model):
     valor = models.FloatField()
     id_prato = models.ForeignKey(prato)
     id_usuario_restaurante = models.ForeignKey(usuariorestaurante)
-    id_aluno = models.ForeignKey(aluno)
+    id_aluno = models.ForeignKey("aluno")
+
+
+class config(models.Model):
+    dominio = models.CharField(max_length=200)
+    endservidor = models.CharField(max_length=200)
+    gadmin = models.CharField(max_length=200)
+    ou = models.CharField(max_length=200)
+    filter = models.TextField('Filtro')
+    hora_fechamento_vendas = models.TimeField(default='23:59:59')
