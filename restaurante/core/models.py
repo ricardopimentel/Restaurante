@@ -12,16 +12,9 @@ class pessoa (models.Model):
     def __str__(self):
         return str(self.nome)
 
-class alunos (models.Model):
-    id_pessoa = models.ForeignKey("pessoa")
 
-
-    def __str__(self):
-        return str(pessoa.nome)
-
-
-class admin (models.Model):
-    id_pessoa = models.ForeignKey("pessoa")
+class administrador (models.Model):
+    id_pessoa = models.ForeignKey(pessoa)
 
 
     def __str__(self):
@@ -29,7 +22,7 @@ class admin (models.Model):
 
 
 class usuariorestaurante (models.Model):
-    id_pessoa = models.ForeignKey("pessoa")
+    id_pessoa = models.ForeignKey(pessoa)
 
 
     def __str__(self):
@@ -42,12 +35,20 @@ class prato (models.Model):
     status = models.BooleanField()
 
 
+class aluno (models.Model):
+    id_pessoa = models.ForeignKey(pessoa)
+
+
+    def __str__(self):
+        return str(pessoa.nome)
+
+
 class venda (models.Model):
     data = models.DateTimeField()
     valor = models.FloatField()
     id_prato = models.ForeignKey(prato)
     id_usuario_restaurante = models.ForeignKey(usuariorestaurante)
-    id_aluno = models.ForeignKey("aluno")
+    id_aluno = models.ForeignKey(aluno)
 
 
 class config(models.Model):

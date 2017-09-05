@@ -1,17 +1,10 @@
 from django import forms
 
-from restaurante.core.models import alunos
-
 
 class RelatorioVendasForm(forms.Form):
-    CHOICES = [(-1, 'Todos')]
-    alunoobj = alunos.objects.all()
-    for al in alunoobj:
-        CHOICES.append((al.id, str(al.id_pessoa).title()))
-
     campo_data_inicial = forms.DateField(label="Data Inicial", widget=forms.DateInput(attrs={'type': 'date'}))
     campo_data_final = forms.DateField(label="Data Final", widget=forms.DateInput(attrs={'type': 'date'}))
-    campo_aluno = forms.ChoiceField(label="Aluno", choices=CHOICES)
+    campo_aluno = forms.ChoiceField(label="Aluno")
 
     def __init__(self, request, *args, **kwargs):
         self.request = request

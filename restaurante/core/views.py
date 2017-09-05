@@ -7,8 +7,7 @@ from restaurante.core.forms import LoginForm
 import sys
 
 from restaurante.core.libs.conexaoAD3 import conexaoAD
-from restaurante.core.models import pessoa, alunos, admin, prato, usuariorestaurante, venda
-from django.db import connection
+from restaurante.core.models import pessoa, aluno, administrador, prato, usuariorestaurante, venda
 import datetime
 
 # Create your views here.
@@ -30,14 +29,6 @@ def Home(request):
                     pess = pessoa.objects.get(usuario=request.session['userl'])
                     if pess:# Pessoa Cadastrada
                         # Pessoa cadastrada, abrir página inicial
-                        if(request.session['usertip'] == 'aluno'): # Se for aluno, mostrar tela de aluno
-                            # Salva na sessão o id da pessoa
-                            request.session['idpessoa'] = pess.id
-                            # Salva id do aluno
-                            cursor = connection.cursor()
-                            cursor.execute("SELECT aluno.id from core_pessoa pessoa, core_aluno aluno WHERE pessoa.id = aluno.id_pessoa_id and pessoa.id = '"+ str(request.session['idpessoa'])+"'")
-                            idaluno = cursor.fetchall()
-                            request.session['idaluno'] = idaluno[0][0]
                         return redirect('/restaurante')
                 except:
                     print(sys.exc_info())
@@ -45,11 +36,8 @@ def Home(request):
                     pessoaobj = pessoa(nome=request.session['nome'], usuario=request.session['userl'], status=True)
                     pessoaobj.save()
                     # Verificar tipo de usuário
-                    if(request.session['usertip'] == 'aluno'): # Cadastrar Aluno
-                        alunoobj = alunos(id_pessoa=pessoaobj)
-                        alunoobj.save()
-                    elif(request.session['usertip'] == 'admin'): # Cadastrar Admin
-                        adminobj = admin(id_pessoa=pessoaobj)
+                    if(request.session['usertip'] == 'admin'): # Cadastrar Admin
+                        adminobj = administrador(id_pessoa=pessoaobj)
                         adminobj.save()
                     return redirect('/restaurante')
             else:# Se os dados não são válidos, mostra tela de login com os erros destacados
@@ -152,7 +140,7 @@ def SalvaAluno(id):
     pessoaobj = pessoa(nome=nomealuno, usuario=id, status=True)
     pessoaobj.save()
 
-    alunoobj = alunos(id_pessoa=pessoaobj)
+    alunoobj = aluno(id_pessoa=pessoaobj)
     alunoobj.save()
 
     return {'pessoa': pessoaobj, 'aluno': alunoobj}
@@ -167,7 +155,7 @@ def ExistePratoCadastrado(id):
 
 def ExisteAlunoCadastrado(id_pessoa):
     try:
-        dados = alunos.objects.select_related('id_pessoa').get(id_pessoa__usuario=id_pessoa)
+        dados = aluno.objects.select_related('id_pessoa').get(id_pessoa__usuario=id_pessoa)
         return {'pessoa': dados.id_pessoa, 'aluno': dados}
     except:
         return False
@@ -178,7 +166,7 @@ def SalvarVenda(request, id_aluno, id_prato):
 
     pratoobj = prato.objects.get(id=id_prato)
     usuariorestauranteobj = usuariorestaurante.objects.select_related('id_pessoa').get(id_pessoa__usuario=str(request.session['userl']))
-    alunoobj = alunos.objects.get(id=id_aluno)
+    alunoobj = aluno.objects.get(id=id_aluno)
 
     vendaobj = venda(data=data, valor=pratoobj.preco, id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj)
     vendaobj.save()

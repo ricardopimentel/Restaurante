@@ -2,6 +2,7 @@ import os
 import platform
 import pdfkit
 
+from django import forms
 from django.http import HttpResponse
 from django.shortcuts import render, resolve_url as r, redirect
 
@@ -10,7 +11,7 @@ from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_exempt
 
 
-from restaurante.core.models import alunos, venda
+from restaurante.core.models import venda, aluno
 from restaurante.relatorios.forms import RelatorioVendasForm
 
 
@@ -34,6 +35,12 @@ def RelatorioVendas(request):
             'campo_data_final': request.session.get('data-final'),
             'campo_aluno': request.session.get('aluno-selecionado')
         })
+
+        CHOICES = [(-1, 'Todos')]
+        alunoobj = aluno.objects.all()
+        for al in alunoobj:
+            CHOICES.append((al.id, str(al.id_pessoa).title()))
+        form.fields['campo_aluno'] = forms.ChoiceField(choices=CHOICES)
 
         if request.method == 'POST':
             form = RelatorioVendasForm(request, request.POST)
@@ -84,7 +91,7 @@ def PdfVendas(request):
             data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59'],
             id_aluno=campo_aluno
         )
-        alunoobj = alunos.objects.get(id=campo_aluno)
+        alunoobj = aluno.objects.get(id=campo_aluno)
 
     # Somar valor das vendas no periodo
     for vend in vd:

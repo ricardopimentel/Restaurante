@@ -33,17 +33,17 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    'django.contrib.sites',
+    'django.contrib.redirects',
+    'pagination_bootstrap',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.admin',
     'restaurante.core',
     'restaurante.relatorios',
-    'pagination_bootstrap',
-    'django.contrib.sites',
-    'django.contrib.redirects',
 ]
 
 MIDDLEWARE_CLASSES = [
