@@ -1,0 +1,18 @@
+instala dokku
+
+criar app
+
+baixar plugin do banco de dados
+sudo dokku plugin:install https://github.com/dokku/dokku-mysql.git mysql
+
+criar serviço do banco
+dokku mysql:create db
+
+criar link entre banco e app
+dokku mysql:link db app
+
+criar secret_key
+dokku config:set app SECRET_KEY='sua_secret_key'
+
+set debug = false
+dokku config:set app DEBUG='False'
