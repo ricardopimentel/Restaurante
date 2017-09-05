@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'restaurante.core',
     'restaurante.relatorios',
+    'restaurante.acesso',
 ]
 
 MIDDLEWARE_CLASSES = [

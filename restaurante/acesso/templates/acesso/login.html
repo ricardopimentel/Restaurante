@@ -7,7 +7,7 @@
 {%block top%}
 	{% if request.session.nome %}
 		<h1>{{request.session.nome}}</h1>
-		<a href="/restaurante/logout"><h2>Sair</h2></a>
+		<a href="{% url 'Logout' %}"><h2>Sair</h2></a>
 	{%else%}
 		<h1>Faça Login</h1>
 	{%endif%}
@@ -65,7 +65,7 @@
 		<h1>Faça Login</h1>
 		<br>
 		<div class="formulario">
-			<form method="post" action="/restaurante/login/"> {%csrf_token%}
+			<form method="post" action="{% url 'Login' %}"> {%csrf_token%}
 		 		{{form.as_p}}
 			   	<p><input type="submit" name="commit" value="Entrar" id="botao" ></p>
 			</form>
