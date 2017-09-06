@@ -38,7 +38,6 @@ class LoginForm(forms.Form):
                 ret = ret.replace('[', '')
                 ret = ret.replace(']', '')
                 result = eval(ret)
-                print(result)
                 # Verificar se usuário é servidor ou aluno
                 if(ret.find(str('G_PSO_SERVIDORES')) > -1):
                     self.request.session['usertip'] = 'admin'

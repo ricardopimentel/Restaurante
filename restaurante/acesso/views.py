@@ -35,7 +35,7 @@ def Login(request):
                 if (request.session['usertip'] == 'admin'):  # Cadastrar Admin
                     adminobj = administrador(id_pessoa=pessoaobj)
                     adminobj.save()
-                return redirect('/restaurante')
+                return redirect(r('Home'))
         else:  # Se os dados não são válidos, mostra tela de login com os erros destacados
             return render('login.html', {'form': form, 'err': '', 'itemselec': 'HOME', }, request)
     else:  # se não veio nada no post cria uma instancia vazia

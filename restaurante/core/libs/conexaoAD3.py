@@ -1,7 +1,6 @@
 # encoding: utf-8
 import sys
-from ldap3 import Server, Connection, AUTO_BIND_NO_TLS, SUBTREE, ALL_ATTRIBUTES
-from ldap3.core.exceptions import LDAPInvalidCredentialsResult
+from ldap3 import Server, Connection, AUTO_BIND_NO_TLS, SUBTREE
 
 from restaurante.administracao.models import config
 
@@ -13,7 +12,7 @@ class conexaoAD(object):
             conf = config.objects.get(id=1)
             self.username = username
             self.password = password
-            self.base = config.base
+            self.base = conf.ou
             self.dominio = conf.dominio
             self.endservidor = conf.endservidor
             self.filter = conf.filter
@@ -23,7 +22,7 @@ class conexaoAD(object):
             self.base = ''
             self.dominio = ''
             self.endservidor = ''
-            self.felter = ''
+            self.filter = ''
 
         # servidor ad
         self.LDAP_SERVER = 'ldap://%s' % self.endservidor
@@ -33,6 +32,12 @@ class conexaoAD(object):
         self.LDAP_PASSWORD = self.password
 
     def Login(self):
+        print('\n\n\n\n')
+        print(self.base)
+        print('\n\n\n\n')
+
+
+
         try:
             with Connection(Server(self.endservidor, use_ssl=True),
                             auto_bind=AUTO_BIND_NO_TLS,
@@ -40,9 +45,7 @@ class conexaoAD(object):
                             check_names=True,
                             user=self.LDAP_USERNAME, password=self.password) as c:
                 user_filter = '(&' + self.filter + '(|(name=%s)))' % self.username
-                print(user_filter)
-                c.search(search_base=self.base, search_filter=user_filter, search_scope=SUBTREE,
-                         attributes=['displayName', 'memberof'], get_operational_attributes=False)
+                c.search(search_base=self.base, search_filter=user_filter, search_scope=SUBTREE, attributes=['displayName', 'memberof'], get_operational_attributes=False)
 
             # print(c.response_to_json())
             # print(c.result)
