@@ -3,10 +3,8 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, resolve_url as r
 from django.views.decorators.csrf import csrf_exempt
 
-import sys
-
 from restaurante.core.libs.conexaoAD3 import conexaoAD
-from restaurante.core.models import pessoa, aluno, administrador, prato, usuariorestaurante, venda
+from restaurante.core.models import pessoa, aluno, prato, usuariorestaurante, venda
 import datetime
 
 # Create your views here.
@@ -20,27 +18,11 @@ def Home(request):
         return redirect(r('Login'))
 
 
-# Create your views here.
-def Logout(request):
-    try:
-        del request.session['nome']
-        del request.session['mail']
-        del request.session['curso']
-        del request.session['userl']
-        del request.session['menu']
-        del request.session['url']
-        
-    except KeyError:
-        print(sys.exc_info())
-    return redirect("/restaurante")
-
-
 def Venda(request):
     usuario = '2306214'
     senha = 'mushramboo4'
-    ou = 'DC=ifto, DC=local'
 
-    con = conexaoAD(usuario, senha, ou)
+    con = conexaoAD(usuario, senha)
     ListaAlunos = []
     for lista in con.ListaAlunos():
         if lista.get('raw_attributes'):
@@ -97,9 +79,8 @@ def Vender(request, id_pessoa):
 def SalvaAluno(id):
     usuario = '2306214'
     senha = 'mushramboo4'
-    ou = 'DC=ifto, DC=local'
 
-    con = conexaoAD(usuario, senha, ou)
+    con = conexaoAD(usuario, senha)
     nomealuno = con.DadosAluno(id)[0]['raw_attributes']['displayName'][0]
 
     pessoaobj = pessoa(nome=nomealuno, usuario=id, status=True)
