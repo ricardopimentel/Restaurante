@@ -12,7 +12,7 @@
 	{% if request.session.menu%}
 		{%for item in request.session.menu%}
 			{% if item == itemselec %}
-				<li> 
+				<li>
 					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
 						<div class="item-menu-selec">
 							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
@@ -21,13 +21,28 @@
 					</a>
 				</li>
 			{%else%}
-				<li> 
-					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-						<div class="item-menu">
-							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-							<p>{{item}}</p>
-						</div>
-					</a>
+				<li>
+                    {% if item == 'logo' %}
+                        <div id="hidemenu">
+                            <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
+                        </div>
+                    {% elif item == 'sair' %}
+                        <div id="hidemenusair">
+                            {% if request.session.nome %}
+                                <h1>{{request.session.nome}}</h1>
+                                <a href="{% url 'Logout' %}"><h2>Sair</h2></a>
+                            {%else%}
+                                <h1>Faça Login</h1>
+                            {%endif%}
+                        </div>
+                    {% else %}
+                        <a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
+                            <div class="item-menu">
+                                <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
+                                <p>{{item}}</p>
+                            </div>
+                        </a>
+                    {% endif %}
 				</li>
 			{%endif%}
 		{%endfor%}
