@@ -6,9 +6,10 @@ class RelatorioVendasForm(forms.Form):
     campo_data_final = forms.DateField(label="Data Final", widget=forms.DateInput(attrs={'type': 'date'}))
     campo_aluno = forms.ChoiceField(label="Aluno")
 
-    def __init__(self, request, *args, **kwargs):
-        self.request = request
+    def __init__(self, request, CHOICES, *args, **kwargs):
         super(RelatorioVendasForm, self).__init__(*args, **kwargs)
+        self.request = request
+        self.fields['campo_aluno'].choices = CHOICES
 
     def clean(self):
         cleaned_data = self.cleaned_data

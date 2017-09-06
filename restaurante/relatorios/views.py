@@ -29,21 +29,20 @@ def RelatorioVendas(request):
         datafinal = ''
         vd = []
 
+        CHOICES = [(-1, 'Todos')]
+        alunoobj = aluno.objects.all()
+        for al in alunoobj:
+            CHOICES.append((al.id, str(al.id_pessoa).title()))
+
         # Pega valores da sessao para jogar no formulario
-        form = RelatorioVendasForm(request, initial={
+        form = RelatorioVendasForm(request, CHOICES, initial={
             'campo_data_inicial': request.session.get('data-inicial'),
             'campo_data_final': request.session.get('data-final'),
             'campo_aluno': request.session.get('aluno-selecionado')
         })
 
-        CHOICES = [(-1, 'Todos')]
-        alunoobj = aluno.objects.all()
-        for al in alunoobj:
-            CHOICES.append((al.id, str(al.id_pessoa).title()))
-        form.fields['campo_aluno'] = forms.ChoiceField(choices=CHOICES)
-
         if request.method == 'POST':
-            form = RelatorioVendasForm(request, request.POST)
+            form = RelatorioVendasForm(request, CHOICES, request.POST)
             if form.is_valid():
                 # Pega valores do POST
                 datainicial = request.POST['campo_data_inicial']
