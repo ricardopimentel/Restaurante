@@ -81,7 +81,8 @@ div.header{
     width: 100%;
     top: 30px;
     height: 130px;
-	background: #009688;
+	background: #009688 url(../images/background-header.png);
+	background-size: 200px;
     margin-bottom: 5px;
     border-radius: 0px;
 	z-index: 0;
