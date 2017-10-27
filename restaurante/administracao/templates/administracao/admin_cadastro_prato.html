@@ -1,0 +1,167 @@
+<meta charset="UTF-8"/>
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load restaurante_extras %}
+{% load pagination_tags %}
+{%block titulo%}{{title}}{%endblock%}
+
+{%block top%}
+	{% if request.session.nome%}
+			<h1>{{request.session.nome}}</h1>
+			<a href="{% url 'Logout' %}"><h2>Sair</h2></a>
+		{%endif%}
+{%endblock%}
+
+{%block menu%}
+	{% if request.session.menu%}
+		{%for item in request.session.menu%}
+			{% if item == itemselec %}
+				<li>
+					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
+						<div class="item-menu-selec">
+							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
+							<p>{{item}}</p>
+						</div>
+					</a>
+				</li>
+			{%else%}
+				<li>
+                    {% if item == 'logo' %}
+                        <div id="hidemenu">
+                            <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
+                        </div>
+                    {% elif item == 'sair' %}
+                        <div id="hidemenusair">
+                            {% if request.session.nome %}
+                                <h1>{{request.session.nome}}</h1>
+                                <a href="{% url 'Logout' %}"><h2>Sair</h2></a>
+                            {%else%}
+                                <h1>Faça Login</h1>
+                            {%endif%}
+                        </div>
+                    {% else %}
+                        <a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
+                            <div class="item-menu">
+                                <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
+                                <p>{{item}}</p>
+                            </div>
+                        </a>
+                    {% endif %}
+				</li>
+			{%endif%}
+		{%endfor%}
+	{%endif%}
+{%endblock%}
+
+{%block conteudo%}
+    <div class="limit" style="max-width: none; margin: 0px">
+        <div class="card">
+            <img src="{% static 'images/comida.png' %}" alt="" width="70"/>
+            <h1>Cadastrar Pratos</h1>
+            <br>
+            <div class="navegation_bar">
+                <a href="{% url 'Administracao' %}">Administração</a>
+                <a href="{% url 'CadastroPrato' %}">Cadastro de Prato</a>
+            </div>
+            <br>
+            <div class="formulario">
+                <form method="post" action="{% url 'CadastroPrato' %}"> {%csrf_token%}
+                    {{form.as_p}}
+                    <p><input type="submit" name="commit" value="Salvar" id="botao" ></p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <form id="frm" method="post" action="{% url 'ExcluirPratos' %}"> {%csrf_token%}
+    <div class="card">
+        <img src="{% static 'images/lupa.png' %}" alt="" width="70"/>
+        <h1>Pratos Cadastrados</h1>
+        <br>
+        <div class="action_bar_tuto" style="height: 18px">
+            <input type="image" name="commit" value="" title="Excluir Prato" style="width: 24px; margin-top: -3px;" src="{% static 'images/delete24b.png' %}" onmouseover="this.src='{% static 'images/delete24.png' %}'" onmouseout="this.src='{% static 'images/delete24b.png' %}'">
+        </div>
+
+        <div class="card-progressao-container">
+            <table id="minhaTabela">
+                <thead>
+                    <tr id="tr-no-shadow">
+                        <th>Descrição</th>
+                        <th>Preço</th>
+                        <th>Marcar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for prato in pratos%}
+                        <tr>
+                            <td id="td-vermelho"><a href="{% url 'EditarPrato' id_prato=prato.id %}">{{ prato.descricao }}</a></td>
+                            <td><a href="{% url 'EditarPrato' id_prato=prato.id %}">{{ prato.preco }}</a></td>
+                            <td><input type="checkbox" name="{{ prato.id }}" ></td>
+                        </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+        </div>
+     </div>
+
+    <script>
+        $(document).ready(function () {
+            $('#minhaTabela').DataTable({
+                "bPaginate": true,
+                "bLengthChange": false,
+                "bFilter": true,
+                "bInfo": true,
+                "bAutoWidth": true,
+                "language": {
+                    "sEmptyTable": "Nenhum registro encontrado",
+                    "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
+                    "sInfoEmpty": "Mostrando 0 até 0 de 0 registros",
+                    "sInfoFiltered": "(Filtrados de _MAX_ registros)",
+                    "sInfoThousands": ".",
+                    "sLengthMenu": "_MENU_ resultados por página",
+                    "sLoadingRecords": "Carregando...",
+                    "sProcessing": "Processando...",
+                    "sZeroRecords": "Nenhum registro encontrado",
+                    "sSearch": "Pesquisar",
+                    "oPaginate": {
+                    "sNext": "»",
+                    "sPrevious": "«",
+                    "sFirst": "Primeiro",
+                    "sLast": "Último"
+                    }
+                },
+            });
+        });
+    </script>
+
+     <script>
+        function mostrarocultar(mostrar, ocultar){
+            $("#"+mostrar).show(500);
+            document.getElementById(ocultar).style.display = "none";
+        }
+        function ocultarmostrar(mostrar, ocultar){
+            $("#"+ocultar).hide(500);
+            $("#"+mostrar).show(500);
+        }
+        function  mostrar(ID){
+            document.getElementById(ID).style.display = "block";
+
+        }
+        function  ocultar(ID){
+            document.getElementById(ID).style.display = "none";
+            $("#"+ID).hide("slow");
+        }
+    </script>
+
+    {% if messages %}
+        <div class="msg-popup-container">
+            {% for message in messages %}
+                <div id="{{ forloop.counter0 }}" class="msg-popup {{ message.tags }}">
+                    <img src="{% static 'images/'%}{{ message.tags }}.png" alt="" width="70" height="70"/>
+                    <p>{{ message }}</p>
+                    <a onclick="ocultar('{{ forloop.counter0 }}')">x</a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{%endblock%}

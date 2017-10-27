@@ -5,8 +5,9 @@ from django.shortcuts import render, redirect, resolve_url as r
 
 
 # Create your views here.
-from restaurante.administracao.forms import AdForm
+from restaurante.administracao.forms import AdForm, CadastroPratoForm
 from restaurante.administracao.models import config
+from restaurante.core.models import prato
 
 
 def Administracao(request):
@@ -60,4 +61,50 @@ def ConfigInicial(request):
         'title': 'Home',
         'form': form,
         'itemselec': 'HOME',
+    })
+
+
+def CadastroPrato(request):
+    form = CadastroPratoForm()
+    pratos = prato.objects.all()
+    if request.method == 'POST':
+        form = CadastroPratoForm(data=request.POST)
+        if form.is_valid():
+            messages.success(request, 'Prato Cadastrado Com Sucesso!!')
+            return redirect(r('CadastroPrato'))
+    return render(request, 'administracao/admin_cadastro_prato.html', {
+        'title': 'Cadastro de Prato',
+        'form': form,
+        'pratos': pratos,
+        'itemselec': 'ADMINISTRAÇÃO',
+    })
+
+
+def ExcluirPratos(request):
+    check = False
+    pratos = prato.objects.all()
+    for item in pratos:
+        if request.POST.get(str(item.id)):
+            check = True
+            try:
+                item.delete()
+                messages.success(request, 'Prato '+ item.descricao+ ' excluído')
+            except:
+                messages.error(request, 'Erro ao exluir prato '+ item.descricao)
+    if not check:
+        messages.error(request, 'Selecione pelo menos 1 prato para excluir')
+    return redirect(r('CadastroPrato'))
+
+
+def EditarPrato(request, id_prato):
+    pratos = prato.objects.all()
+    pratoobj = pratos.get(pk=id_prato)
+    form = CadastroPratoForm(initial={'descricao': pratoobj.descricao, 'preco': pratoobj.preco, 'status': pratoobj.status, 'id': id_prato})
+
+    return render(request, 'administracao/admin_cadastro_prato.html', {
+        'title': 'Cadastro de Prato',
+        'form': form,
+        'pratos': pratos,
+        'id': id_prato,
+        'itemselec': 'ADMINISTRAÇÃO',
     })

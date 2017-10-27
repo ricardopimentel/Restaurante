@@ -3,6 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from restaurante.administracao.models import config
 from restaurante.core.libs.conexaoAD3 import conexaoAD
+from restaurante.core.models import prato
 
 
 class AdForm(forms.ModelForm):
@@ -70,4 +71,42 @@ class AdForm(forms.ModelForm):
                     conf = config(id=1, dominio=Dominio, endservidor=Endservidor, gadmin=Gadmin, ou=Ou, filter=Filter)
                     conf.save()
         # Sempre retorne a coleção completa de dados válidos.
+        return cleaned_data
+
+
+class CadastroPratoForm(forms.ModelForm):
+    id = forms.CharField(required=False, widget=forms.HiddenInput())
+
+    class Meta:  # Define os campos vindos do Model
+        model = prato
+        fields = ('descricao', 'preco', 'status')
+
+    def __init__(self, *args, **kwargs):  # INIT define caracteristicas para os campos de formulário vindos do Model (banco de dados)
+        super(CadastroPratoForm, self).__init__(*args, **kwargs)
+        self.fields['descricao'].widget = forms.TextInput(attrs={
+            'placeholder': 'Descrição',
+            'title': 'Descrição'})
+        self.fields['descricao'].label = ''
+        self.fields['preco'].widget = forms.TextInput(attrs={
+            'placeholder': 'Preço',
+            'title': 'Preço do Prato'})
+        self.fields['preco'].label = ''
+
+    def clean(self):
+        cleaned_data = self.cleaned_data
+        Descricao = cleaned_data.get("descricao")
+        Preco = cleaned_data.get("preco")
+        Status = cleaned_data.get("status")
+        Id = cleaned_data.get("id")
+
+        try:
+            if Id:
+                pratoobj = prato.objects.get(id=Id)
+                pratoobj.descricao = Descricao; pratoobj.preco = Preco; pratoobj.status = Status
+                pratoobj.save()
+            else:
+                pratoobj = prato(descricao=Descricao, preco=Preco, status=Status)
+                pratoobj.save()
+        except:
+            raise forms.ValidationError("Não foi possível salvar o prato", code='invalid')
         return cleaned_data

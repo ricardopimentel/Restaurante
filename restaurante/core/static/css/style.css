@@ -1336,9 +1336,26 @@ input#control-nav {
 	border-radius: 10px 10px 10px 10px;
 }
 
+.action_bar_tuto input{
+	padding: 0px 5px 0px 5px;
+	background: #ad7fa8;
+	border-radius: 10px 10px 10px 10px;
+	border: none;
+}
+
+.action_bar_tuto input:HOVER{
+	padding: 0px 5px 0px 5px;
+	text-decoration:none;
+	border-bottom: none;
+	color: white;
+	background: #75507b;
+	border-radius: 10px 10px 10px 10px;
+}
+
 .action_bar_tuto img{
 	display: inline-block;
 	margin-bottom: -7px;
+	width: 24px;
 }
 
 
