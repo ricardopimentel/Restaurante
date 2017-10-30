@@ -56,65 +56,41 @@
 {%endblock%}
 	
 {%block conteudo%}
-	{%if request.session.usertip == 'aluno'%}
-		<div class="card">
-			<img src="/restaurante/static/images/ticket.png" alt="">
-			<h1>Tiquetes Disponíveis</h1>
-			<br>
-			{% autopaginate tickets 4 %}
-				{%for item in tickets%}
-					<div class="list_card">
-						<li>
-							<table>
-								<tbody>
-									<tr>
-										<td><b>DATA</b></td>
-										<td><b>ID</b></td>
-										<td><b>STATUS</b></td>
-									</tr>
-									<tr>
-										<td>{{item.data_criacao|convert_datetime}}</td>
-										<td>{{item.id}}</td>
-										<td>{{item.status}}</td>
-									</tr>
-								</tbody>
-							</table>
-						</li>
-					</div>
-				{%endfor%}
-			{% paginate %}
-			<br>
-			<p>{{dia}}</p>
-		</div>
-		
-		<div class="card">
-			<img src="/restaurante/static/images/user.png" alt="">
-			<h1>Dados do Aluno</h1>
-			<br>
+	{%if request.session.usertip == 'lanchonete'%}
+        <div class="card">
+			<img src="{% static 'images/user.png' %}" alt="">
+			<h1>Dados do Usuário</h1>
+			<br><br><br>
 			<p><b>CPF:</b> {{request.session.userl}}</p>
 			<p><b>Nome:</b> {{request.session.nome}}</p>
 			<p><b>E-mail:</b> {{request.session.mail}}</p>
-			<p><b>Curso:</b> {{request.session.curso}}</p>
+            <p><b>Telefone:</b> {{request.session.phone}}</p>
 		</div>
-		
-		<div class="fab-bottom-single-container">
-			<div class="tooltip">
-				<a href="/restaurante/geraticket/">
-					<div class="fab-bottom-single">
-						<img alt="" src="{% static 'images/add24.png' %}">
-					</div>
-				</a>
-				<span class="tooltiptext">Gerar Tiquetes</span>
-			</div>
-		</div>
-	{%else%}
+
 		<div class="card">
-			<img src="/restaurante/static/images/user.png" alt="">
-			<h1>Opções</h1>
+            <img src="{% static 'images/listmenu.png' %}" alt="">
+			<h1>Opções Rápidas</h1>
 			<br>
-			<a href="{% url 'Venda' %}">Vendas</a>
-            <br><br>
-            <a href="{% url 'Relatorios' %}">Relatórios</a>
+            <div class="box-file">
+				<div class="box_folder">
+					<a href="{% url 'Venda' %}" title="Abrir Página de Vendas">
+						<div class="folder">
+							<br><img src="{% static 'images/money.png' %}" alt="" />
+						</div>
+						<p>Página de Vendas</p>
+					</a>
+				</div>
+			</div>
+            <div class="box-file">
+				<div class="box_folder">
+					<a href="{% url 'Relatorios' %}" title="Abrir Página de Relatórios">
+						<div class="folder">
+							<br><img src="{% static 'images/report.png' %}" alt="" />
+						</div>
+						<p>Página de Relatórios</p>
+					</a>
+				</div>
+			</div>
 		</div>
 	{%endif%}
 

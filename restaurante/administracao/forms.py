@@ -77,7 +77,7 @@ class AdForm(forms.ModelForm):
 class CadastroPratoForm(forms.ModelForm):
     id = forms.CharField(required=False, widget=forms.HiddenInput())
 
-    class Meta:  # Define os campos vindos do Model
+    class Meta:  # Define os campos vindos do Modelo
         model = prato
         fields = ('descricao', 'preco', 'status')
 

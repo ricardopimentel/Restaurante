@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
-
 from django import forms
 from restaurante.core.libs.conexaoAD3 import conexaoAD
+from django.shortcuts import resolve_url as r
 
 class LoginForm(forms.Form):
     usuario = forms.CharField(label="", max_length=20, widget=forms.TextInput(attrs={'placeholder': 'Login'}))
@@ -11,6 +10,7 @@ class LoginForm(forms.Form):
         self.request = request
         super(LoginForm, self).__init__(*args, **kwargs)
 
+
     def clean(self):
         cleaned_data = self.cleaned_data
         usuario = cleaned_data.get("usuario")
@@ -19,6 +19,7 @@ class LoginForm(forms.Form):
         if usuario and senha:
             c = conexaoAD(usuario, senha)
             result = c.Login() #tenta login no ldap
+
             if(result == ('i')): # Credenciais invalidas
                 # Adiciona erro na validação do formulário
                 raise forms.ValidationError("Usuário ou senha incorretos", code='invalid')
@@ -37,33 +38,56 @@ class LoginForm(forms.Form):
                 # Transformar em dicionario
                 ret = ret.replace('[', '')
                 ret = ret.replace(']', '')
-                result = eval(ret)
-                # Verificar se usuário é servidor ou aluno
-                if(ret.find(str('G_PSO_SERVIDORES')) > -1):
-                    self.request.session['usertip'] = 'admin'
-                    # Preparar menu admin
-                    self.request.session['menu'] = ['logo', 'HOME', 'RELATÓRIOS', 'ADMINISTRAÇÃO', 'AJUDA', 'sair']
-                    self.request.session['url'] = ['restaurante/', 'restaurante/', 'restaurante/relatorios/', 'restaurante/administracao', 'restaurante/', '']
-                    self.request.session['img'] = ['if.png', 'home24.png', 'relatorio24.png', 'admin24.png', 'ajuda24.png', '']
-                    #logou então, adicionar os dados do usuário na sessão
-                    self.request.session['userl'] = usuario
-                    self.request.session['nome'] = result['displayName'].title()
-                    
-                elif(ret.find(str('G_PARAISO_DO_TOCANTINS_ALUNOS')) > -1):
-                    self.request.session['usertip'] = 'aluno'
-                    # Preparar menu user
-                    self.request.session['menu'] = ['HOME']
-                    self.request.session['url'] = ['restaurante/']
-                    self.request.session['img'] = ['home24.png']
-                    #logou então, adicionar os dados do usuário na sessão
-                    self.request.session['userl'] = usuario
-                    self.request.session['nome'] = result['displayName'].title()
-                    try:
-                        self.request.session['mail'] = result['mail']
-                    except KeyError:
-                        self.request.session['mail'] = 'Não informado'
-                    self.request.session['curso'] = result['description']
-                    
-                
+
+                MontarMenu(self.request, ret, usuario)
         # Sempre retorne a coleção completa de dados válidos.
         return cleaned_data
+
+
+def MontarMenu(request, ret, usuario):
+    result = eval(ret)
+    if (ret.find(str('G_ADMINS_AD_IFTO')) > -1):
+        request.session['usertip'] = 'admin'
+        # Preparar menu admin
+        request.session['menu'] = ['logo', 'HOME', 'RELATÓRIOS', 'ADMINISTRAÇÃO', 'AJUDA', 'sair']
+        request.session['url'] = [r('Home').replace('/restaurante/', 'restaurante/'),
+                                  r('Home').replace('/restaurante/', 'restaurante/'),
+                                  r('Relatorios').replace('/restaurante/', 'restaurante/'),
+                                  r('Administracao').replace('/restaurante/', 'restaurante/'), '', '']
+        request.session['img'] = ['if.png', 'home24.png', 'relatorio24.png', 'admin24.png', 'ajuda24.png', '']
+        # logou então, adicionar os dados do usuário na sessão
+        request.session['userl'] = usuario
+        request.session['nome'] = result['displayName'].title()
+
+    elif (ret.find(str('G_PSO_LANCHONETE')) > -1):
+        request.session['usertip'] = 'lanchonete'
+        # Preparar menu user
+        request.session['menu'] = ['logo', 'HOME', 'VENDA', 'RELATÓRIOS', 'AJUDA', 'sair']
+        request.session['url'] = [r('Home').replace('/restaurante/', 'restaurante/'),
+                                  r('Home').replace('/restaurante/', 'restaurante/'),
+                                  r('Venda').replace('/restaurante/', 'restaurante/'),
+                                  r('Relatorios').replace('/restaurante/', 'restaurante/'), '', '']
+        request.session['img'] = ['if.png', 'home24.png', 'dinheiro24b.png', 'relatorio24.png', 'ajuda24.png', '']
+        # logou então, adicionar os dados do usuário na sessão
+        request.session['userl'] = usuario
+        request.session['nome'] = result['displayName'].title()
+        try:
+            request.session['mail'] = result['mail']
+        except KeyError:
+            request.session['mail'] = 'Não informado'
+        try:
+            request.session['phone'] = result['telephoneNumber']
+        except KeyError:
+            request.session['phone'] = 'Não informado'
+
+    elif (ret.find(str('G_PSO_GERENCIA_LANCHONETE')) > -1):
+        request.session['usertip'] = 'glanchonete'
+        # Preparar menu admin
+        request.session['menu'] = ['logo', 'HOME', 'RELATÓRIOS', 'AJUDA', 'sair']
+        request.session['url'] = [r('Home').replace('/restaurante/', 'restaurante/'),
+                                  r('Home').replace('/restaurante/', 'restaurante/'),
+                                  r('Relatorios').replace('/restaurante/', 'restaurante/'), '', '']
+        request.session['img'] = ['if.png', 'home24.png', 'relatorio24.png', 'ajuda24.png', '']
+        # logou então, adicionar os dados do usuário na sessão
+        request.session['userl'] = usuario
+        request.session['nome'] = result['displayName'].title()

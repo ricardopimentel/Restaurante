@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+import sys
 from django.contrib import messages
 from django.shortcuts import render, redirect, resolve_url as r
 from django.views.decorators.csrf import csrf_exempt
@@ -47,8 +47,8 @@ def Vender(request, id_pessoa):
         restricoes = Restricoes(horafechamento, id_aluno)
         if not restricoes['status']:
             vendaobj = SalvarVenda(request, id_aluno, 1)
-            vendaobj.save()
-            messages.success(request, "Venda realizada com sucesso")
+            if vendaobj:
+                messages.success(request, "Venda realizada com sucesso")
             return redirect(r('Venda'))
         else:
             messages.error(request, restricoes['erro'])
@@ -108,16 +108,21 @@ def ExisteAlunoCadastrado(id_pessoa):
 
 
 def SalvarVenda(request, id_aluno, id_prato):
-    data = datetime.datetime.now()
+    try:
+        data = datetime.datetime.now()
 
-    pratoobj = prato.objects.get(id=id_prato)
-    usuariorestauranteobj = usuariorestaurante.objects.select_related('id_pessoa').get(id_pessoa__usuario=str(request.session['userl']))
-    alunoobj = aluno.objects.get(id=id_aluno)
+        pratoobj = prato.objects.get(id=id_prato)
+        usuariorestauranteobj = usuariorestaurante.objects.select_related('id_pessoa').get(id_pessoa__usuario=str(request.session['userl']))
+        alunoobj = aluno.objects.get(id=id_aluno)
 
-    vendaobj = venda(data=data, valor=pratoobj.preco, id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj)
-    vendaobj.save()
+        vendaobj = venda(data=data, valor=pratoobj.preco, id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj)
+        vendaobj.save()
 
-    return vendaobj
+        return True
+    except:
+        print(sys.exc_info())
+        messages.error(request, sys.exc_info()[1])
+        return False
 
 
 def Restricoes(horafechamento, id_aluno):

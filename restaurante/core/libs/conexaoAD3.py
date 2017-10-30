@@ -1,4 +1,3 @@
-# encoding: utf-8
 import sys
 from ldap3 import Server, Connection, AUTO_BIND_NO_TLS, SUBTREE
 
@@ -32,12 +31,6 @@ class conexaoAD(object):
         self.LDAP_PASSWORD = self.password
 
     def Login(self):
-        print('\n\n\n\n')
-        print(self.base)
-        print('\n\n\n\n')
-
-
-
         try:
             with Connection(Server(self.endservidor, use_ssl=True),
                             auto_bind=AUTO_BIND_NO_TLS,
@@ -45,11 +38,10 @@ class conexaoAD(object):
                             check_names=True,
                             user=self.LDAP_USERNAME, password=self.password) as c:
                 user_filter = '(&' + self.filter + '(|(name=%s)))' % self.username
-                c.search(search_base=self.base, search_filter=user_filter, search_scope=SUBTREE, attributes=['displayName', 'memberof'], get_operational_attributes=False)
+                c.search(search_base=self.base, search_filter=user_filter, search_scope=SUBTREE, attributes=['displayName', 'memberof', 'mail', 'telephoneNumber'], get_operational_attributes=False)
 
-            # print(c.response_to_json())
-            # print(c.result)
             res = (c.response)
+
             if 'searchResEntry' in str(res):
                 return res[0]['attributes']
             else:
