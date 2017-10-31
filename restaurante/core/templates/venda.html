@@ -56,11 +56,11 @@
 {%endblock%}
 
 {%block conteudo%}
-	{%if request.session.usertip == 'lanchonete'%}
+	{%if request.session.usertip == 'lanchonete' or request.session.usertip == 'admin' %}
 
         {% if step == 'notprato' %}
 			<div class="card">
-				<img src="/restaurante/static/images/comida.png" alt="" width="70">
+				<img src="{% static 'images/comida.png' %}" alt="" width="70">
 				<h1>Pratos</h1>
 				<br>
 				<div class="navegation_bar">

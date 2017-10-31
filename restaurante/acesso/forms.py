@@ -49,15 +49,24 @@ def MontarMenu(request, ret, usuario):
     if (ret.find(str('G_ADMINS_AD_IFTO')) > -1):
         request.session['usertip'] = 'admin'
         # Preparar menu admin
-        request.session['menu'] = ['logo', 'HOME', 'RELATÓRIOS', 'ADMINISTRAÇÃO', 'AJUDA', 'sair']
+        request.session['menu'] = ['logo', 'HOME', 'VENDA', 'RELATÓRIOS', 'ADMINISTRAÇÃO', 'AJUDA', 'sair']
         request.session['url'] = [r('Home').replace('/restaurante/', 'restaurante/'),
                                   r('Home').replace('/restaurante/', 'restaurante/'),
+                                  r('Venda').replace('/restaurante/', 'restaurante/'),
                                   r('Relatorios').replace('/restaurante/', 'restaurante/'),
                                   r('Administracao').replace('/restaurante/', 'restaurante/'), '', '']
-        request.session['img'] = ['if.png', 'home24.png', 'relatorio24.png', 'admin24.png', 'ajuda24.png', '']
+        request.session['img'] = ['if.png', 'home24.png', 'dinheiro24b.png', 'relatorio24.png', 'admin24.png', 'ajuda24.png', '']
         # logou então, adicionar os dados do usuário na sessão
         request.session['userl'] = usuario
         request.session['nome'] = result['displayName'].title()
+        try:
+            request.session['mail'] = result['mail']
+        except KeyError:
+            request.session['mail'] = 'Não informado'
+        try:
+            request.session['phone'] = result['telephoneNumber']
+        except KeyError:
+            request.session['phone'] = 'Não informado'
 
     elif (ret.find(str('G_PSO_LANCHONETE')) > -1):
         request.session['usertip'] = 'lanchonete'
@@ -91,3 +100,11 @@ def MontarMenu(request, ret, usuario):
         # logou então, adicionar os dados do usuário na sessão
         request.session['userl'] = usuario
         request.session['nome'] = result['displayName'].title()
+        try:
+            request.session['mail'] = result['mail']
+        except KeyError:
+            request.session['mail'] = 'Não informado'
+        try:
+            request.session['phone'] = result['telephoneNumber']
+        except KeyError:
+            request.session['phone'] = 'Não informado'

@@ -1,3 +1,14 @@
+/* Styles Colors */
+:root{
+	--primary: #00776c;
+	--primary-light: #009688;
+	--primary-middle: #016f62;
+	--primary-dark: #026156;
+	--accent: #ad7fa8;
+	--accent-dark: #75507b;
+	--accent-light: #c192bc;
+}
+
 body{
 	width: 99%;
 	margin-left: 0px;
@@ -10,8 +21,8 @@ div.bar-top{
     height: 20px;
     top: 0px;
 	padding: 0px;
-    background: #00796b;
-    border-top: 10px solid #026156;
+    background: var(--primary-middle);
+    border-top: 10px solid var(--primary-dark);
     text-align: right;
     z-index: 1;
 	position: fixed;
@@ -45,7 +56,7 @@ div.bar-top a {
 	text-decoration: none;
 	padding-left: 30px;
 	padding-right: 30px;
-	background-color: #026156;
+	background-color: var(--primary-dark);
 	box-shadow: 1px 1px 3px #888;
 	margin-right: 0px;
 	display: inline-block;
@@ -81,7 +92,7 @@ div.header{
     width: 100%;
     top: 30px;
     height: 130px;
-	background: #009688 url(../images/background-header.png);
+	background: var(--primary-light) url(../images/background-header.png);
 	background-size: 200px;
     margin-bottom: 5px;
     border-radius: 0px;
@@ -123,9 +134,9 @@ div.header{
     width: 100%;
     top: 160px;
 	font-family: sans-serif;
-    background: #00776c;
+    background: var(--primary);
     font-size: 16px;
-    border-top: 10px solid #016f62;
+    border-top: 10px solid var(--primary-middle);
     z-index: 3;
     position: absolute;
     box-shadow: 0px -5px 9px rgba(0,0,0,0.3);
@@ -136,7 +147,7 @@ div.header{
 }
 
 .menu-fixo {
-    border-top: 10px solid #026156;
+    border-top: 10px solid var(--primary-dark);
 	position: fixed;
     padding-top: 10px;
 	top: 0;
@@ -216,7 +227,7 @@ div.header{
 	text-decoration: none;
 	padding-left: 30px;
 	padding-right: 30px;
-	background-color: #026156;
+	background-color: var(--primary-dark);
 	box-shadow: 1px 1px 3px #888;
 	margin-right: 0px;
     border-radius: 0px 0px 15px 15px;
@@ -257,7 +268,7 @@ div.header{
 
 .item-menu{
 	padding: 0px 10px;
-	background-color:#00776c;
+	background-color:var(--primary);
 	color: #ffffff;
 	border-bottom: 0px solid #EDEDED;
 	border-radius: 3px 3px 0px 0px;
@@ -270,7 +281,7 @@ div.header{
 }
 
 .item-menu:HOVER{
-	background-color: #016f62;
+	background-color: var(--primary-middle);
 	color: #ffffff;
 	border-bottom: 3px solid #EA0000;
 }
@@ -287,7 +298,7 @@ div.header{
 
 .item-menu-selec{
 	padding: 0px 10px;
-	background-color: #016f62;
+	background-color: var(--primary-middle);
 	color: #ffffff;
 	border-bottom: 1px solid #EDEDED;
 	border-radius: 3px 3px 0px 0px;
@@ -320,7 +331,7 @@ input#control-nav {
 
 @media screen and (max-width: 767px) {
 	.conteiner-menu{
-		background: #00776c;
+		background: var(--primary);
 		border-radius: 0px 15px 15px 0px;
 		position: fixed;
 	    top: 0;
@@ -470,7 +481,7 @@ input#control-nav {
 	width: 100%;
 	bottom: 0px;
 	position: fixed;
-	background: #02443c;
+	background: var(--primary-dark);
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
@@ -487,9 +498,9 @@ input#control-nav {
     left: 0;
     right: 0;
     margin-bottom: 18px;
-    border-bottom: 8px solid #026156;
-    border-left: 8px solid #026156;
-    border-right: 8px solid #026156;
+    border-bottom: 8px solid var(--primary-dark);
+    border-left: 8px solid var(--primary-dark);
+    border-right: 8px solid var(--primary-dark);
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
@@ -606,7 +617,7 @@ input#control-nav {
 	max-width: 100%;
 	background: #ffffff;
 	box-shadow: 1px 1px 3px #888;
-	border-top: 5px solid #026156;
+	border-top: 5px solid var(--primary-dark);
 	padding: 10px;
 	border-radius: 10px 10px 0px 0px;
 	display: inline-block;
@@ -696,7 +707,7 @@ input#control-nav {
 	width:21em;
 	background: #ffffff;
 	box-shadow: 1px 1px 3px #888;
-	border-top: 5px solid #026156;
+	border-top: 5px solid var(--primary-dark);
 	padding: 10px;
 	margin: 5px 10px 5px 10px;
 	border-radius: 10px 10px 0px 0px;
@@ -773,7 +784,7 @@ input#control-nav {
 	min-width: 40%;
 	max-width: 90%;
 	box-shadow: 1px 1px 3px #888;
-	border-top: 5px solid #026156;
+	border-top: 5px solid var(--primary-dark);
 	padding: 10px;
 	margin: 5px;
 	border-radius: 10px 10px 0px 0px;
@@ -1185,7 +1196,7 @@ input#control-nav {
 
 .arquivo_cab_load{
 	margin: 0px;
-	background: #75507b;
+	background: var(--accent-dark);
 	width: 150px;
 	height: 30px;
 }
@@ -1249,7 +1260,7 @@ input#control-nav {
 }
 
 .folder:HOVER{
-	border:6px solid #75507b;
+	border:6px solid var(--accent-dark);
 	background: #ffffff;
 	width: 94px;
 	height: 94px;
@@ -1299,7 +1310,7 @@ input#control-nav {
 
 .navegation_bar a{
 	padding: 5px;
-	background: #ad7fa8;
+	background: var(--accent);
 	border-radius: 10px 10px 10px 10px;
 }
 
@@ -1308,11 +1319,11 @@ input#control-nav {
 	border-bottom: none;
 	color: white;
 	padding: 5px;
-	background: #75507b;
+	background: var(--accent-dark);
 	border-radius: 10px 10px 10px 10px;
 }
 
-/* Fim Barra de Navega��o*/
+/* Fim Barra de Navegação*/
 
 .action_bar_tuto{
 	background: #f3f3f3;
@@ -1323,7 +1334,7 @@ input#control-nav {
 }
 .action_bar_tuto a{
 	padding: 5px;
-	background: #ad7fa8;
+	background: var(--accent);
 	border-radius: 10px 10px 10px 10px;
 }
 
@@ -1332,13 +1343,13 @@ input#control-nav {
 	border-bottom: none;
 	color: white;
 	padding: 5px;
-	background: #75507b;
+	background: var(--accent-dark);
 	border-radius: 10px 10px 10px 10px;
 }
 
 .action_bar_tuto input{
 	padding: 0px 5px 0px 5px;
-	background: #ad7fa8;
+	background: var(--accent);
 	border-radius: 10px 10px 10px 10px;
 	border: none;
 }
@@ -1348,7 +1359,7 @@ input#control-nav {
 	text-decoration:none;
 	border-bottom: none;
 	color: white;
-	background: #75507b;
+	background: var(--accent-dark);
 	border-radius: 10px 10px 10px 10px;
 }
 
@@ -1527,7 +1538,7 @@ a.icon:hover:before {
 	background: white;
 	border-radius: 50%;
 	text-align: center;
-	border: 6px solid #75507b;
+	border: 6px solid var(--accent-dark);
 }
 
 .circle-convert img{
@@ -2220,7 +2231,7 @@ a.icon:hover:before {
 .progressao{
 	width: 100%;
     height: 50px;
-    background: #1c9596;
+    background: var(--primary-light);
     text-align: center;
     border-radius: 10px 10px 0px 0px;
 }
@@ -2234,7 +2245,7 @@ a.icon:hover:before {
 .progressao-rotulo{
 	width: 100%;
 	height: 33px;
-	background: #188383;
+	background: var(--primary);
 	margin-top: -21px;
 }
 
@@ -2250,7 +2261,7 @@ a.icon:hover:before {
 
 #nome-aluno{
 	text-align: center;
-	background: #157575;
+	background: var(--primary);
 	color: white;
 	border-radius: 0px 0px 10px 10px;
 }

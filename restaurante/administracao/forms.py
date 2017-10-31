@@ -110,3 +110,10 @@ class CadastroPratoForm(forms.ModelForm):
         except:
             raise forms.ValidationError("Não foi possível salvar o prato", code='invalid')
         return cleaned_data
+
+
+class ConfigHorarioLimiteVendasForm(forms.ModelForm):
+
+    class Meta:  # Define os campos vindos do Model
+        model = config
+        fields = ('hora_fechamento_vendas',)

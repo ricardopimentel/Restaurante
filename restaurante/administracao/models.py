@@ -7,4 +7,4 @@ class config(models.Model):
     gadmin = models.CharField(max_length=200)
     ou = models.CharField(max_length=200)
     filter = models.TextField('Filtro')
-    hora_fechamento_vendas = models.TimeField(default='23:59:59')
+    hora_fechamento_vendas = models.TimeField('Horário do Fechamento das Vendas', default='23:59:59')

@@ -5,14 +5,17 @@ from django.shortcuts import render, redirect, resolve_url as r
 
 
 # Create your views here.
-from restaurante.administracao.forms import AdForm, CadastroPratoForm
+from restaurante.administracao.forms import AdForm, CadastroPratoForm, ConfigHorarioLimiteVendasForm
 from restaurante.administracao.models import config
 from restaurante.core.models import prato
 
 
 def Administracao(request):
     if dict(request.session).get('nome'):
-        return render(request, 'administracao/administracao.html')
+        return render(request, 'administracao/administracao.html', {
+            'title': 'Administração',
+            'itemselec': 'ADMINISTRAÇÃO',
+        })
     return redirect(r('Login'))
 
 
@@ -37,8 +40,9 @@ def Dados_ad(request):
                     'ou': model.ou, 'filter': model.filter
                 })
                 return render(request, 'administracao/admin_config_ad.html', {
-                    'form': form,
+                    'title': 'Config. LDAP',
                     'itemselec': 'ADMINISTRAÇÃO',
+                    'form': form,
                 })
         except ObjectDoesNotExist:
             model = ''
@@ -58,9 +62,9 @@ def ConfigInicial(request):
         if form.is_valid():
             return redirect(r('Login'))
     return render(request, 'administracao/admin_config_ad_inicial.html', {
-        'title': 'Home',
+        'title': 'Config. Inicial',
+        'itemselec': 'ADMINISTRAÇÃO',
         'form': form,
-        'itemselec': 'HOME',
     })
 
 
@@ -74,9 +78,9 @@ def CadastroPrato(request):
             return redirect(r('CadastroPrato'))
     return render(request, 'administracao/admin_cadastro_prato.html', {
         'title': 'Cadastro de Prato',
+        'itemselec': 'ADMINISTRAÇÃO',
         'form': form,
         'pratos': pratos,
-        'itemselec': 'ADMINISTRAÇÃO',
     })
 
 
@@ -103,8 +107,29 @@ def EditarPrato(request, id_prato):
 
     return render(request, 'administracao/admin_cadastro_prato.html', {
         'title': 'Cadastro de Prato',
+        'itemselec': 'ADMINISTRAÇÃO',
         'form': form,
         'pratos': pratos,
         'id': id_prato,
+    })
+
+
+def HorarioLimiteVendas(request):
+    configobj = config.objects.get(id=1)
+    form = ConfigHorarioLimiteVendasForm(initial={'hora_fechamento_vendas': configobj.hora_fechamento_vendas})
+    if request.method == 'POST':
+        form = ConfigHorarioLimiteVendasForm(data=request.POST)
+        # Checa se os dados são válidos:
+        if form.is_valid():
+            try:
+                configobj.hora_fechamento_vendas = form.cleaned_data['hora_fechamento_vendas']
+                configobj.save()
+                messages.success(request, 'Horário salvo com sucesso!')
+            except:
+                messages.error(request, 'Erro ao atualizar o horario de fechamento das vendas.')
+            return redirect(r('HorarioLimiteVendas'))
+    return render(request, 'administracao/admin_config_horario_limite_vendas.html', {
+        'title': 'Cadastro de Prato',
         'itemselec': 'ADMINISTRAÇÃO',
+        'form': form,
     })

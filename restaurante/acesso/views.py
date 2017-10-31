@@ -61,6 +61,7 @@ def Logout(request):
         del request.session['userl']
         del request.session['menu']
         del request.session['url']
+        del request.session['phone']
 
     except KeyError:
         print(sys.exc_info())

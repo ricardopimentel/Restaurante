@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, resolve_url as r
 from django.views.decorators.csrf import csrf_exempt
 
+from restaurante.administracao.models import config
 from restaurante.core.libs.conexaoAD3 import conexaoAD
 from restaurante.core.models import pessoa, aluno, prato, usuariorestaurante, venda
 import datetime
@@ -32,8 +33,8 @@ def Venda(request):
             })
 
     return render(request, 'venda.html', {
-        'title': 'Home',
-        'itemselec': 'HOME',
+        'title': 'Venda',
+        'itemselec': 'VENDA',
         'step': 'pri',
         'alunos': ListaAlunos,
     })
@@ -42,9 +43,8 @@ def Venda(request):
 @csrf_exempt
 def Vender(request, id_pessoa):
     if request.method == 'POST':
-        horafechamento = datetime.time(23, 59)
         id_aluno = request.POST['id_aluno']
-        restricoes = Restricoes(horafechamento, id_aluno)
+        restricoes = Restricoes(id_aluno)
         if not restricoes['status']:
             vendaobj = SalvarVenda(request, id_aluno, 1)
             if vendaobj:
@@ -61,8 +61,8 @@ def Vender(request, id_pessoa):
             if not dados:
                 dados = SalvaAluno(id_pessoa)
             return render(request, 'venda.html', {
-                'title': 'Home',
-                'itemselec': 'HOME',
+                'title': 'Venda',
+                'itemselec': 'VENDA',
                 'step': 'fim',
                 'dados': dados,
                 'data': data,
@@ -70,8 +70,8 @@ def Vender(request, id_pessoa):
             })
         else:
             return render(request, 'venda.html', {
-                'title': 'Home',
-                'itemselec': 'HOME',
+                'title': 'Venda',
+                'itemselec': 'VENDA',
                 'step': 'notprato',
             })
 
@@ -121,16 +121,20 @@ def SalvarVenda(request, id_aluno, id_prato):
         return True
     except:
         print(sys.exc_info())
-        messages.error(request, sys.exc_info()[1])
+        messages.error(request, 'O usuário não tem permissão para realizar a venda. '+ str(sys.exc_info()[1]))
         return False
 
 
-def Restricoes(horafechamento, id_aluno):
-    hoje = datetime.datetime.today()
-    if hoje.time() < horafechamento:
-        vendaobj = venda.objects.filter(data__contains=hoje.date(), id_aluno=id_aluno)
-        if vendaobj:
-            return {'status': True, 'erro': "Aluno já realizou compra hoje"}
-        return {'status': False, 'erro': "Não há restrições"}
+def Restricoes(id_aluno):
+    try:
+        horafechamento = config.objects.get(id=1).hora_fechamento_vendas
+        hoje = datetime.datetime.today()
+        if hoje.time() < horafechamento:
+            vendaobj = venda.objects.filter(data__contains=hoje.date(), id_aluno=id_aluno)
+            if vendaobj:
+                return {'status': True, 'erro': "Aluno já realizou compra hoje"}
+            return {'status': False, 'erro': "Não há restrições"}
+    except:
+        return {'status': True, 'erro': "Falha ao verificar o horário de fechamento"}
     else:
         return {'status': True, 'erro': "O horário das vendas está encerrado"}

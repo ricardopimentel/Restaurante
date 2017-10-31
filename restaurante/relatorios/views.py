@@ -17,7 +17,10 @@ from restaurante.relatorios.forms import RelatorioVendasForm
 
 def Relatorios(request):
     if dict(request.session).get('nome'):
-        return render(request, 'relatorios/relatorios.html')
+        return render(request, 'relatorios/relatorios.html', {
+            'title': 'Relatórios',
+            'itemselec': 'RELATÓRIOS',
+        })
     return redirect(r('Login'))
 
 
@@ -69,7 +72,7 @@ def RelatorioVendas(request):
 
         return render(request, 'relatorios/relatoriovendas.html', {
             'soma': soma, 'datainicial': datainicial, 'datafinal': datafinal,
-            'itemselec': 'HOME', 'venda': vd, 'form': form,
+            'itemselec': 'RELATÓRIOS', 'venda': vd, 'form': form, 'title': 'Relatórios',
         })
 
 
