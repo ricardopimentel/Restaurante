@@ -73,7 +73,7 @@
 	
 		{% if step == 'fim' %}
 			<div class="card">
-				<img src="/restaurante/static/images/comida.png" alt="" width="70">
+				<img src="{% static 'images/comida.png' %}" alt="" width="70">
 				<h1>Finalizar Venda</h1>
 				<br>
 				<div class="navegation_bar">
@@ -97,9 +97,9 @@
 			{% if step == 'ter' %}
 				<div class="card-progressao">
 					<div class="progressao">
-						<img src="/restaurante/static/images/aluno.png" alt="" width="70">
-						<img src="/restaurante/static/images/ticket.png" alt="" width="70">
-						<img src="/restaurante/static/images/comida.png" alt="" width="70">
+						<img src="{% static 'images/aluno.png' %}" alt="" width="70">
+						<img src="{% static 'images/ticket.png' %}" alt="" width="70">
+						<img src="{% static 'images/comida.png' %}" alt="" width="70">
 						<!--- <h1>Alunos</h1> --->
 					</div>
 					<div class="progressao-rotulo">
@@ -112,7 +112,7 @@
 					{% autopaginate pratos 4 %}
 						{%for prato in pratos%}
 							<div class="list_card">
-								<a href="/restaurante/venda/{{idaluno}}/{{idticket}}/{{prato.id}}">
+                                <a href="{% url 'Venda' %}"><!---"Antiga URL /restaurante/venda/{{idaluno}}/{{idticket}}/{{prato.id}}--->
 									<li>
 										<table>
 											<tbody>
@@ -139,9 +139,9 @@
 		{% if step == 'seg' %}
 			<div class="card-progressao">
 				<div class="progressao">
-					<img src="/restaurante/static/images/aluno.png" alt="" width="70">
-					<img src="/restaurante/static/images/ticket.png" alt="" width="70">
-					<img src="/restaurante/static/images/comida.png" alt="" width="70">
+					<img src="{% static 'images/aluno.png' %}" alt="" width="70">
+                    <img src="{% static 'images/ticket.png' %}" alt="" width="70">
+                    <img src="{% static 'images/comida.png' %}" alt="" width="70">
 					<!--- <h1>Alunos</h1> --->
 				</div>
 				<div class="progressao-rotulo">
@@ -159,9 +159,9 @@
 		{% if step == 'pri' %}
 			<div class="card-progressao">
 				<div class="progressao">
-					<img src="/restaurante/static/images/aluno.png" alt="" width="70">
-					<img src="/restaurante/static/images/ticket.png" alt="" width="70">
-					<img src="/restaurante/static/images/comida.png" alt="" width="70">
+					<img src="{% static 'images/aluno.png' %}" alt="" width="70">
+                    <img src="{% static 'images/ticket.png' %}" alt="" width="70">
+                    <img src="{% static 'images/comida.png' %}" alt="" width="70">
 					<!--- <h1>Alunos</h1> --->
 				</div>
 				<div class="progressao-rotulo">
