@@ -1,9 +1,9 @@
 /* Styles Colors */
 :root{
-	--primary: #00776c;
 	--primary-light: #009688;
-	--primary-middle: #016f62;
-	--primary-dark: #026156;
+	--primary: #00796b;
+	--primary-middle: #00695c;
+	--primary-dark: #004d40;
 	--accent: #ad7fa8;
 	--accent-dark: #75507b;
 	--accent-light: #c192bc;
