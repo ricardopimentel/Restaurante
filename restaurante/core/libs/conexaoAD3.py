@@ -56,6 +56,8 @@ class conexaoAD(object):
 
 
     def ListaAlunos(self):
+        base = self.base
+        base = 'DC=ifto, DC=local' # Sobrescrevendo a base para pegar alunos apenas do campus paraiso, remover essa linha para utilizar as definições do banco de dados
         try:
             with Connection(Server(self.endservidor, use_ssl=True),
                             auto_bind=AUTO_BIND_NO_TLS,
@@ -63,7 +65,7 @@ class conexaoAD(object):
                             check_names=True,
                             user=self.LDAP_USERNAME, password=self.password) as c:
                 user_filter = '(&(!(userAccountControl:1.2.840.113556.1.4.803:=2))(memberof=CN=G_PARAISO_DO_TOCANTINS_ALUNOS, CN=Users,DC=ifto,DC=local))'
-                c.search(search_base=self.base, search_filter=user_filter, search_scope=SUBTREE,
+                c.search(search_base=base, search_filter=user_filter, search_scope=SUBTREE,
                          attributes=['description', 'mail', 'sAMAccountName', 'displayName'],
                          get_operational_attributes=False)
 
