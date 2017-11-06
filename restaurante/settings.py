@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     'restaurante.acesso',
     'restaurante.administracao',
     'restaurante.venda',
-    'restaurante.ajuda',
 ]
 
 MIDDLEWARE_CLASSES = [

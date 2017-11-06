@@ -133,3 +133,19 @@ def HorarioLimiteVendas(request):
         'itemselec': 'ADMINISTRAÇÃO',
         'form': form,
     })
+
+
+def Tutoriais(request, action):
+    form = CadastroPratoForm()
+    pratos = prato.objects.all()
+    if request.method == 'POST':
+        form = CadastroPratoForm(data=request.POST)
+        if form.is_valid():
+            messages.success(request, 'Prato Cadastrado Com Sucesso!!')
+            return redirect(r('CadastroPrato'))
+    return render(request, 'administracao/admin_cadastro_prato.html', {
+        'title': 'Cadastro de Prato',
+        'itemselec': 'ADMINISTRAÇÃO',
+        'form': form,
+        'pratos': pratos,
+    })

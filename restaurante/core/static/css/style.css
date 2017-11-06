@@ -1275,7 +1275,7 @@ input#control-nav {
 
 .folder img{
 	width: 50px;
-	border-radius: 0%;
+	border-radius: 100%;
 	margin: 0px;
 }
 
