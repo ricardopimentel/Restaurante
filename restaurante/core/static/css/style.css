@@ -115,30 +115,33 @@ div.header{
 }
 /* Header */
 
-.header-container-img{
+.header-container-img {
     margin-top: -15px;
     z-index: 3;
     display: block;
     position: fixed;
     margin-left: 15px;
-    box-shadow: 0px 0px 9px rgba(0,0,0,0.3);
+    box-shadow: 0px 0px 9px rgba(0, 0, 0, 0.3);
     border-radius: 100%;
     overflow: hidden;
     top: 20px;
-
-	-webkit-transition: all 500ms ease;
-	-moz-transition: all 500ms ease;
-	-ms-transition: all 500ms ease;
-	-o-transition: all 500ms ease;
-	transition: all 500ms ease;
 }
 
-.header-container-img:HOVER{
-	-moz-transform: scale(1) rotate(360deg) translateX(1px) translateY(1px) skewX(1deg) skewY(1deg);
-	-webkit-transform: scale(1) rotate(360deg) translateX(1px) translateY(1px) skewX(1deg) skewY(1deg);
-	-o-transform: scale(1) rotate(360deg) translateX(1px) translateY(1px) skewX(1deg) skewY(1deg);
-	-ms-transform: scale(1) rotate(360deg) translateX(1px) translateY(1px) skewX(1deg) skewY(1deg);
-	transform: scale(1) rotate(360deg) translateX(1px) translateY(1px) skewX(1deg) skewY(1deg);
+@-webkit-keyframes rodaroda {
+    0% {
+        -webkit-transform:rotate(0deg);
+    }
+    50% {
+        -webkit-transform:rotate(180deg);
+    }
+    100% {
+        -webkit-transform:rotate(360deg);
+    }
+}
+
+.header-container-img img{
+    border-radius: 100%;
+	-webkit-animation: rodaroda 0.5s linear alternate;
 }
 
 
@@ -684,6 +687,7 @@ input#control-nav {
 .card_noprinter_cab img{
 	border-radius: 50%;
 	width: 70px;
+    cursor: pointer;
 }
 
 .card_noprinter_cab h1{
