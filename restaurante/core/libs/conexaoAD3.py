@@ -70,8 +70,6 @@ class conexaoAD(object):
             res = (c.response)
             return res
         except:
-            print('excessão')
-            print(sys.exc_info())
             if 'invalidCredentials' in str(sys.exc_info()):
                 return 'i'  # Credenciais Invalidas
             elif 'LDAPSocketOpenError' in str(sys.exc_info()):

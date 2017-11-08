@@ -125,6 +125,20 @@ div.header{
     border-radius: 100%;
     overflow: hidden;
     top: 20px;
+
+	-webkit-transition: all 500ms ease;
+	-moz-transition: all 500ms ease;
+	-ms-transition: all 500ms ease;
+	-o-transition: all 500ms ease;
+	transition: all 500ms ease;
+}
+
+.header-container-img:HOVER{
+	-moz-transform: scale(1) rotate(360deg) translateX(1px) translateY(1px) skewX(1deg) skewY(1deg);
+	-webkit-transform: scale(1) rotate(360deg) translateX(1px) translateY(1px) skewX(1deg) skewY(1deg);
+	-o-transform: scale(1) rotate(360deg) translateX(1px) translateY(1px) skewX(1deg) skewY(1deg);
+	-ms-transform: scale(1) rotate(360deg) translateX(1px) translateY(1px) skewX(1deg) skewY(1deg);
+	transform: scale(1) rotate(360deg) translateX(1px) translateY(1px) skewX(1deg) skewY(1deg);
 }
 
 
