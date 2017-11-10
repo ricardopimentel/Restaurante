@@ -522,7 +522,7 @@ input#control-nav {
 	flex-direction: row;
 	flex-wrap: wrap;
 	justify-content: center;
-	padding: 15px 0px 20px 0px;
+	padding: 15px 0px 14px 0px;
     background: #ffffff url(../images/noise.png);
     z-index: 4;
 }

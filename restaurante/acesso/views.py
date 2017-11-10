@@ -35,7 +35,7 @@ def Login(request):
                 if (request.session['usertip'] == 'admin'):  # Cadastrar Admin
                     adminobj = administrador(id_pessoa=pessoaobj)
                     adminobj.save()
-                elif (request.session['usertip'] == 'lanchonete'): # Usuário da lanchonete
+                elif (request.session['usertip'] == 'lanchonete'):  # Usuário da lanchonete
                     lanchoneteobj = usuariorestaurante(id_pessoa=pessoaobj)
                     lanchoneteobj.save()
                 return redirect(r('Home'))

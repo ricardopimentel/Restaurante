@@ -8,18 +8,21 @@ from restaurante.core.models import pessoa, aluno, prato, usuariorestaurante, ve
 import datetime
 
 # Create your views here.
-def Venda(request):
-    usuario = '2306214'
-    senha = 'mushramboo4'
+usuario = 'visitante'
+senha = '123456789'
 
+def Venda(request):
     con = conexaoAD(usuario, senha)
     ListaAlunos = []
     for lista in con.ListaAlunos():
-        if lista.get('raw_attributes'):
-            ListaAlunos.append({
-                'nome': lista['raw_attributes']['displayName'][0],
-                'cpf': lista['raw_attributes']['sAMAccountName'][0],
-            })
+        try:
+            if lista.get('raw_attributes'):
+                ListaAlunos.append({
+                    'nome': lista['raw_attributes']['displayName'][0],
+                    'cpf': lista['raw_attributes']['sAMAccountName'][0],
+                })
+        except:
+            messages.error(request, str(sys.exc_info()[1]))
 
     return render(request, 'venda/venda.html', {
         'title': 'Venda',
@@ -66,9 +69,6 @@ def Vender(request, id_pessoa):
 
 
 def SalvaAluno(id):
-    usuario = '2306214'
-    senha = 'mushramboo4'
-
     con = conexaoAD(usuario, senha)
     nomealuno = con.DadosAluno(id)[0]['raw_attributes']['displayName'][0]
 
@@ -109,7 +109,6 @@ def SalvarVenda(request, id_aluno, id_prato):
 
         return True
     except:
-        print(sys.exc_info())
         messages.error(request, 'O usuário não tem permissão para realizar a venda. '+ str(sys.exc_info()[1]))
         return False
 
