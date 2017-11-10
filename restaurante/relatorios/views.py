@@ -107,11 +107,11 @@ def RelatorioCustoAlunoPeriodo(request):
                 # Pega no bd os dados da vas vendas, filtrando por aluno
                 #objects.values('host').annotate(soma=Sum('pages')).order_by('-soma')
                 if alunoselecionado == '-1':
-                    vd = venda.objects.select_related('id_aluno', 'id_prato').values('id_aluno__id_pessoa__nome', 'id_aluno__id_pessoa__usuario', 'valor').annotate(soma=Sum('valor')).filter(
+                    vd = venda.objects.select_related().values('id_aluno__id_pessoa__nome', 'id_aluno__id_pessoa__usuario').annotate(soma=Sum('valor')).filter(
                         data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59']
                     )
                 else:
-                    vd = venda.objects.select_related('id_aluno', 'id_prato').values('id_aluno__id_pessoa__nome', 'id_aluno__id_pessoa__usuario', 'valor').annotate(soma=Sum('valor')).filter(
+                    vd = venda.objects.select_related().values('id_aluno__id_pessoa__nome', 'id_aluno__id_pessoa__usuario').annotate(soma=Sum('valor')).filter(
                         data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59'],
                         id_aluno=alunoselecionado
                     )
@@ -139,12 +139,12 @@ def PdfCustoAlunoPeriodo(request):
     soma = 0
 
     if campo_aluno == '-1':
-        vd = venda.objects.select_related('id_aluno', 'id_prato').values('id_aluno__id_pessoa__nome', 'id_aluno__id_pessoa__usuario', 'valor').annotate(soma=Sum('valor')).filter(
+        vd = venda.objects.select_related().values('id_aluno__id_pessoa__nome', 'id_aluno__id_pessoa__usuario').annotate(soma=Sum('valor')).filter(
             data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59']
         )
         alunoobj = ''
     else:
-        vd = venda.objects.select_related('id_aluno', 'id_prato').values('id_aluno__id_pessoa__nome', 'id_aluno__id_pessoa__usuario', 'valor').annotate(soma=Sum('valor')).filter(
+        vd = venda.objects.select_related().values('id_aluno__id_pessoa__nome', 'id_aluno__id_pessoa__usuario').annotate(soma=Sum('valor')).filter(
             data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59'],
             id_aluno=campo_aluno
         )
