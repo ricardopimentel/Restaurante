@@ -57,15 +57,16 @@ div.bar-top a {
 	padding-left: 30px;
 	padding-right: 30px;
 	background-color: var(--primary-dark);
-	box-shadow: 1px 1px 3px #888;
 	margin-right: 0px;
 	display: inline-block;
     border-radius: 0px 0px 15px 15px;
+	-webkit-transition: all 1000ms ease;
+	transition: all 1000ms ease;
 }
 
 div.bar-top a:hover {
 	text-decoration:none;
-	box-shadow: 0px 6px 15px 0px #607D8B;
+	box-shadow: 0px 3px 3px 0px #fff;
 	color: #000000;
 }
 
@@ -165,6 +166,7 @@ div.header{
 
 .menu-fixo {
     border-top: 10px solid var(--primary-dark);
+    background: var(--primary-middle);
 	position: fixed;
     padding-top: 10px;
 	top: 0;
@@ -175,6 +177,10 @@ div.header{
 	border-radius: 0px;
     padding-left: 50px;
     box-shadow: 0px 7px 9px rgba(0,0,0,0.3);
+}
+
+.menu-fixo ul{
+    margin-top: 10px;
 }
 
 .menu-fixo #hidemenu{
@@ -189,6 +195,19 @@ div.header{
     position: absolute;
     top: 0px;
     right: 0px;
+}
+
+.background-nome{
+    z-index: 0;
+    display: block;
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    width: 336px;
+    height: 20px;
+    background: var(--primary-middle);
+    padding-left: 25px;
+    border-radius: 0px 0px 0px 15px;
 }
 
 .menu-fixo .header-container-img{
@@ -218,7 +237,7 @@ div.header{
 	font-family: 'Times new Roman';
 	font-size: 100%;
 	padding-right: 0px;
-	margin-right: 150px;
+    margin-top: 0px;
 	text-align: right;
 	color: white;
 	display: inline-block;
@@ -245,15 +264,16 @@ div.header{
 	padding-left: 30px;
 	padding-right: 30px;
 	background-color: var(--primary-dark);
-	box-shadow: 1px 1px 3px #888;
 	margin-right: 0px;
     border-radius: 0px 0px 15px 15px;
     color: white;
+    -webkit-transition: all 1000ms ease;
+	transition: all 1000ms ease;
 }
 
 #hidemenusair a:hover {
 	text-decoration:none;
-	box-shadow: 0px 6px 15px 0px #607D8B;
+	box-shadow: 0px 3px 3px 0px #fff;
 	color: #000000;
 }
 
@@ -264,11 +284,14 @@ div.header{
 }
 
 .menu ul{
-	margin: 0px;
-	padding-left: 35px;
-	padding-top: 2px;
-	padding-bottom: 0px;
-	text-decoration: none;
+	background: var(--primary);
+    margin-left: -50px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-left: 90px;
+    padding-top: 2px;
+    padding-bottom: 0px;
+    text-decoration: none;
 }
 
 .menu ul li {	

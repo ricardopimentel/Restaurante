@@ -34,12 +34,14 @@
                         </div>
                     {% elif item == 'sair' %}
                         <div id="hidemenusair">
-                            {% if request.session.nome %}
-                                <h1>{{request.session.nome}}</h1>
-                                <a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-                            {%else%}
-                                <h1>Faça Login</h1>
-                            {%endif%}
+                            <div class="background-nome">
+                                {% if request.session.nome %}
+                                    <h1>{{request.session.nome}}</h1>
+                                    <a href="{% url 'Logout' %}"><h2>Sair</h2></a>
+                                {%else%}
+                                    <h1>Faça Login</h1>
+                                {%endif%}
+                            </div>
                         </div>
                     {% else %}
                         <a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
