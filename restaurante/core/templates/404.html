@@ -58,12 +58,16 @@
 {%endblock%}
 	
 {%block conteudo%}
-    <div class="error-page-container-404">
-        <div class="error-page-img">
-            <img src="{% static 'images/404.png' %}" alt="" />
+    <div class="cartao">
+        <div class="card-background-titulo">
+            <img src="{% static 'images/404.png' %}" alt="" >
+            <h1 style="margin-top: -130px">Erro 404</h1>
+            <div class="sistemas-container">
+                <a href="https://paraiso.ifto.edu.br/" target="_blank" title="Abrir o Portal do IFTO"><div class="sistemas"><img src="{% static 'images/if24b.png' %}"/></div></a>
+                <a href="https://paraiso.ifto.edu.br/suporte/" target="_blank" title="Abrir a página de suporte"><div class="sistemas"><img src="{% static 'images/suporte.png' %}"/></div></a>
+            </div>
         </div>
-        <div class="error-page-text">
-            <h1>Erro 404</h1>
+        <div class="card-progressao-container" style="text-align: justify">
             <h2>A página solicitada não existe!</h2>
             <h3>Verifique o endereço especificado e tente novamente, caso o problema persista contate a CGTI</h3>
             <p><b>E-mail: </b>cpd.paraiso@ifto.edu.br</p>
