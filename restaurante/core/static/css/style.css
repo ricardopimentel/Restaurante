@@ -818,6 +818,61 @@ input#control-nav {
 }
 /* Fim Card*/
 
+.card-background-titulo{
+    height: 75px;
+    background: var(--primary);
+    color: white;
+    margin: -10px;
+    padding: 10px;
+    border-bottom: 10px solid var(--primary-dark);
+    border-radius: 6px 6px 0px 0px;
+    margin-bottom: 40px;
+}
+
+.card-background-titulo img{
+    border: 1px solid white;
+}
+
+.sistemas-container{
+    text-align: right;
+}
+
+.sistemas-container a:hover{
+    text-decoration: none;
+    background-color: inherit;
+    color: inherit;
+    border-bottom: 0px;
+}
+
+.sistemas{
+    width: 30px;
+    height: 30px;
+    margin-right: 5px;
+    background: white;
+    display: inline-block;
+    box-shadow: 1px 1px 3px #888;
+    border-radius: 100%;
+    text-align: center;
+
+    -webkit-transition: all 500ms ease;
+	-moz-transition: all 500ms ease;
+	-ms-transition: all 500ms ease;
+	-o-transition: all 500ms ease;
+	transition: all 500ms ease;
+}
+
+.sistemas img{
+    padding-top: 2px;
+    width: 24px;
+    margin: 0px;
+    border: 0px;
+    border-radius: 0px;
+}
+
+.sistemas:hover{
+    box-shadow: 3px 4px 11px #888;
+    cursor: pointer;
+}
 
 /* Cartao*/
 .cartao{
