@@ -1,5 +1,5 @@
 import sys
-from ldap3 import Server, Connection, AUTO_BIND_TLS_AFTER_BIND, SUBTREE
+from ldap3 import Server, Connection, AUTO_BIND_NO_TLS, SUBTREE
 
 from restaurante.administracao.models import config
 
@@ -32,8 +32,8 @@ class conexaoAD(object):
 
     def Login(self):
         try:
-            with Connection(Server(self.endservidor, use_ssl=True),
-                            auto_bind=AUTO_BIND_TLS_AFTER_BIND,
+            with Connection(Server(self.endservidor, use_ssl=False),
+                            auto_bind=AUTO_BIND_NO_TLS,
                             read_only=True,
                             check_names=True,
                             user=self.LDAP_USERNAME, password=self.password) as c:
@@ -57,8 +57,8 @@ class conexaoAD(object):
 
     def ListaAlunos(self):
         try:
-            with Connection(Server(self.endservidor, use_ssl=True),
-                            auto_bind=AUTO_BIND_TLS_AFTER_BIND,
+            with Connection(Server(self.endservidor, use_ssl=False),
+                            auto_bind=AUTO_BIND_NO_TLS,
                             read_only=True,
                             check_names=True,
                             user=self.LDAP_USERNAME, password=self.password) as c:
@@ -78,8 +78,8 @@ class conexaoAD(object):
 
     def DadosAluno(self, cpf):
         try:
-            with Connection(Server(self.endservidor, use_ssl=True),
-                            auto_bind=AUTO_BIND_TLS_AFTER_BIND,
+            with Connection(Server(self.endservidor, use_ssl=False),
+                            auto_bind=AUTO_BIND_NO_TLS,
                             read_only=True,
                             check_names=True,
                             user=self.LDAP_USERNAME, password=self.password) as c:
@@ -104,8 +104,8 @@ class conexaoAD(object):
         LDAP_USERNAME = Username + '@' + Dominio
 
         try:
-            with Connection(Server(Endservidor, use_ssl=True),
-                            auto_bind=AUTO_BIND_TLS_AFTER_BIND,
+            with Connection(Server(Endservidor, use_ssl=False),
+                            auto_bind=AUTO_BIND_NO_TLS,
                             read_only=True,
                             check_names=True,
                             user=LDAP_USERNAME, password=Password) as c:
