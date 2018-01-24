@@ -12,18 +12,21 @@ usuario = 'visitante'
 senha = '123456789'
 
 def Venda(request):
-    con = conexaoAD(usuario, senha)
     ListaAlunos = []
-    for lista in con.ListaAlunos():
-        try:
-            if lista.get('raw_attributes'):
-                ListaAlunos.append({
-                    'nome': lista['raw_attributes']['displayName'][0],
-                    'cpf': lista['raw_attributes']['sAMAccountName'][0],
-                })
-        except:
-            messages.error(request, str(sys.exc_info()[1]))
-
+    con = conexaoAD(usuario, senha)
+    if str(con.ListaAlunos()) == 'i':
+	    messages.error(request, 'Falha ao realizar a consulta verifique o usuário "'+ usuario+'"')
+    else:
+        for lista in con.ListaAlunos():
+            try:
+                if lista.get('raw_attributes'):
+                    ListaAlunos.append({
+                        'nome': lista['raw_attributes']['displayName'][0],
+                        'cpf': lista['raw_attributes']['sAMAccountName'][0],
+                    })
+            except:
+                messages.error(request, str(sys.exc_info()[1]))
+	
     return render(request, 'venda/venda.html', {
         'title': 'Venda',
         'itemselec': 'VENDA',
