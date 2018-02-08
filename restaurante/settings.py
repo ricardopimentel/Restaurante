@@ -113,6 +113,12 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
+# number formats
+DECIMAL_SEPARATOR = ','
+THOUSAND_SEPARATOR = '.'
+USE_THOUSAND_SEPARATOR = True
+NUMBER_GROUPING = 3
+
 LANGUAGE_CODE = 'pt-br'
 
 DATE_FORMAT = 'd/m/Y'
