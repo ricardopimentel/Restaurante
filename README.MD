@@ -4,50 +4,49 @@ Sistema de gerenciamento da utilização de beneficios destinados à alimentaç�
 
 
 ## Como utilizar?
-1 Clone o repositório.
-
+1 Instalando Dokku
 ```console
-git clone https://github.com/ricardopimentel/Restaurante.git Restaurante
+wget https://raw.githubusercontent.com/dokku/dokku/v0.10.5/bootstrap.sh
+sudo DOKKU_TAG=v0.10.5 bash bootstrap.sh
 ```
 
-2 Crie um virtualenv com python 3.5
-
+2 Gerar chave ssh (Aceite as três opções pedidas por default. Não inserir password)
 ```console
-cd Restaurante
-python -m venv .Restaurante
+ssh-keygen -t rsa
 ```
 
-3 Ative o virtualenv
-
+3 Visualizar a chave, selecionar e copiar o conteúdo
 ```console
-source .Restaurante/bin/activate
+cat ~/.ssh/id_rsa.pub
 ```
 
-4 Instale as dependêcias
+4 Acessar o endereço IP do servidor pelo navegador, colar a chave copiada e pressionar Finish Setup
+![Print1](contrib/dokkuprint1.png)
 
+5 Criar o app Restaurante
 ```console
-sudo apt-get install libmysqlclient-dev
-pip install -r requirements.txt
+dokku apps:create restaurante
 ```
 
-5 Configure a instancia com o .env
-
+6 Instalar plugin mysql, criar serviço e ligar ao app
 ```console
-cp contrib/env-sample .env
-nano .env
+sudo dokku plugin:install https://github.com/dokku/dokku-mysql.git mysql
+dokku mysql:create restaurante
+dokku mysql:link restaurante restaurante
 ```
 
-   - Defina uma SECRET_KEY segura para a instância
-   - Defina DEBUG=False
-
-6 Rodar as migrações
-
+7 Configurando DEBUG e SECRET_KEY (Criar Secret Key segura)
 ```console
-python manage.py migrate
+dokku config:set restaurante DEBUG='False'
+dokku config:set restaurante SECRET_KEY='sua secret_key'
 ```
 
-7 Execute os testes
-
+8 Clone o repositório, no final será apresentado o endereço para acessar a aplicação
 ```console
-python manage.py test
+sudo dokku plugin:install https://github.com/crisward/dokku-clone.git clone
+dokku clone restaurante https://github.com/ricardopimentel/Restaurante.git Restaurante
 ```
+
+9 Acesse a página de configuração http://servidor:porta/restaurante
+
+- Preencha os dados solicitados e clique em salvar
