@@ -4,7 +4,7 @@ from restaurante.core.libs.conexaoAD3 import conexaoAD
 
 
 class ConfirmacaoVendaForm(forms.Form):
-    usuario = forms.CharField(label="", max_length=20, widget=forms.TextInput(attrs={'placeholder': 'Login'}))
+    usuario = forms.CharField(label="", max_length=20, widget=forms.HiddenInput(attrs={'placeholder': 'Login'}))
     senha = forms.CharField(label="", widget=forms.PasswordInput(attrs={'placeholder': 'Senha'}))
 
     def __init__(self, request, *args, **kwargs):
