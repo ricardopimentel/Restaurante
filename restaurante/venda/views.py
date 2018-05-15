@@ -8,6 +8,8 @@ from restaurante.core.models import pessoa, aluno, prato, usuariorestaurante, ve
 import datetime
 
 # Create your views here.
+from restaurante.venda.forms import ConfirmacaoVendaForm
+
 usuario = 'visitante'
 senha = '123456789'
 
@@ -26,7 +28,6 @@ def Venda(request):
                     })
             except:
                 messages.error(request, str(sys.exc_info()[1]))
-	
     return render(request, 'venda/venda.html', {
         'title': 'Venda',
         'itemselec': 'VENDA',
@@ -37,6 +38,12 @@ def Venda(request):
 
 @csrf_exempt
 def Vender(request, id_pessoa):
+    #Rever toda essa lógica, para validar o formulário antes de começar a salvar
+    form = ConfirmacaoVendaForm(request, initial={'campo_usuario': id_pessoa})
+    if form.is_valid():
+        pass
+    #############################################################################
+
     if request.method == 'POST':
         id_aluno = request.POST['id_aluno']
         restricoes = Restricoes(id_aluno)
@@ -62,6 +69,7 @@ def Vender(request, id_pessoa):
                 'dados': dados,
                 'data': data,
                 'prato': pratoobj,
+                'formulario': form,
             })
         else:
             return render(request, 'venda/venda.html', {
