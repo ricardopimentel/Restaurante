@@ -2,12 +2,13 @@ import sys
 from django.contrib import messages
 from django.shortcuts import render, redirect, resolve_url as r
 from django.views.decorators.csrf import csrf_exempt
+
+from restaurante.acesso.forms import LoginForm
 from restaurante.administracao.models import config
 from restaurante.core.libs.conexaoAD3 import conexaoAD
 from restaurante.core.models import pessoa, aluno, prato, usuariorestaurante, venda
 import datetime
 
-# Create your views here.
 from restaurante.venda.forms import ConfirmacaoVendaForm
 
 usuario = 'visitante'
@@ -38,45 +39,42 @@ def Venda(request):
 
 @csrf_exempt
 def Vender(request, id_pessoa):
-    #Rever toda essa lógica, para validar o formulário antes de começar a salvar
-    form = ConfirmacaoVendaForm(request, initial={'campo_usuario': id_pessoa})
-    if form.is_valid():
-        pass
-    #############################################################################
-
+    form = LoginForm(request, initial={'usuario': id_pessoa})
     if request.method == 'POST':
-        id_aluno = request.POST['id_aluno']
-        restricoes = Restricoes(id_aluno)
-        if not restricoes['status']:
-            vendaobj = SalvarVenda(request, id_aluno, 1)
-            if vendaobj:
-                messages.success(request, "Venda realizada com sucesso")
-            return redirect(r('Venda'))
-        else:
-            messages.error(request, restricoes['erro'])
-            return redirect(r('Venda'))
+        form = ConfirmacaoVendaForm(request, data=request.POST)
+        if form.is_valid():
+            id_aluno = request.POST['id_aluno']
+            restricoes = Restricoes(id_aluno)
+            if not restricoes['status']:
+                vendaobj = SalvarVenda(request, id_aluno, 1)
+                if vendaobj:
+                    messages.success(request, "Venda realizada com sucesso")
+                return redirect(r('Venda'))
+            else:
+                messages.error(request, restricoes['erro'])
+                return redirect(r('Venda'))
+
+    data = datetime.datetime.now()
+    pratoobj = ExistePratoCadastrado(1)
+    if pratoobj:
+        dados = ExisteAlunoCadastrado(id_pessoa)
+        if not dados:
+            dados = SalvaAluno(id_pessoa)
+        return render(request, 'venda/venda.html', {
+            'title': 'Venda',
+            'itemselec': 'VENDA',
+            'step': 'fim',
+            'dados': dados,
+            'data': data,
+            'prato': pratoobj,
+            'formulario': form,
+        })
     else:
-        data = datetime.datetime.now()
-        pratoobj = ExistePratoCadastrado(1)
-        if pratoobj:
-            dados = ExisteAlunoCadastrado(id_pessoa)
-            if not dados:
-                dados = SalvaAluno(id_pessoa)
-            return render(request, 'venda/venda.html', {
-                'title': 'Venda',
-                'itemselec': 'VENDA',
-                'step': 'fim',
-                'dados': dados,
-                'data': data,
-                'prato': pratoobj,
-                'formulario': form,
-            })
-        else:
-            return render(request, 'venda/venda.html', {
-                'title': 'Venda',
-                'itemselec': 'VENDA',
-                'step': 'notprato',
-            })
+        return render(request, 'venda/venda.html', {
+            'title': 'Venda',
+            'itemselec': 'VENDA',
+            'step': 'notprato',
+        })
 
 
 def SalvaAluno(id):

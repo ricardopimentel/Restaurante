@@ -4,8 +4,8 @@ from restaurante.core.libs.conexaoAD3 import conexaoAD
 
 
 class ConfirmacaoVendaForm(forms.Form):
-    campo_usuario = forms.CharField(label="", widget=forms.TextInput(attrs={'placeholder': 'Usuário', 'readonly':'readonly'}))
-    campo_senha = forms.CharField(label="", widget=forms.PasswordInput(attrs={'placeholder': 'Senha'}))
+    usuario = forms.CharField(label="", max_length=20, widget=forms.TextInput(attrs={'placeholder': 'Login'}))
+    senha = forms.CharField(label="", widget=forms.PasswordInput(attrs={'placeholder': 'Senha'}))
 
     def __init__(self, request, *args, **kwargs):
         super(ConfirmacaoVendaForm, self).__init__(*args, **kwargs)
@@ -13,10 +13,10 @@ class ConfirmacaoVendaForm(forms.Form):
 
     def clean(self):
         cleaned_data = self.cleaned_data
-        campo_usuario = cleaned_data.get("campo_usuario")
-        campo_senha = cleaned_data.get("campo_senha")
+        usuario = cleaned_data.get("usuario")
+        senha = cleaned_data.get("senha")
 
-        c = conexaoAD(campo_usuario, campo_senha)
+        c = conexaoAD(usuario, senha)
         result = c.Login()  # tenta login no ldap
 
         if (result == ('i')):  # Credenciais invalidas
@@ -25,12 +25,7 @@ class ConfirmacaoVendaForm(forms.Form):
         elif (result == ('n')):  # Server Down
             # Adiciona erro na validação do formulário
             raise forms.ValidationError("Servidor AD não encontrado", code='invalid')
-        elif (result == ('o')):  # Usuario fora do escopo permitido
-            # Adiciona erro na validação do formulário
-            raise forms.ValidationError("Usuário não tem permissão para acessar essa página", code='invalid')
         else:  # se logou
             pass
-
         # Sempre retorne a coleção completa de dados válidos.
-
         return cleaned_data
