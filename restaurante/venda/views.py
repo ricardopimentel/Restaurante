@@ -39,9 +39,9 @@ def Venda(request):
 
 @csrf_exempt
 def Vender(request, id_pessoa):
-    form = ConfirmacaoVendaForm(request, initial={'usuario': id_pessoa})
+    form = ConfirmacaoVendaForm(request, id_pessoa)
     if request.method == 'POST':
-        form = ConfirmacaoVendaForm(request, data=request.POST)
+        form = ConfirmacaoVendaForm(request, id_pessoa, data=request.POST)
         if form.is_valid():
             id_aluno = request.POST['id_aluno']
             restricoes = Restricoes(id_aluno)
