@@ -60,29 +60,29 @@
 		<meta http-equiv="refresh" content="0; url=/login/">
 	{%else%}
 		<div class="cartao">
-			<img src="{% static 'images/relatorio.png' %}" alt="" width="70"/>
-			<h1>Relatórios</h1>
+			<img src="{% static 'images/loja.png' %}" alt="" width="70"/>
+			<h1>Vendas</h1>
 			<br>
 			<div class="navegation_bar">
                 <a href="{% url 'Home' %}">Home</a>
-				<a href="{% url 'Relatorios' %}">Relatórios</a>
+				<a href="{% url 'Vendas' %}">Vendas</a>
 			</div>
 			
 			<div class="box-file">
 				<div class="box_folder">
-					<a href="{% url 'RelatorioVendas' %}" title="Abrir Relatório de Vendas">
+					<a href="{% url 'Venda' %}" title="Abrir Página de Vendas">
 						<div class="folder">
-							<br><img src="{% static 'images/dinheiro.png' %}" alt="" />
+							<br><img src="{% static 'images/money.png' %}" alt="" />
 						</div>
-						<p>Rel. Vendas Realizadas</p>
+						<p>Venda Individual</p>
 					</a>
 				</div>
 				<div class="box_folder">
-					<a href="{% url 'RelatorioCustoAlunoPeriodo' %}" title="Abrir Relatório Custo Alunos Período">
+					<a href="{% url 'VendaEmLotes' %}" title="Abrir Página de Vendas em Lotes">
 						<div class="folder">
-							<br><img src="{% static 'images/dinheiroorange.png' %}" alt="" />
+							<br><img src="{% static 'images/carrinho.png' %}" alt="" />
 						</div>
-						<p>Rel. Custo Aluno Período</p>
+						<p>Venda em Lotes</p>
 					</a>
 				</div>
 			</div>

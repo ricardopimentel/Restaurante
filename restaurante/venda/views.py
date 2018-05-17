@@ -2,9 +2,8 @@ import sys
 from django.contrib import messages
 from django.shortcuts import render, redirect, resolve_url as r
 from django.views.decorators.csrf import csrf_exempt
-
-from restaurante.acesso.forms import LoginForm
 from restaurante.administracao.models import config
+from restaurante.core.libs.calendario import calendario
 from restaurante.core.libs.conexaoAD3 import conexaoAD
 from restaurante.core.models import pessoa, aluno, prato, usuariorestaurante, venda
 import datetime
@@ -13,6 +12,14 @@ from restaurante.venda.forms import ConfirmacaoVendaForm
 
 usuario = 'visitante'
 senha = '123456789'
+
+def Vendas(request):
+    if dict(request.session).get('nome'):
+        return render(request, 'venda/vendas.html', {
+            'title': 'Vendas',
+            'itemselec': 'VENDA',
+        })
+    return redirect(r('Login'))
 
 def Venda(request):
     ListaAlunos = []
@@ -35,6 +42,30 @@ def Venda(request):
         'step': 'pri',
         'alunos': ListaAlunos,
     })
+
+def VendaLotes(request):
+    calendarobj = calendario()
+    # Pega od dados necessarios para montar visão do calendario
+    dadospagina = calendarobj.getCalendario()
+    ListaAlunos = []
+    con = conexaoAD(usuario, senha)
+    if str(con.ListaAlunos()) == 'i':
+	    messages.error(request, 'Falha ao realizar a consulta verifique o usuário "'+ usuario+'"')
+    else:
+        for lista in con.ListaAlunos():
+            try:
+                if lista.get('raw_attributes'):
+                    ListaAlunos.append({
+                        'nome': lista['raw_attributes']['displayName'][0],
+                        'cpf': lista['raw_attributes']['sAMAccountName'][0],
+                    })
+            except:
+                messages.error(request, str(sys.exc_info()[1]))
+    dadospagina['title'] = 'Venda'
+    dadospagina['itemselec'] = 'VENDA'
+    dadospagina['step'] = 'pri'
+    dadospagina['alunos'] = ListaAlunos
+    return render(request, 'venda/venda_em_lotes.html', dadospagina)
 
 
 @csrf_exempt

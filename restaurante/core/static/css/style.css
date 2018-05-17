@@ -1326,6 +1326,7 @@ input#control-nav {
 	position: relative;
 	text-align: center;
 	border-radius: 50%;
+	cursor: pointer;
 }
 
 .folder img{
