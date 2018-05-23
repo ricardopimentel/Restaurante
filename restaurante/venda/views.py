@@ -13,11 +13,12 @@ from restaurante.venda.forms import ConfirmacaoVendaForm
 usuario = 'visitante'
 senha = '123456789'
 
+# Views
 def Vendas(request):
     if dict(request.session).get('nome'):
         return render(request, 'venda/vendas.html', {
             'title': 'Vendas',
-            'itemselec': 'VENDA',
+            'itemselec': 'VENDAS',
         })
     return redirect(r('Login'))
 
@@ -38,19 +39,16 @@ def Venda(request):
                 messages.error(request, str(sys.exc_info()[1]))
     return render(request, 'venda/venda.html', {
         'title': 'Venda',
-        'itemselec': 'VENDA',
+        'itemselec': 'VENDAS',
         'step': 'pri',
         'alunos': ListaAlunos,
     })
 
 def VendaLotes(request):
-    calendarobj = calendario()
-    # Pega od dados necessarios para montar visão do calendario
-    dadospagina = calendarobj.getCalendario()
     ListaAlunos = []
     con = conexaoAD(usuario, senha)
     if str(con.ListaAlunos()) == 'i':
-	    messages.error(request, 'Falha ao realizar a consulta verifique o usuário "'+ usuario+'"')
+        messages.error(request, 'Falha ao realizar a consulta verifique o usuário "' + usuario + '"')
     else:
         for lista in con.ListaAlunos():
             try:
@@ -61,10 +59,25 @@ def VendaLotes(request):
                     })
             except:
                 messages.error(request, str(sys.exc_info()[1]))
+
+    return render(request, 'venda/venda_em_lotes.html', {
+        'title': 'Venda',
+        'itemselec': 'VENDAS',
+        'step': 'pri',
+        'alunos': ListaAlunos,
+    })
+
+
+def VenderLotes(request, id_pessoa):
+    if request.method == 'POST':
+        messages.success(request, "Você quer vender")
+    calendarobj = calendario()
+
+    # Pega od dados necessarios para montar visão do calendario
+    dadospagina = calendarobj.getCalendario()
     dadospagina['title'] = 'Venda'
-    dadospagina['itemselec'] = 'VENDA'
-    dadospagina['step'] = 'pri'
-    dadospagina['alunos'] = ListaAlunos
+    dadospagina['itemselec'] = 'VENDAS'
+    dadospagina['step'] = 'seg'
     return render(request, 'venda/venda_em_lotes.html', dadospagina)
 
 
@@ -93,7 +106,7 @@ def Vender(request, id_pessoa):
             dados = SalvaAluno(id_pessoa)
         return render(request, 'venda/venda.html', {
             'title': 'Venda',
-            'itemselec': 'VENDA',
+            'itemselec': 'VENDAS',
             'step': 'fim',
             'dados': dados,
             'data': data,
@@ -107,7 +120,7 @@ def Vender(request, id_pessoa):
             'step': 'notprato',
         })
 
-
+# Métodos aplicados nas views
 def SalvaAluno(id):
     con = conexaoAD(usuario, senha)
     nomealuno = con.DadosAluno(id)[0]['raw_attributes']['displayName'][0]

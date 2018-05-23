@@ -614,7 +614,7 @@ input#control-nav {
 
 #botao{
 	margin: 0px;
-	background: #50527e;
+	background: var(--primary-dark);
 	border: 3px solid white;
 	color: #fff;
 	font-size: 16px;
@@ -626,7 +626,7 @@ input#control-nav {
 }
 
 #botao:hover{
-	background: #62659b;
+	background: var(--primary);;
 	cursor: pointer;
 }
 
@@ -2015,6 +2015,7 @@ a.icon:hover:before {
 	margin: 0px;
 	width: 100%;
 	padding: 0px;
+	margin-bottom: 10px;
 }
 
 .calendar-container tr td{
@@ -2044,14 +2045,14 @@ a.icon:hover:before {
 }
 
 #rotulo{
-	color: #8d91e4;
+	color: var(--primary-middle);
 	background: white;
 }
 
 .cabecalho-calendario{
 	border-radius: 10px 10px 0px 0px;
 	margin: 0px 0px 0px 0px;
-	background: #7376b5;
+	background: var(--primary);
 	width: 100%;
 	height: 100px;
 }
@@ -2073,7 +2074,7 @@ a.icon:hover:before {
 }
 
 .calendar-checkbox input[type="checkbox"]:checked + label span {
-    background: #8d91e4;
+    background: var(--primary-middle);
     color: white;
 }
 
@@ -2105,9 +2106,12 @@ a.icon:hover:before {
 }
 
 .container-fab-toolbar{
-	margin-top: -25px;
 	width: 100%;
+	height: 25px;
+	background: var(--primary-middle);
 	text-align: right;
+	margin-top: 0px;
+	margin-bottom: 10px;
 }
 
 .container-fab-toolbar input{
@@ -2122,6 +2126,7 @@ a.icon:hover:before {
 	border: none;
 	background: #E91E63 url(../images/checkbutton.png) center no-repeat;
 	cursor: pointer;
+	margin-top: -20px;
 }
 
 .container-fab-toolbar input:HOVER{
@@ -2137,6 +2142,7 @@ a.icon:hover:before {
 	margin-right: 20px;
 	box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.5);
 	text-align: center;
+	margin-top: -20px;
 }
 
 .fab-toolbar-nlink img{

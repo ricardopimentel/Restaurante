@@ -56,113 +56,269 @@
 		{%endfor%}
 	{%endif%}
 {%endblock%}
-	
+
 {%block conteudo%}
-	<div class="cartao">
-		<div class="Erro-form">
-			{% if err %}
-	   			{{err}}
-	   		{%endif%}
-		</div>
-		<img src="{% static 'images/calendar.png' %}" alt="" width="70">
-		<h1>Gerar Tiquetes</h1>
-		<br>
-		<div class="formulario">			
-			<form id="frm" method="post" action="/restaurante/geraticket/"> {%csrf_token%}
-				<div class="calendar-container">
-					<div class = "cabecalho-calendario">
-						<p>{{hojemes}} de {{hojeano}}</p>
+	{%if request.session.usertip == 'lanchonete' or request.session.usertip == 'admin' %}
+
+        {% if step == 'notprato' %}
+			<div class="card">
+				<img src="{% static 'images/comida.png' %}" alt="" width="70">
+				<h1>Pratos</h1>
+				<br>
+				<div class="navegation_bar">
+					<a href="javascript:window.history.go(-1)">Voltar</a>
+				</div>
+                <p>Não há pratos cadastrados</p>
+                <a href="{% url 'CadastroPrato' %}">Cadastrar Prato</a>
+			</div>
+		{%endif%}
+
+		{% if step == 'fim' %}
+			<div class="card">
+				<img src="{% static 'images/comida.png' %}" alt="" width="70">
+				<h1>Finalizar Venda</h1>
+				<br>
+				<div class="navegation_bar">
+					<a href="javascript:window.history.go(-1)">Voltar</a>
+				</div>
+				<div class="formulario">
+					<form id="frm" method="post" action="{% url 'Vender' id_pessoa=dados.pessoa.usuario %}"> {%csrf_token%}
+						<p style="text-align: center">Descrição da Venda</p>
+						<p style="text-align: left"><b>Aluno: </b>{{dados.pessoa.nome}}</p>
+                        <p style="text-align: left"><b>ID Aluno: </b><input style="display: none" type="text" id="id_aluno" name="id_aluno" value="{{dados.aluno.id}}"/>{{dados.aluno.id}}</p>
+						<p style="text-align: left"><b>Data: </b>{{data}}</p>
+						<p style="text-align: left"><b>Prato: </b>{{prato.descricao}}</p>
+						<p style="text-align: left"><b>Valor: </b>{{prato.preco}}</p>
+                        {{ formulario.as_p }}
+						<p><input type="submit" name="commit" value="Finalizar" id="botao" ></p>
+					</form>
+				</div>
+			</div>
+		{%endif%}
+
+		{% if pratos %}
+			{% if step == 'ter' %}
+				<div class="card-progressao">
+					<div class="progressao">
+						<img src="{% static 'images/aluno.png' %}" alt="" width="70">
+						<img src="{% static 'images/ticket.png' %}" alt="" width="70">
+						<img src="{% static 'images/comida.png' %}" alt="" width="70">
+						<!--- <h1>Alunos</h1> --->
 					</div>
-					
-					
-					<div id="hide" class="container-fab-toolbar">
-						<input type="submit" name="commit" value="">
+					<div class="progressao-rotulo">
+						<h1>Pratos</h1>
 					</div>
-					<div id="show" class="container-fab-toolbar">
-						<div class="fab-toolbar-nlink">
-							<img id="imgbt" alt="" src="{% static 'images/ticketbutton.png' %}">
-						</div>
+					<p id="nome-aluno">{{nome.id_pessoa.nome}}</p>
+					<div class="navegation_bar">
+						<a href="javascript:window.history.go(-1)">Voltar</a>
 					</div>
-					
-					<table>
-						<tbody>
-							<tr id="rotulo">
-								{% for diasemana in smallweekdayslabel %}
-									<td>{{diasemana}}</td>
-								{%endfor%}
-							</tr>
-							<tr>
-								{% for dia in diasmes %}
-									{% if dia < hoje %}
-										<td class="calendar-dia-bloqueado">
-											<input type="checkbox" id="{{dia}}" name="{{dia}}" disabled/>
-											<label for="{{dia}}"><span>{{dia}}</span></label>
-										</td>
-									{%elif dia == ' '%}
-										<td class= "calendar-dia-bloqueado">
-											<input type="checkbox" id="{{dia}}" name="{{dia}}" disabled/>
-											<label for="{{dia}}"><span>{{dia}}</span></label>
-										</td>
-									{%else%}
-										{% if weekdays|get_at_index:forloop.counter0 == 5 or weekdays|get_at_index:forloop.counter0 == 6%}
-											<td class= "calendar-dia-bloqueado">
-												<input type="checkbox" id="{{dia}}" name="{{dia}}" disabled/>
-												<label for="{{dia}}"><span>{{dia}}</span></label>
-											</td>
-										{%else%}
-											{%if dia == hoje%}
-												{%if diascompletos|get_at_index:forloop.counter0|vtiquet:tickets%}
-													<td class= "calendar-dia-bloqueado">
-														<input type="checkbox" id="{{dia}}" name="{{dia}}" disabled/>
-														<label for="{{dia}}"><span>{{dia}}</span></label>
-													</td>
-												{%else%}
-													{%if hora <= horafechamento%}
-														<td class="calendar-checkbox"> <!-- DIA UTIL -->
-															<input type="checkbox" id="{{dia}}" name="{{dia}}" onClick="cbChanged(this);"/>
-															<label for="{{dia}}"><span><b>{{dia}}</b></span></label>
-														</td>
-													{%else%}
-														<td class= "calendar-dia-bloqueado">
-															<input type="checkbox" id="{{dia}}" name="{{dia}}" disabled/>
-															<label for="{{dia}}"><span>{{dia}}</span></label>
-														</td>
-													{%endif%}
-												{%endif%}
-											{%else%}
-												{%if diascompletos|get_at_index:forloop.counter0|vtiquet:tickets%}
-													<td class= "calendar-dia-bloqueado">
-														<input type="checkbox" id="{{dia}}" name="{{dia}}" disabled/>
-														<label for="{{dia}}"><span>{{dia}}</span></label>
-													</td>
-												{%else%} <!-- DIA UTIL -->
-													<td class="calendar-checkbox">
-														<input type="checkbox" id="{{dia}}" name="{{dia}}" onClick="cbChanged(this);"/>
-														<label for="{{dia}}"><span>{{dia}}</span></label>
-													</td>
-												{%endif%}
-											{%endif%}
-										{%endif%}
-									{%endif%}
-									{% if weekdays|get_at_index:forloop.counter0 == 5%}
-										</tr>
-										<tr>
-									{%endif%}
-								{%endfor%}
-							</tr>
-						</tbody>
-					</table>
-				<p><input type="submit" name="commit" value="Gerar Tiquetes" id="botao" ></p>
-			</form>
-		</div>
-	</div>
-	
-	<script language="JavaScript" >
+					{% autopaginate pratos 4 %}
+						{%for prato in pratos%}
+							<div class="list_card">
+                                <a href="{% url 'Venda' %}"><!---"Antiga URL /restaurante/venda/{{idaluno}}/{{idticket}}/{{prato.id}}--->
+									<li>
+										<table>
+											<tbody>
+												<tr>
+													<td><b>NOME</b></td>
+													<td><b>VALOR</b></td>
+												</tr>
+
+												<tr>
+													<td>{{prato.descricao}}</td>
+													<td>{{prato.preco}}</td>
+												</tr>
+											</tbody>
+										</table>
+									</li>
+								</a>
+							</div>
+						{%endfor%}
+					{% paginate %}
+				</div>
+			{%endif%}
+		{%endif%}
+
+		{% if step == 'seg' %}
+			<div class="card-progressao">
+				<div class="progressao">
+					<img src="{% static 'images/aluno.png' %}" alt="" width="50">
+                    <img src="{% static 'images/calendar.png' %}" alt="" width="70">
+                    <img src="{% static 'images/comida.png' %}" alt="" width="50">
+					<!--- <h1>Alunos</h1> --->
+				</div>
+				<div class="progressao-rotulo">
+					<h1>Tickets</h1>
+				</div>
+				<div class="card-progressao-container">
+                    <div class="navegation_bar">
+                        <a href="{% url 'Home' %}">Home</a>
+                        <a href="{% url 'Vendas' %}">Vendas</a>
+                        <a href="{% url 'VendaEmLotes' %}">Venda em Lotes</a>
+                    </div>
+                </div>
+                <div class="formulario">
+                    <form id="frm" method="post" action={% url 'VenderEmLotes' id_pessoa='2306214' %}> {%csrf_token%}
+                        <div class="calendar-container">
+                            <div class = "cabecalho-calendario">
+                                <p>{{hojemes}} de {{hojeano}}</p>
+                            </div>
+
+                            <div class="container-fab-toolbar">
+                                <div id="show" class="fab-toolbar-nlink">
+                                    <img alt="" src="{% static 'images/ticketbutton.png' %}">
+                                </div>
+                                <input id="hide" type="submit" name="commit" value="">
+                            </div>
+
+                            <table>
+                                <tbody>
+                                    <tr id="rotulo">
+                                        {% for diasemana in smallweekdayslabel %}
+                                            <td>{{diasemana}}</td>
+                                        {%endfor%}
+                                    </tr>
+                                    <tr>
+                                        {% for dia in diasmes %}
+                                            {% if dia < hoje %}
+                                                <td class="calendar-dia-bloqueado">
+                                                    <input type="checkbox" id="{{dia}}" name="{{dia}}" disabled/>
+                                                    <label for="{{dia}}"><span>{{dia}}</span></label>
+                                                </td>
+                                            {%elif dia == ' '%}
+                                                <td class= "calendar-dia-bloqueado">
+                                                    <input type="checkbox" id="{{dia}}" name="{{dia}}" disabled/>
+                                                    <label for="{{dia}}"><span>{{dia}}</span></label>
+                                                </td>
+                                            {%else%}
+                                                {% if weekdays|get_at_index:forloop.counter0 == 5 or weekdays|get_at_index:forloop.counter0 == 6%}
+                                                    <td class= "calendar-dia-bloqueado">
+                                                        <input type="checkbox" id="{{dia}}" name="{{dia}}" disabled/>
+                                                        <label for="{{dia}}"><span>{{dia}}</span></label>
+                                                    </td>
+                                                {%else%}
+                                                    {%if dia == hoje%}
+                                                        {%if diascompletos|get_at_index:forloop.counter0|vtiquet:tickets%}
+                                                            <td class= "calendar-dia-bloqueado">
+                                                                <input type="checkbox" id="{{dia}}" name="{{dia}}" disabled/>
+                                                                <label for="{{dia}}"><span>{{dia}}</span></label>
+                                                            </td>
+                                                        {%else%}
+                                                            {%if hora <= horafechamento%}
+                                                                <td class="calendar-checkbox"> <!-- DIA UTIL -->
+                                                                    <input type="checkbox" id="{{dia}}" name="{{dia}}" onClick="cbChanged(this);"/>
+                                                                    <label for="{{dia}}"><span><b>{{dia}}</b></span></label>
+                                                                </td>
+                                                            {%else%}
+                                                                <td class= "calendar-dia-bloqueado">
+                                                                    <input type="checkbox" id="{{dia}}" name="{{dia}}" disabled/>
+                                                                    <label for="{{dia}}"><span>{{dia}}</span></label>
+                                                                </td>
+                                                            {%endif%}
+                                                        {%endif%}
+                                                    {%else%}
+                                                        {%if diascompletos|get_at_index:forloop.counter0|vtiquet:tickets%}
+                                                            <td class= "calendar-dia-bloqueado">
+                                                                <input type="checkbox" id="{{dia}}" name="{{dia}}" disabled/>
+                                                                <label for="{{dia}}"><span>{{dia}}</span></label>
+                                                            </td>
+                                                        {%else%} <!-- DIA UTIL -->
+                                                            <td class="calendar-checkbox">
+                                                                <input type="checkbox" id="{{dia}}" name="{{dia}}" onClick="cbChanged(this);"/>
+                                                                <label for="{{dia}}"><span>{{dia}}</span></label>
+                                                            </td>
+                                                        {%endif%}
+                                                    {%endif%}
+                                                {%endif%}
+                                            {%endif%}
+                                            {% if weekdays|get_at_index:forloop.counter0 == 5%}
+                                                </tr>
+                                                <tr>
+                                            {%endif%}
+                                        {%endfor%}
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+                </div>
+			</div>
+		{%endif%}
+
+		{% if step == 'pri' %}
+			<div class="card-progressao">
+				<div class="progressao">
+					<img src="{% static 'images/aluno.png' %}" alt="" width="70">
+                    <img src="{% static 'images/calendar.png' %}" alt="" width="50">
+                    <img src="{% static 'images/comida.png' %}" alt="" width="50">
+					<!--- <h1>Alunos</h1> --->
+                </div>
+
+				<div class="progressao-rotulo">
+					<h1>Alunos</h1>
+				</div>
+				<div class="card-progressao-container">
+                    <div class="navegation_bar">
+                        <a href="{% url 'Home' %}">Home</a>
+                        <a href="{% url 'Vendas' %}">Vendas</a>
+                        <a href="{% url 'VendaEmLotes' %}">Venda em Lotes</a>
+                    </div>
+                    <table id="minhaTabela">
+                        <thead>
+                            <tr id="tr-no-shadow">
+                                <th>Nome</th>
+                                <th>CPF</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {%for aluno in alunos%}
+                                <tr>
+                                    <td id="td-vermelho"><a href="{% url 'VenderEmLotes' id_pessoa=aluno.cpf %}">{{ aluno.nome }}</a></td>
+                                    <td><a href="{% url 'VenderEmLotes' id_pessoa=aluno.cpf %}">{{ aluno.cpf }}</a></td>
+                                </tr>
+                            {%endfor%}
+                        </tbody>
+                    </table>
+                </div>
+			</div>
+            <script>
+                $(document).ready(function () {
+                    $('#minhaTabela').DataTable({
+                        "bPaginate": true,
+                        "bLengthChange": false,
+                        "bFilter": true,
+                        "bInfo": true,
+                        "bAutoWidth": true,
+                        "language": {
+                            "sEmptyTable": "Nenhum registro encontrado",
+                            "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
+                            "sInfoEmpty": "Mostrando 0 até 0 de 0 registros",
+                            "sInfoFiltered": "(Filtrados de _MAX_ registros)",
+                            "sInfoThousands": ".",
+                            "sLengthMenu": "_MENU_ resultados por página",
+                            "sLoadingRecords": "Carregando...",
+                            "sProcessing": "Processando...",
+                            "sZeroRecords": "Nenhum registro encontrado",
+                            "sSearch": "Pesquisar",
+                            "oPaginate": {
+                            "sNext": "»",
+                            "sPrevious": "«",
+                            "sFirst": "Primeiro",
+                            "sLast": "Último"
+                            }
+                        },
+                    });
+                });
+            </script>
+		{%endif%}
+	{%endif%}
+
+	<script >
 		function cbChanged(checkboxElem) {
 			if(!$('#frm input[type="checkbox"]').is(':checked')){
 				trocar('show', 'hide')
 				return false;
-		    }else{		    	
+		    }else{
 		    	trocar('hide', 'show')
 		    	return true;
 		    }
@@ -180,12 +336,24 @@
 		}
 		function  mostrar(ID){
 			document.getElementById(ID).style.display = "block";
-		
+
 		}
 		function  ocultar(ID){
 			document.getElementById(ID).style.display = "none";
-			$("#"+ID).hide("slow");
+			$("#"+ID).hide();
 		}
 	</script>
+
+    {% if messages %}
+        <div class="msg-popup-container">
+            {% for message in messages %}
+                <div id="{{ forloop.counter0 }}" class="msg-popup {{ message.tags }}">
+                    <img src="{% static 'images/'%}{{ message.tags  }}.png" alt="" width="70" height="70"/>
+                    <p>{{ forloop.counter0 }}</p>
+                    <a onclick="ocultar('{{ forloop.counter0 }}')">x</a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 	
 {%endblock%}
