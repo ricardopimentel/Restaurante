@@ -614,7 +614,7 @@ input#control-nav {
 
 #botao{
 	margin: 0px;
-	background: var(--primary-dark);
+	background: #50527e;
 	border: 3px solid white;
 	color: #fff;
 	font-size: 16px;
@@ -626,7 +626,7 @@ input#control-nav {
 }
 
 #botao:hover{
-	background: var(--primary);;
+	background: #62659b;
 	cursor: pointer;
 }
 
