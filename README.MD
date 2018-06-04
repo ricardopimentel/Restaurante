@@ -44,7 +44,7 @@ dokku config:set restaurante SECRET_KEY='sua secret_key'
 8 Clone o repositório, no final será apresentado o endereço para acessar a aplicação
 ```console
 sudo dokku plugin:install https://github.com/crisward/dokku-clone.git clone
-dokku clone restaurante https://github.com/ricardopimentel/Restaurante.git Restaurante
+dokku clone restaurante https://github.com/ricardopimentel/Restaurante.git
 ```
 
 9 Acesse a página de configuração http://servidor:porta/restaurante
