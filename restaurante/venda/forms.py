@@ -1,5 +1,4 @@
 from django import forms
-
 from restaurante.core.libs.conexaoAD3 import conexaoAD
 
 
