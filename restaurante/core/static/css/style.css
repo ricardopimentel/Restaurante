@@ -1,5 +1,6 @@
 /* Styles Colors */
 :root{
+	
 	--primary-light: #009688;
 	--primary: #00796b;
 	--primary-middle: #00695c;
@@ -7,6 +8,7 @@
 	--accent: #ad7fa8;
 	--accent-dark: #75507b;
 	--accent-light: #c192bc;
+	
 }
 
 body{
