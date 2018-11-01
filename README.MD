@@ -47,6 +47,20 @@ sudo dokku plugin:install https://github.com/crisward/dokku-clone.git clone
 dokku clone restaurante https://github.com/ricardopimentel/Restaurante.git
 ```
 
-9 Acesse a página de configuração http://servidor:porta/restaurante
+9 Criar a estrutura de pastas para receber os componentes externos
+
+sudo mkdir -p  "/var/lib/dokku/data/storage/restaurante"
+sudo mkdir -p  "/var/lib/dokku/data/storage/restaurante/wkhtmltopdf"
+dokku storage:mount restaurante /var/lib/dokku/data/storage/restaurante:/app/storage
+
+wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/wkhtmltox-0.12.4_linux-generic-amd64.tar.xz
+sudo tar -Jxf wkhtmltox-0.12.4_linux-generic-amd64.tar.xz
+sudo cp wkhtmltox/bin/wkhtmltopdf "/var/lib/dokku/data/storage/restaurante/wkhtmltopdf"
+
+sudo dokku plugin:install https://github.com/F4-Group/dokku-apt
+
+dokku ps:rebuild restaurante
+
+10 Acesse a página de configuração http://servidor:porta/restaurante
 
 - Preencha os dados solicitados e clique em salvar
