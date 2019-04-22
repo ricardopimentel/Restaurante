@@ -25,10 +25,12 @@ def Vendas(request):
 def Venda(request):
     ListaAlunos = []
     con = conexaoAD(usuario, senha)
-    if str(con.ListaAlunos()) == 'i':
+    retorno = con.ListaAlunos()
+
+    if str(retorno) == 'i':
 	    messages.error(request, 'Falha ao realizar a consulta verifique o usuário "'+ usuario+'"')
     else:
-        for lista in con.ListaAlunos():
+        for lista in retorno:
             try:
                 if lista.get('raw_attributes'):
                     ListaAlunos.append({

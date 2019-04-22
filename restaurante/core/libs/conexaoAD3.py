@@ -52,7 +52,7 @@ class conexaoAD(object):
                 return 'i'  # Credenciais Invalidas
             elif 'LDAPSocketOpenError' in str(sys.exc_info()):
                 print(sys.exc_info())
-                return 'n'  # Servidor não encotrado
+                return 'n'  # Servidor não encontrado
 
 
     def ListaAlunos(self):
