@@ -46,7 +46,7 @@ class LoginForm(forms.Form):
 
 def MontarMenu(request, ret, usuario):
     result = eval(ret)
-    if (ret.find(str('G_ADMINS_AD_IFTO')) > -1):
+    if (ret.find(str('G_PSO_CGTI_SERVIDORES')) > -1):
         request.session['usertip'] = 'admin'
         # Preparar menu admin
         request.session['menu'] = ['logo', 'HOME', 'VENDAS', 'RELATÓRIOS', 'ADMINISTRAÇÃO', 'sair']
