@@ -10,8 +10,8 @@ import datetime
 
 from restaurante.venda.forms import ConfirmacaoVendaForm
 
-usuario = 'visitante'
-senha = '123456789'
+usuario = 'winbackup'
+senha = 'v4c4pr3t4'
 
 # Views
 def Vendas(request):
