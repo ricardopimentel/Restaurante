@@ -111,7 +111,7 @@
                                 <td>{{item.data|convert_datetime}}</td>
                                 <td>{{item.id_aluno.id_pessoa|title}}</td>
                                 <td>{{item.id_aluno.id_pessoa.usuario}}</td>
-                                <td>{{item.valor|real}}</td>
+                                <td>{{item.valor}}</td>
                             </tr>
                         {%endfor%}
                     </tbody>
@@ -148,7 +148,7 @@
                 });
             </script>
             <br>
-            <p id="direita">O total gasto no periodo é <b>{{soma|real}}</b></p>
+            <p id="direita">O total gasto no periodo é <b>{{soma}}</b></p>
         {% endif%}
     </div>
 
