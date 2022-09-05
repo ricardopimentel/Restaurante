@@ -34,8 +34,8 @@ def Venda(request):
             try:
                 if lista.get('raw_attributes'):
                     ListaAlunos.append({
-                        'nome': lista['raw_attributes']['displayName'][0],
-                        'cpf': lista['raw_attributes']['sAMAccountName'][0],
+                        'nome': (lista['raw_attributes']['displayName'][0]).decode('UTF-8'),
+                        'cpf': (lista['raw_attributes']['sAMAccountName'][0]).decode('UTF-8'),
                     })
             except:
                 messages.error(request, str(sys.exc_info()[1]))
@@ -125,7 +125,7 @@ def Vender(request, id_pessoa):
 # Métodos aplicados nas views
 def SalvaAluno(id):
     con = conexaoAD(usuario, senha)
-    nomealuno = con.DadosAluno(id)[0]['raw_attributes']['displayName'][0]
+    nomealuno = (con.DadosAluno(id)[0]['raw_attributes']['displayName'][0]).decode('UTF-8')
 
     pessoaobj = pessoa(nome=nomealuno, usuario=id, status=True)
     pessoaobj.save()
@@ -152,14 +152,22 @@ def ExisteAlunoCadastrado(id_pessoa):
 
 
 def SalvarVenda(request, id_aluno, id_prato):
+    print('entrei aqui olha só')
     try:
         data = datetime.datetime.now()
+        print('data: ' + str(data))
 
         pratoobj = prato.objects.get(id=id_prato)
+        print('valor: ' + str(pratoobj.preco))
+        print('prato: ' + str(pratoobj.id))
+        print('usuário sessão: '+ str(request.session['userl']))
         usuariorestauranteobj = usuariorestaurante.objects.select_related('id_pessoa').get(id_pessoa__usuario=str(request.session['userl']))
+        print('vendedor: ' + str(usuariorestauranteobj.id))
         alunoobj = aluno.objects.get(id=id_aluno)
+        print('aluno: ' + str(alunoobj.id))
 
         vendaobj = venda(data=data, valor=pratoobj.preco, id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj)
+
         vendaobj.save()
 
         return True
