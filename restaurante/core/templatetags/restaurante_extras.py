@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from django import template
 import datetime
 
@@ -61,7 +60,6 @@ def to_int(value):
 @register.filter()
 def real(valor):
     if valor != None:
-        import locale
-        locale.setlocale( locale.LC_ALL, 'pt_BR.utf8' )
-        return locale.currency( valor, grouping=True )
+        final = f'R$ {valor:_.2f}'
+        return final.replace('.', ',').replace('_', '.')
     return ''
