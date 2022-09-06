@@ -62,6 +62,6 @@ def to_int(value):
 def real(valor):
     if valor != None:
         import locale
-        locale.setlocale( locale.LC_ALL, 'pt_BR.UTF-8' )
+        locale.setlocale( locale.LC_ALL, 'pt_BR.utf8' )
         return locale.currency( valor, grouping=True )
     return ''
