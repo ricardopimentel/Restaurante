@@ -5,11 +5,12 @@ from django.views.decorators.csrf import csrf_exempt
 from restaurante.administracao.models import config
 from restaurante.core.libs.calendario import calendario
 from restaurante.core.libs.conexaoAD3 import conexaoAD
-from restaurante.core.models import pessoa, aluno, prato, usuariorestaurante, venda
+from restaurante.core.models import pessoa, aluno, prato, usuariorestaurante, venda, alunoscem
 import datetime
 
 from restaurante.venda.forms import ConfirmacaoVendaForm
 
+# Eu sei que tenho que trocar isso
 usuario = 'winbackup'
 senha = 'v4c4pr3t4'
 
@@ -92,7 +93,7 @@ def Vender(request, id_pessoa):
             id_aluno = request.POST['id_aluno']
             restricoes = Restricoes(id_aluno)
             if not restricoes['status']:
-                vendaobj = SalvarVenda(request, id_aluno, 1)
+                vendaobj = SalvarVenda(request, id_aluno, 1, id_pessoa)
                 if vendaobj:
                     messages.success(request, "Venda realizada com sucesso")
                 return redirect(r('Venda'))
@@ -102,18 +103,25 @@ def Vender(request, id_pessoa):
 
     data = datetime.datetime.now()
     pratoobj = ExistePratoCadastrado(1)
+    cem = False
     if pratoobj:
-        dados = ExisteAlunoCadastrado(id_pessoa)
-        if not dados:
-            dados = SalvaAluno(id_pessoa)
+        aluno = ExisteAlunoCadastrado(id_pessoa)
+        try:
+            cem = alunoscem.objects.select_related('id_pessoa').get(id_pessoa__usuario=id_pessoa)
+        except:
+            cem = False
+        if not aluno:
+            aluno = SalvaAluno(id_pessoa)
+
         return render(request, 'venda/venda.html', {
             'title': 'Venda',
             'itemselec': 'VENDAS',
             'step': 'fim',
-            'dados': dados,
+            'dados': aluno,
             'data': data,
             'prato': pratoobj,
             'formulario': form,
+            'cem': cem,
         })
     else:
         return render(request, 'venda/venda.html', {
@@ -123,11 +131,11 @@ def Vender(request, id_pessoa):
         })
 
 # Métodos aplicados nas views
-def SalvaAluno(id):
+def SalvaAluno(cpf):
     con = conexaoAD(usuario, senha)
-    nomealuno = (con.DadosAluno(id)[0]['raw_attributes']['displayName'][0]).decode('UTF-8')
+    nomealuno = (con.DadosAluno(cpf)[0]['raw_attributes']['displayName'][0]).decode('UTF-8')
 
-    pessoaobj = pessoa(nome=nomealuno, usuario=id, status=True)
+    pessoaobj = pessoa(nome=nomealuno, usuario=cpf, status=True)
     pessoaobj.save()
 
     alunoobj = aluno(id_pessoa=pessoaobj)
@@ -151,24 +159,23 @@ def ExisteAlunoCadastrado(id_pessoa):
         return False
 
 
-def SalvarVenda(request, id_aluno, id_prato):
-    print('entrei aqui olha só')
+def SalvarVenda(request, id_aluno, id_prato, id_pessoa):
     try:
         data = datetime.datetime.now()
-        print('data: ' + str(data))
 
         pratoobj = prato.objects.get(id=id_prato)
-        print('valor: ' + str(pratoobj.preco))
-        print('prato: ' + str(pratoobj.id))
-        print('usuário sessão: '+ str(request.session['userl']))
         usuariorestauranteobj = usuariorestaurante.objects.select_related('id_pessoa').get(id_pessoa__usuario=str(request.session['userl']))
-        print('vendedor: ' + str(usuariorestauranteobj.id))
         alunoobj = aluno.objects.get(id=id_aluno)
-        print('aluno: ' + str(alunoobj.id))
 
-        vendaobj = venda(data=data, valor=pratoobj.preco, id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj)
-
-        vendaobj.save()
+        #Verificar se a bolsa é 100%
+        try:
+            cem = alunoscem.objects.select_related('id_pessoa').get(id_pessoa__usuario=id_pessoa)
+            precoprato = (pratoobj.preco * 2)
+        except:
+            precoprato = pratoobj.preco
+        #criar objeto da venda
+        vendaobj = venda(data=data, valor=precoprato, id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj)
+        vendaobj.save()#salva venda
 
         return True
     except:

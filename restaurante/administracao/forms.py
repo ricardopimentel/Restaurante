@@ -1,9 +1,11 @@
+import string
+
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
 
 from restaurante.administracao.models import config
 from restaurante.core.libs.conexaoAD3 import conexaoAD
-from restaurante.core.models import prato
+from restaurante.core.models import prato, alunoscem, pessoa
 
 
 class AdForm(forms.ModelForm):
@@ -117,3 +119,18 @@ class ConfigHorarioLimiteVendasForm(forms.ModelForm):
     class Meta:  # Define os campos vindos do Model
         model = config
         fields = ('hora_fechamento_vendas',)
+
+
+class CadastroAlunosBolsistasForm(forms.Form):
+    usuarios = forms.CharField(label="", max_length=2000, widget=forms.Textarea(attrs={'placeholder': 'Lista de CPFs'}))
+
+    def __init__(self, *args, **kwargs):
+        super(CadastroAlunosBolsistasForm, self).__init__(*args, **kwargs)
+
+
+    def clean(self):
+        cleaned_data = self.cleaned_data
+        usuarios = cleaned_data.get("usuarios")
+
+        # Sempre retorne a coleção completa de dados válidos.
+        return cleaned_data

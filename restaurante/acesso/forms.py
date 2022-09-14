@@ -92,11 +92,12 @@ def MontarMenu(request, ret, usuario):
     elif (ret.find(str('G_PSO_GERENCIA_LANCHONETE')) > -1):
         request.session['usertip'] = 'glanchonete'
         # Preparar menu admin
-        request.session['menu'] = ['logo', 'HOME', 'RELATÓRIOS', 'sair']
+        request.session['menu'] = ['logo', 'HOME', 'RELATÓRIOS', 'CONFIGURAÇÃO', 'sair']
         request.session['url'] = [r('Home').replace('/restaurante/', 'restaurante/'),
                                   r('Home').replace('/restaurante/', 'restaurante/'),
-                                  r('Relatorios').replace('/restaurante/', 'restaurante/'), '']
-        request.session['img'] = ['if.png', 'home24.png', 'relatorio24.png', '']
+                                  r('Relatorios').replace('/restaurante/', 'restaurante/'),
+                                  r('Configuracao').replace('/restaurante/', 'restaurante/'), '']
+        request.session['img'] = ['if.png', 'home24.png', 'relatorio24.png', 'admin24.png', '']
         # logou então, adicionar os dados do usuário na sessão
         request.session['userl'] = usuario
         request.session['nome'] = result['displayName'].title()

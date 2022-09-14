@@ -1,7 +1,7 @@
 <meta charset="UTF-8"/>
 {% extends "base.html" %}
-{% load restaurante_extras %}
 {% load staticfiles %}
+{% load restaurante_extras %}
 {% load pagination_tags %}
 {%block titulo%}{{title}}{%endblock%}
 
@@ -56,28 +56,53 @@
 {%endblock%}
 
 {%block conteudo%}
-	{% if not request.session.userl %}
-		<meta http-equiv="refresh" content="0; url=/login/">
-	{%else%}
-		<div class="cartao">
-			<img src="{% static 'images/loja1.png' %}" alt="" width="70"/>
-			<h1>Vendas</h1>
-			<br>
-			<div class="navegation_bar">
-                <a href="{% url 'Home' %}">Home</a>
-				<a href="{% url 'Vendas' %}">Vendas</a>
-			</div>
-			
-			<div class="box-file">
-				<div class="box_folder">
-					<a href="{% url 'Venda' %}" title="Abrir Página de Vendas">
-						<div class="folder">
-							<br><img src="{% static 'images/money.png' %}" alt="" />
-						</div>
-						<p>Venda Individual</p>
-					</a>
-				</div>
-			</div>
-		</div>
-	{%endif%}
+    <div class="cartao">
+        <img src="{% static 'images/shared-folder.png' %}" alt="" width="70"/>
+        <h1>Cadastro de Bolsistas</h1>
+        <br>
+        <div class="navegation_bar">
+            <a href="{% url 'Configuracao' %}">Configuração</a>
+            <a href="{% url 'CadastroBolsistas' %}">Cadastro Bolsistas</a>
+        </div>
+        <br>
+        <div class="formulario">
+            <form method="post" action="{% url 'CadastroBolsistas' %}"> {%csrf_token%}
+                {{form.as_p}}
+                <p><input type="submit" name="commit" value="Salvar" id="botao" ></p>
+            </form>
+        </div>
+        {{ListaErros}}
+        {{ListaAcertos}}
+    </div>
+
+     <script>
+        function mostrarocultar(mostrar, ocultar){
+            $("#"+mostrar).show(500);
+            document.getElementById(ocultar).style.display = "none";
+        }
+        function ocultarmostrar(mostrar, ocultar){
+            $("#"+ocultar).hide(500);
+            $("#"+mostrar).show(500);
+        }
+        function  mostrar(ID){
+            document.getElementById(ID).style.display = "block";
+
+        }
+        function  ocultar(ID){
+            document.getElementById(ID).style.display = "none";
+            $("#"+ID).hide("slow");
+        }
+    </script>
+
+    {% if messages %}
+        <div class="msg-popup-container">
+            {% for message in messages %}
+                <div id="{{ forloop.counter0 }}" class="msg-popup {{ message.tags }}">
+                    <img src="{% static 'images/'%}{{ message.tags }}.png" alt="" width="70" height="70"/>
+                    <p>{{ message }}</p>
+                    <a onclick="ocultar('{{ forloop.counter0 }}')">x</a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 {%endblock%}

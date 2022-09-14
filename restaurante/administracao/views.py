@@ -5,16 +5,31 @@ from django.shortcuts import render, redirect, resolve_url as r
 
 
 # Create your views here.
-from restaurante.administracao.forms import AdForm, CadastroPratoForm, ConfigHorarioLimiteVendasForm
+from restaurante.administracao.forms import AdForm, CadastroPratoForm, ConfigHorarioLimiteVendasForm, \
+    CadastroAlunosBolsistasForm
 from restaurante.administracao.models import config
-from restaurante.core.models import prato
+from restaurante.core.libs.conexaoAD3 import conexaoAD
+from restaurante.core.models import prato, alunoscem, pessoa
+from restaurante.venda.views import ExisteAlunoCadastrado, SalvaAluno
 
+# Eu sei que tenho que trocar isso
+usuario = 'winbackup'
+senha = 'v4c4pr3t4'
 
 def Administracao(request):
     if dict(request.session).get('nome'):
         return render(request, 'administracao/administracao.html', {
             'title': 'Administração',
             'itemselec': 'ADMINISTRAÇÃO',
+        })
+    return redirect(r('Login'))
+
+
+def Configuracao(request):
+    if dict(request.session).get('nome'):
+        return render(request, 'administracao/configuracao.html', {
+            'title': 'Configuração',
+            'itemselec': 'CONFIGURAÇÃO',
         })
     return redirect(r('Login'))
 
@@ -149,3 +164,67 @@ def Tutoriais(request, action):
         'form': form,
         'pratos': pratos,
     })
+
+
+def CadastroBolsistas(request):
+    ListaErros = []
+    ListaAcertos = []
+    form = CadastroAlunosBolsistasForm()
+    if request.method == 'POST':#se vier pelo post
+        ListaAlunosAD = GetListaEstudantesAD()
+        form = CadastroAlunosBolsistasForm(data=request.POST)
+        if form.is_valid():#se o formulário foi válido, ou seja todos os campos obrigatórios preecnhidos
+            usuarios = form.cleaned_data['usuarios']
+            ListaCPFsDigitados = list(map(str, usuarios.split('\n'))) #Transforma todos os cpfs digitados no campo usuários em uma lista
+            # Percorre a lista de cpfs
+            for cpf in ListaCPFsDigitados:
+                cpf = str(cpf.replace('\r', ''))
+                print(ListaAlunosAD)
+                if any(cpf in i for i in ListaAlunosAD):
+                    try:
+                        alunoobj = ExisteAlunoCadastrado(cpf)
+                        if alunoobj:
+                            pessoaobj = pessoa.objects.get(usuario=cpf) #pega uma instancia da pessoa com o cpf listado
+                            aluno = ExisteAlunoCadastrado(pessoaobj.id)
+                        else:
+                            retorno = SalvaAluno(cpf)
+                            aluno = retorno['aluno']
+                            pessoaobj = retorno['pessoa']
+                        cem = alunoscem(id_pessoa=pessoaobj)
+                        cem.save()
+                        ListaAcertos.append("O CPF: "+ cpf+ " Foi adicionado com sucesso!")
+                    except:
+                        ListaErros.append("O CPF: "+ cpf+ " Não foi adicionado")
+                else:
+                    ListaErros.append("O CPF: "+ cpf+ " Não é de um aluno do IFTO")
+            print(ListaErros)
+            print(ListaAcertos)
+            return render(request, 'administracao/admin_cadastro_bolsistas.html', {
+                'title': 'Cadastro de Bolsistas',
+                'ListaErros': ListaErros,
+                'ListaAcertos': ListaAcertos,
+                'itemselec': 'CONFIGURAÇÃO',
+                'form': form,
+            })
+    return render(request, 'administracao/admin_cadastro_bolsistas.html', {
+        'title': 'Cadastro de Bolsistas',
+        'itemselec': 'CONFIGURAÇÃO',
+        'form': form,
+    })
+
+
+def GetListaEstudantesAD():
+    ListaAlunos = []
+    con = conexaoAD(usuario, senha)
+    retorno = con.ListaAlunos()
+
+    if str(retorno) == 'i':
+        return False
+    else:
+        for lista in retorno:
+            try:
+                if lista.get('raw_attributes'):
+                    ListaAlunos.append((lista['raw_attributes']['sAMAccountName'][0]).decode('UTF-8'))
+            except:
+                return False
+        return ListaAlunos
