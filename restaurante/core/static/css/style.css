@@ -88,6 +88,13 @@ div.Erro-form{
     margin: auto;
 }
 
+div.Acerto-form{
+	font-family: sans-serif;
+    background: #bff3c5;
+    text-align: center;
+    margin: auto;
+}
+
 /* Erro_form */
 
 /* Header */

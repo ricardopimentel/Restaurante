@@ -115,6 +115,29 @@ def ExcluirPratos(request):
     return redirect(r('CadastroPrato'))
 
 
+def ExcluirBolsistas(request):
+    bolsistas = alunoscem.objects.select_related('id_pessoa')
+    if request.method == 'POST':
+        check = False
+        for aluno in bolsistas:
+            if request.POST.get(str(aluno.id)):
+                check = True
+                try:
+                    aluno.delete()
+                    messages.success(request, 'Bolsista '+ str(aluno.id_pessoa.nome)+ ' excluído')
+                except:
+                    messages.error(request, 'Erro ao exluir bolsista '+ str(aluno.id))
+        if not check:
+            messages.error(request, 'Selecione pelo menos 1 aluno para excluir')
+        return redirect(r('ExcluirBolsistas'))
+    else:
+        return render(request, 'administracao/admin_conferir_cadastro_bolsistas.html', {
+            'title': 'Lista de Bolsistas 100%',
+            'itemselec': 'CONFIGURAÇÃO',
+            'bolsistas': bolsistas,
+        })
+
+
 def EditarPrato(request, id_prato):
     pratos = prato.objects.all()
     pratoobj = pratos.get(pk=id_prato)
@@ -179,7 +202,6 @@ def CadastroBolsistas(request):
             # Percorre a lista de cpfs
             for cpf in ListaCPFsDigitados:
                 cpf = str(cpf.replace('\r', ''))
-                print(ListaAlunosAD)
                 if any(cpf in i for i in ListaAlunosAD):
                     try:
                         alunoobj = ExisteAlunoCadastrado(cpf)
@@ -197,14 +219,12 @@ def CadastroBolsistas(request):
                         ListaErros.append("O CPF: "+ cpf+ " Não foi adicionado")
                 else:
                     ListaErros.append("O CPF: "+ cpf+ " Não é de um aluno do IFTO")
-            print(ListaErros)
-            print(ListaAcertos)
             return render(request, 'administracao/admin_cadastro_bolsistas.html', {
                 'title': 'Cadastro de Bolsistas',
                 'ListaErros': ListaErros,
                 'ListaAcertos': ListaAcertos,
                 'itemselec': 'CONFIGURAÇÃO',
-                'form': form,
+                'form': CadastroAlunosBolsistasForm(),
             })
     return render(request, 'administracao/admin_cadastro_bolsistas.html', {
         'title': 'Cadastro de Bolsistas',

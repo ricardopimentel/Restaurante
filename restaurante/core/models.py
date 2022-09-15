@@ -51,4 +51,4 @@ class venda (models.Model):
     id_aluno = models.ForeignKey(aluno, on_delete=models.PROTECT)
 
 class alunoscem (models.Model):
-    id_pessoa = models.ForeignKey(pessoa, on_delete=models.PROTECT)
+    id_pessoa = models.ForeignKey(pessoa, on_delete=models.PROTECT, unique=True)

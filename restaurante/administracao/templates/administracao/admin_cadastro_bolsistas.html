@@ -62,17 +62,27 @@
         <br>
         <div class="navegation_bar">
             <a href="{% url 'Configuracao' %}">Configuração</a>
+            <a href="{% url 'ExcluirBolsistas' %}">Listar Bolsistas</a>
             <a href="{% url 'CadastroBolsistas' %}">Cadastro Bolsistas</a>
         </div>
         <br>
+        <div class="Erro-form">
+            {%for item in ListaErros %}
+                <p>{{item}}</p>
+            {%endfor%}
+        </div>
+
+        <div class="Acerto-form">
+            {%for item in ListaAcertos %}
+                <p>{{item}}</p>
+            {%endfor%}
+        </div>
         <div class="formulario">
             <form method="post" action="{% url 'CadastroBolsistas' %}"> {%csrf_token%}
                 {{form.as_p}}
                 <p><input type="submit" name="commit" value="Salvar" id="botao" ></p>
             </form>
         </div>
-        {{ListaErros}}
-        {{ListaAcertos}}
     </div>
 
      <script>

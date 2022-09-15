@@ -12,4 +12,5 @@ urlpatterns = [
     url(r'^tutoriais/(?P<action>.+)$', views.Tutoriais, name='Tutoriais'),
     url(r'^configuracao/$', views.Configuracao, name='Configuracao'),
     url(r'^cadastrobolsistas/$', views.CadastroBolsistas, name='CadastroBolsistas'),
+    url(r'^excluirbolsistas/$', views.ExcluirBolsistas, name='ExcluirBolsistas'),
 ]

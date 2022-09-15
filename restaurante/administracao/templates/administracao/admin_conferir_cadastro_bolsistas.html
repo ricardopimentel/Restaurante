@@ -1,7 +1,7 @@
 <meta charset="UTF-8"/>
 {% extends "base.html" %}
-{% load restaurante_extras %}
 {% load staticfiles %}
+{% load restaurante_extras %}
 {% load pagination_tags %}
 {%block titulo%}{{title}}{%endblock%}
 
@@ -56,32 +56,74 @@
 {%endblock%}
 
 {%block conteudo%}
-	{% if not request.session.userl %}
-		<meta http-equiv="refresh" content="0; url=/login/">
-	{%else%}
-		<div class="cartao">
-			<img src="{% static 'images/relatorio.png' %}" alt="" width="70"/>
-			<h1>Painel Administrativo</h1>
-			<br>
-			<div class="navegation_bar">
-				<a href="{% url 'Configuracao' %}">Configuração</a>
-			</div>
-			
-			<div class="box-file">
-				<div class="box_folder">
-					<a href="{% url 'ExcluirBolsistas' %}" title="Cadastro dos estudantes com bolsa de 100%">
-						<div class="folder">
-							<br><img src="{% static 'images/relogio.png' %}" alt="" />
-						</div>
-						<p>Estudantes Bolsistas</p>
-					</a>
-				</div>
+    <form id="frm" method="post" action="{% url 'ExcluirBolsistas' %}"> {%csrf_token%}
+    <div class="card">
+        <img src="{% static 'images/lupa.png' %}" alt="" width="70"/>
+        <h1>{{title}}</h1>
+        <br>
+        <div class="navegation_bar">
+            <a href="{% url 'Configuracao' %}">Configuração</a>
+            <a href="{% url 'ExcluirBolsistas' %}">Listar Bolsistas</a>
+        </div>
 
-			</div>
-		</div>
-	{%endif%}
+        <div class="action_bar_tuto" style="height: 18px">
+            <a href="{% url 'CadastroBolsistas' %}" title="Cadastro dos estudantes com bolsa de 100%"><img title="Excluir Prato"  src="{% static 'images/add24b.png' %}" onmouseover="this.src='{% static 'images/add24.png' %}'" onmouseout="this.src='{% static 'images/add24b.png' %}'"></a>
+            <input type="image" name="commit" value="" title="Excluir Prato" src="{% static 'images/delete24b.png' %}" onmouseover="this.src='{% static 'images/delete24.png' %}'" onmouseout="this.src='{% static 'images/delete24b.png' %}'">
+        </div>
+
+        <div class="card-progressao-container">
+            <table id="minhaTabela">
+                <thead>
+                    <tr id="tr-no-shadow">
+                        <th>Descrição</th>
+                        <th>Preço</th>
+                        <th>Marcar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for aluno in bolsistas%}
+                        <tr>
+                            <td id="td-vermelho">{{ aluno.id_pessoa.nome }}</td>
+                            <td>{{ aluno.id_pessoa.usuario }}</td>
+                            <td><input type="checkbox" name="{{ aluno.id }}" ></td>
+                        </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+        </div>
+     </div>
 
     <script>
+        $(document).ready(function () {
+            $('#minhaTabela').DataTable({
+                "bPaginate": true,
+                "bLengthChange": false,
+                "bFilter": true,
+                "bInfo": true,
+                "bAutoWidth": true,
+                "language": {
+                    "sEmptyTable": "Nenhum registro encontrado",
+                    "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
+                    "sInfoEmpty": "Mostrando 0 até 0 de 0 registros",
+                    "sInfoFiltered": "(Filtrados de _MAX_ registros)",
+                    "sInfoThousands": ".",
+                    "sLengthMenu": "_MENU_ resultados por página",
+                    "sLoadingRecords": "Carregando...",
+                    "sProcessing": "Processando...",
+                    "sZeroRecords": "Nenhum registro encontrado",
+                    "sSearch": "Pesquisar",
+                    "oPaginate": {
+                    "sNext": "»",
+                    "sPrevious": "«",
+                    "sFirst": "Primeiro",
+                    "sLast": "Último"
+                    }
+                },
+            });
+        });
+    </script>
+
+     <script>
         function mostrarocultar(mostrar, ocultar){
             $("#"+mostrar).show(500);
             document.getElementById(ocultar).style.display = "none";
