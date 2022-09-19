@@ -57,7 +57,7 @@
 
 {%block conteudo%}
     <form id="frm" method="post" action="{% url 'ExcluirBolsistas' %}"> {%csrf_token%}
-    <div class="card">
+    <div class="cartao">
         <img src="{% static 'images/lupa.png' %}" alt="" width="70"/>
         <h1>{{title}}</h1>
         <br>
@@ -75,17 +75,17 @@
             <table id="minhaTabela">
                 <thead>
                     <tr id="tr-no-shadow">
-                        <th>Descrição</th>
-                        <th>Preço</th>
                         <th>Marcar</th>
+                        <th>Nome</th>
+                        <th>CPF</th>
                     </tr>
                 </thead>
                 <tbody>
                     {%for aluno in bolsistas%}
                         <tr>
-                            <td id="td-vermelho">{{ aluno.id_pessoa.nome }}</td>
+                            <td id="td-vermelho"><input type="checkbox" name="{{ aluno.id }}" ></td>
+                            <td style="text-align: left;">{{ aluno.id_pessoa.nome }}</td>
                             <td>{{ aluno.id_pessoa.usuario }}</td>
-                            <td><input type="checkbox" name="{{ aluno.id }}" ></td>
                         </tr>
                     {%endfor%}
                 </tbody>
