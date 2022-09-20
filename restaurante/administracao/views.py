@@ -262,7 +262,7 @@ def CadastroBolsistas(request):
                     # Percorre a lista de cpfs
                     for cpf in ListaCPFsDigitados:
                         cpf = str(cpf.replace('\r', ''))
-                        if any(cpf in i for i in ListaAlunosAD):
+                        if (cpf in ListaAlunosAD):
                             try:
                                 alunoobj = ExisteAlunoCadastrado(cpf)
                                 if alunoobj:
