@@ -62,7 +62,11 @@
         <h1>{{title}}</h1>
         <br>
         <div class="navegation_bar">
-            <a href="{% url 'Configuracao' %}">Configuração</a>
+            {% if itemselec == 'CONFIGURAÇÃO' %}
+                <a href="{% url 'Configuracao' %}">Configuração</a>
+            {% elif itemselec == 'ADMINISTRAÇÃO' %}
+                <a href="{% url 'Administracao' %}">Administração</a>
+            {% endif %}
             <a href="{% url 'ExcluirBolsistas' %}">Listar Bolsistas</a>
         </div>
 
