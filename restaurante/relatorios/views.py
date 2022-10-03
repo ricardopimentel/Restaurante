@@ -29,6 +29,8 @@ def Relatorios(request):
 def RelatorioVendas(request):
     if dict(request.session).get('nome'):# Verificar se usuário está logado
         soma = 0
+        contcem = 0
+        contcinc = 0
         datainicial = ''
         datafinal = ''
         vd = []
@@ -69,11 +71,15 @@ def RelatorioVendas(request):
 
         # Somar valor das vendas no periodo
         for vend in vd:
+            if vend.valor == 7:# isso pode dar problema no futuro, mas por enquanto resolve
+                contcinc = contcinc + 1
+            elif vend.valor == 14:
+                contcem = contcem + 1
             soma = soma + vend.valor
 
         return render(request, 'relatorios/relatoriovendas.html', {
             'soma': soma, 'datainicial': datainicial, 'datafinal': datafinal,
-            'itemselec': 'RELATÓRIOS', 'venda': vd, 'form': form, 'title': 'Relatórios',
+            'itemselec': 'RELATÓRIOS', 'venda': vd, 'contcem': contcem, 'contcinc': contcinc, 'form': form, 'title': 'Relatórios',
         })
 
 

@@ -45,6 +45,7 @@ class conexaoAD(object):
             if 'searchResEntry' in str(res):
                 return res[0]['attributes']
             else:
+                print(sys.exc_info())
                 return 'o'  # Usuario fora do escopo permitido
 
         except:
