@@ -80,7 +80,7 @@ def RelatorioVendas(request):
 
         return render(request, 'relatorios/relatoriovendas.html', {
             'soma': soma, 'datainicial': datainicial, 'datafinal': datafinal,
-            'itemselec': 'RELATÓRIOS', 'venda': vd, 'contcem': contcem, 'valorcem': (contcem*(prat.preco*2)), 'contcinc': contcinc, 'valorcinc': (contcem*prat.preco), 'form': form, 'title': 'Relatórios',
+            'itemselec': 'RELATÓRIOS', 'venda': vd, 'contcem': contcem, 'valorcem': (contcem*(prat.preco*2)), 'contcinc': contcinc, 'valorcinc': (contcinc*prat.preco), 'form': form, 'title': 'Relatórios',
         })
 
 
@@ -246,7 +246,7 @@ def PdfVendas(request):
         'contcem': contcem,
         'valorcem': (contcem * (prat.preco * 2)),
         'contcinc': contcinc,
-        'valorcinc': (contcem * prat.preco),
+        'valorcinc': (contcinc * prat.preco),
     }
 
     html = template.render(contexto)
