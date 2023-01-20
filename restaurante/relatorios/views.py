@@ -12,7 +12,7 @@ from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_exempt
 
 
-from restaurante.core.models import venda, aluno
+from restaurante.core.models import venda, aluno, prato
 from restaurante.relatorios.forms import RelatorioVendasForm
 
 
@@ -70,16 +70,17 @@ def RelatorioVendas(request):
                 request.session['aluno-selecionado'] = alunoselecionado
 
         # Somar valor das vendas no periodo
+        prat = prato.objects.get(id=1)
         for vend in vd:
-            if vend.valor == 7:# isso pode dar problema no futuro, mas por enquanto resolve
+            if vend.valor == prat.preco:# resolvido, puxando agora do banco de dados, gratidão
                 contcinc = contcinc + 1
-            elif vend.valor == 14:
+            elif vend.valor == prat.preco*2:
                 contcem = contcem + 1
             soma = soma + vend.valor
 
         return render(request, 'relatorios/relatoriovendas.html', {
             'soma': soma, 'datainicial': datainicial, 'datafinal': datafinal,
-            'itemselec': 'RELATÓRIOS', 'venda': vd, 'contcem': contcem, 'contcinc': contcinc, 'form': form, 'title': 'Relatórios',
+            'itemselec': 'RELATÓRIOS', 'venda': vd, 'contcem': contcem, 'valorcem': (contcem*(prat.preco*2)), 'contcinc': contcinc, 'valorcinc': (contcem*prat.preco), 'form': form, 'title': 'Relatórios',
         })
 
 
@@ -200,6 +201,8 @@ def PdfCustoAlunoPeriodo(request):
 
 
 def PdfVendas(request):
+    contcem = 0
+    contcinc = 0
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     campo_aluno = request.session.get('aluno-selecionado')
     datainicial = request.session['data-inicial']
@@ -219,7 +222,12 @@ def PdfVendas(request):
         alunoobj = aluno.objects.get(id=campo_aluno)
 
     # Somar valor das vendas no periodo
+    prat = prato.objects.get(id=1)
     for vend in vd:
+        if vend.valor == 7:  # resolvido, puxando agora do banco de dados, gratidão
+            contcinc = contcinc + 1
+        elif vend.valor == 14:
+            contcem = contcem + 1
         soma = soma + vend.valor
 
     # Template
@@ -235,6 +243,10 @@ def PdfVendas(request):
         'datafinal': datafinal,
         'aluno': alunoobj,
         'base_dir': BASE_DIR,
+        'contcem': contcem,
+        'valorcem': (contcem * (prat.preco * 2)),
+        'contcinc': contcinc,
+        'valorcinc': (contcem * prat.preco),
     }
 
     html = template.render(contexto)
