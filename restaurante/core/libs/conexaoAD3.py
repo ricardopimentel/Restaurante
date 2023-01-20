@@ -64,7 +64,7 @@ class conexaoAD(object):
                             check_names=True,
                             user=self.LDAP_USERNAME, password=self.password) as c:
                 user_filter = '(&(!(userAccountControl:1.2.840.113556.1.4.803:=2))(memberof=CN=G_PARAISO_DO_TOCANTINS_ALUNOS, CN=Users,DC=ifto,DC=local))'
-                c.search(search_base='OU=Alunos, OU=SIGA_PARAISO_DO_TOCANTINS, OU=RE, OU=IFTO, '+ self.base, search_filter=user_filter, search_scope=SUBTREE,
+                c.search(search_base='OU=Alunos, OU=CA-PARAISO, OU=IFTO, '+ self.base, search_filter=user_filter, search_scope=SUBTREE,
                          attributes=['description', 'mail', 'sAMAccountName', 'displayName'],
                          get_operational_attributes=False)
 
