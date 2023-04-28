@@ -122,7 +122,7 @@ class ConfigHorarioLimiteVendasForm(forms.ModelForm):
 
 
 class CadastroAlunosBolsistasForm(forms.Form):
-    usuarios = forms.CharField(label="", max_length=2000, widget=forms.Textarea(attrs={'placeholder': 'Lista de CPFs'}))
+    usuarios = forms.CharField(label="", max_length=2000, widget=forms.Textarea(attrs={'placeholder': 'Lista de Matrículas'}))
 
     def __init__(self, *args, **kwargs):
         super(CadastroAlunosBolsistasForm, self).__init__(*args, **kwargs)
