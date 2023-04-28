@@ -102,7 +102,8 @@ def Vender(request, id_pessoa):
                 return redirect(r('Venda'))
 
     data = datetime.datetime.now()
-    pratoobj = ExistePratoCadastrado(1)
+    print(data.hour)
+    pratoobj = ExistePratoCadastrado(data.hour)
     cem = False
     if pratoobj:
         aluno = ExisteAlunoCadastrado(id_pessoa)
@@ -144,9 +145,14 @@ def SalvaAluno(cpf):
     return {'pessoa': pessoaobj, 'aluno': alunoobj}
 
 
-def ExistePratoCadastrado(id):
+def ExistePratoCadastrado(hora):
+    id = False
+    if hora <= 14:
+        id = "Almoço"
+    else:
+        id = "Janta"
     try:
-        return prato.objects.get(id=id)
+        return prato.objects.get(descricao=id)
     except:
         return False
 
