@@ -63,3 +63,7 @@ def real(valor):
         final = f'R$ {valor:_.2f}'
         return final.replace('.', ',').replace('_', '.')
     return ''
+
+@register.filter()
+def dobro(value):
+    return value*2

@@ -93,7 +93,7 @@ def Vender(request, id_pessoa):
             id_aluno = request.POST['id_aluno']
             restricoes = Restricoes(id_aluno)
             if not restricoes['status']:
-                vendaobj = SalvarVenda(request, id_aluno, 1, id_pessoa)
+                vendaobj = SalvarVenda(request, id_aluno, ExistePratoCadastrado(id_pessoa).id, id_pessoa)
                 if vendaobj:
                     messages.success(request, "Venda realizada com sucesso")
                 return redirect(r('Venda'))
@@ -102,15 +102,10 @@ def Vender(request, id_pessoa):
                 return redirect(r('Venda'))
 
     data = datetime.datetime.now()
-    print(data.hour)
-    pratoobj = ExistePratoCadastrado(data.hour)
-    cem = False
+    pratoobj = ExistePratoCadastrado(id_pessoa)
     if pratoobj:
         aluno = ExisteAlunoCadastrado(id_pessoa)
-        try:
-            cem = alunoscem.objects.select_related('id_pessoa').get(id_pessoa__usuario=id_pessoa)
-        except:
-            cem = False
+        cem = VerificarUsuarioCem(id_pessoa)
         if not aluno:
             aluno = SalvaAluno(id_pessoa)
 
@@ -145,12 +140,16 @@ def SalvaAluno(cpf):
     return {'pessoa': pessoaobj, 'aluno': alunoobj}
 
 
-def ExistePratoCadastrado(hora):
+def ExistePratoCadastrado(id_pessoa):
+    hora = datetime.datetime.now().hour
     id = False
-    if hora <= 14:
+    if VerificarUsuarioCem(id_pessoa):
         id = "Almoço"
     else:
-        id = "Janta"
+        if hora <= 14:
+            id = "Almoço"
+        else:
+            id = "Janta"
     try:
         return prato.objects.get(descricao=id)
     except:
@@ -173,19 +172,26 @@ def SalvarVenda(request, id_aluno, id_prato, id_pessoa):
         usuariorestauranteobj = usuariorestaurante.objects.select_related('id_pessoa').get(id_pessoa__usuario=str(request.session['userl']))
         alunoobj = aluno.objects.get(id=id_aluno)
 
-        #Verificar se a bolsa é 100%
-        try:
-            cem = alunoscem.objects.select_related('id_pessoa').get(id_pessoa__usuario=id_pessoa)
-            precoprato = (pratoobj.preco * 2)
-        except:
-            precoprato = pratoobj.preco
+        cem = VerificarUsuarioCem(id_pessoa) #verifica se a bolsa é 100%
         #criar objeto da venda
-        vendaobj = venda(data=data, valor=precoprato, id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj)
+        if cem: #verifica se a bolsa é 100%
+            vendaobj = venda(data=data, valor=(pratoobj.preco*2), id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj)
+        else:
+            vendaobj = venda(data=data, valor=(pratoobj.preco), id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj)
         vendaobj.save()#salva venda
 
         return True
     except:
         messages.error(request, 'O usuário não tem permissão para realizar a venda. '+ str(sys.exc_info()[1]))
+        return False
+
+
+def VerificarUsuarioCem(id_pessoa):
+    # Verificar se a bolsa é 100%
+    try:
+        cem = alunoscem.objects.select_related('id_pessoa').get(id_pessoa__usuario=id_pessoa)
+        return True
+    except:
         return False
 
 
