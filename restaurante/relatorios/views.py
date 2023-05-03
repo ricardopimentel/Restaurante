@@ -30,7 +30,8 @@ def RelatorioVendas(request):
     if dict(request.session).get('nome'):# Verificar se usuário está logado
         soma = 0
         contcem = 0
-        contcinc = 0
+        contalmoco = 0
+        contjanta = 0
         datainicial = ''
         datafinal = ''
         vd = []
@@ -70,17 +71,20 @@ def RelatorioVendas(request):
                 request.session['aluno-selecionado'] = alunoselecionado
 
         # Somar valor das vendas no periodo
-        prat = prato.objects.get(id=1)
+        almoco = prato.objects.get(descricao='Almoço')
+        janta = prato.objects.get(descricao='Janta')
         for vend in vd:
-            if vend.valor == prat.preco:# resolvido, puxando agora do banco de dados, gratidão
-                contcinc = contcinc + 1
-            elif vend.valor == prat.preco*2:
+            if vend.valor == almoco.preco:# resolvido, puxando agora do banco de dados, gratidão
+                contalmoco = contalmoco + 1
+            elif vend.valor == janta.preco:
+                contjanta = contjanta + 1
+            elif vend.valor == almoco.preco*2:
                 contcem = contcem + 1
             soma = soma + vend.valor
 
         return render(request, 'relatorios/relatoriovendas.html', {
             'soma': soma, 'datainicial': datainicial, 'datafinal': datafinal,
-            'itemselec': 'RELATÓRIOS', 'venda': vd, 'contcem': contcem, 'valorcem': (contcem*(prat.preco*2)), 'contcinc': contcinc, 'valorcinc': (contcinc*prat.preco), 'form': form, 'title': 'Relatórios',
+            'itemselec': 'RELATÓRIOS', 'venda': vd, 'contcem': contcem, 'valorcem': (contcem*(almoco.preco*2)), 'contjanta': contjanta, 'contalmoco': contalmoco, 'valorjanta': (contjanta*janta.preco), 'valoralmoco': (contalmoco*almoco.preco), 'form': form, 'title': 'Relatórios',
         })
 
 
