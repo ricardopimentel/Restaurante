@@ -206,7 +206,8 @@ def PdfCustoAlunoPeriodo(request):
 
 def PdfVendas(request):
     contcem = 0
-    contcinc = 0
+    contalmoco = 0
+    contjanta = 0
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     campo_aluno = request.session.get('aluno-selecionado')
     datainicial = request.session['data-inicial']
@@ -226,11 +227,15 @@ def PdfVendas(request):
         alunoobj = aluno.objects.get(id=campo_aluno)
 
     # Somar valor das vendas no periodo
+    almoco = prato.objects.get(descricao='Almoço')
+    janta = prato.objects.get(descricao='Janta')
     prat = prato.objects.get(id=1)
     for vend in vd:
-        if vend.valor == 7:  # resolvido, puxando agora do banco de dados, gratidão
-            contcinc = contcinc + 1
-        elif vend.valor == 14:
+        if vend.valor == almoco.preco:  # resolvido, puxando agora do banco de dados, gratidão
+            contalmoco = contalmoco + 1
+        elif vend.valor == janta.preco:
+            contjanta = contjanta + 1
+        elif vend.valor == almoco.preco * 2:
             contcem = contcem + 1
         soma = soma + vend.valor
 
@@ -248,9 +253,11 @@ def PdfVendas(request):
         'aluno': alunoobj,
         'base_dir': BASE_DIR,
         'contcem': contcem,
-        'valorcem': (contcem * (prat.preco * 2)),
-        'contcinc': contcinc,
-        'valorcinc': (contcinc * prat.preco),
+        'valorcem': (contcem * (almoco.preco * 2)),
+        'contalmoco': contalmoco,
+        'valoralmoco': (contalmoco * almoco.preco),
+        'contjanta': contjanta,
+        'valorjanta': (contjanta * janta.preco),
     }
 
     html = template.render(contexto)
