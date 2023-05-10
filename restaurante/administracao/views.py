@@ -6,10 +6,10 @@ from django.shortcuts import render, redirect, resolve_url as r
 
 # Create your views here.
 from restaurante.administracao.forms import AdForm, CadastroPratoForm, ConfigHorarioLimiteVendasForm, \
-    CadastroAlunosBolsistasForm
+    CadastroAlunosBolsistasForm, CadastroAlunosColaboradoresForm
 from restaurante.administracao.models import config
 from restaurante.core.libs.conexaoAD3 import conexaoAD
-from restaurante.core.models import prato, alunoscem, pessoa
+from restaurante.core.models import prato, alunoscem, pessoa, alunoscolaboradores
 from restaurante.venda.views import ExisteAlunoCadastrado, SalvaAluno
 
 # Eu sei que tenho que trocar isso
@@ -140,39 +140,6 @@ def ExcluirPratos(request):
         return redirect(r('Login'))
 
 
-def ExcluirBolsistas(request):
-    if dict(request.session).get('nome'):# verifica se o usurário está logado
-        if (dict(request.session).get('usertip') == 'glanchonete')or(dict(request.session).get('usertip') == 'admin'):  # Verifica permissão de gerente ou admin
-            menu = 'CONFIGURAÇÃO'
-            if (dict(request.session).get('usertip') == 'admin'):
-                menu = 'ADMINISTRAÇÃO'
-            bolsistas = alunoscem.objects.select_related('id_pessoa')
-            if request.method == 'POST':
-                check = False
-                for aluno in bolsistas:
-                    if request.POST.get(str(aluno.id)):
-                        check = True
-                        try:
-                            aluno.delete()
-                            messages.success(request, 'Bolsista '+ str(aluno.id_pessoa.nome)+ ' excluído')
-                        except:
-                            messages.error(request, 'Erro ao exluir bolsista '+ str(aluno.id))
-                if not check:
-                    messages.error(request, 'Selecione pelo menos 1 aluno para excluir')
-                return redirect(r('ExcluirBolsistas'))
-            else:
-                return render(request, 'administracao/admin_conferir_cadastro_bolsistas.html', {
-                    'title': 'Lista de Bolsistas 100%',
-                    'itemselec': menu,
-                    'bolsistas': bolsistas,
-                })
-        else:
-            messages.error(request, "Você não tem permissão para acessar esta página, redirecionando para HOME")
-            return redirect(r('Home'))
-    else:
-        return redirect(r('Login'))
-
-
 def EditarPrato(request, id_prato):
     if dict(request.session).get('nome'):# verifica se o usurário está logado
         if dict(request.session).get('usertip') == 'admin':# Verifica permissão de administrador
@@ -291,6 +258,126 @@ def CadastroBolsistas(request):
                 'itemselec': menu,
                 'form': form,
             })
+        else:
+            messages.error(request, "Você não tem permissão para acessar esta página, redirecionando para HOME")
+            return redirect(r('Home'))
+    else:
+        return redirect(r('Login'))
+
+
+def ExcluirBolsistas(request):
+    if dict(request.session).get('nome'):# verifica se o usurário está logado
+        if (dict(request.session).get('usertip') == 'glanchonete')or(dict(request.session).get('usertip') == 'admin'):  # Verifica permissão de gerente ou admin
+            menu = 'CONFIGURAÇÃO'
+            if (dict(request.session).get('usertip') == 'admin'):
+                menu = 'ADMINISTRAÇÃO'
+            bolsistas = alunoscem.objects.select_related('id_pessoa')
+            if request.method == 'POST':
+                check = False
+                for aluno in bolsistas:
+                    if request.POST.get(str(aluno.id)):
+                        check = True
+                        try:
+                            aluno.delete()
+                            messages.success(request, 'Bolsista '+ str(aluno.id_pessoa.nome)+ ' excluído')
+                        except:
+                            messages.error(request, 'Erro ao exluir bolsista '+ str(aluno.id))
+                if not check:
+                    messages.error(request, 'Selecione pelo menos 1 aluno para excluir')
+                return redirect(r('ExcluirBolsistas'))
+            else:
+                return render(request, 'administracao/admin_conferir_cadastro_bolsistas.html', {
+                    'title': 'Lista de Bolsistas 100%',
+                    'itemselec': menu,
+                    'bolsistas': bolsistas,
+                })
+        else:
+            messages.error(request, "Você não tem permissão para acessar esta página, redirecionando para HOME")
+            return redirect(r('Home'))
+    else:
+        return redirect(r('Login'))
+
+
+def CadastroColaboradores(request):
+    if dict(request.session).get('nome'):# verifica se o usurário está logado
+        if (dict(request.session).get('usertip') == 'glanchonete')or(dict(request.session).get('usertip') == 'admin'): # Verifica permissão de gerente ou admin
+            menu = 'CONFIGURAÇÃO'
+            if (dict(request.session).get('usertip') == 'admin'):
+                menu = 'ADMINISTRAÇÃO'
+            ListaErros = []
+            ListaAcertos = []
+            form = CadastroAlunosColaboradoresForm()
+            if request.method == 'POST':#se vier pelo post
+                ListaAlunosAD = GetListaEstudantesAD()
+                form = CadastroAlunosColaboradoresForm(data=request.POST)
+                if form.is_valid():#se o formulário foi válido, ou seja todos os campos obrigatórios preecnhidos
+                    usuarios = form.cleaned_data['usuarios']
+                    ListaCPFsDigitados = list(map(str, usuarios.split('\n'))) #Transforma todos os cpfs digitados no campo usuários em uma lista
+                    # Percorre a lista de cpfs
+                    for cpf in ListaCPFsDigitados:
+                        cpf = str(cpf.replace('\r', ''))
+                        if (cpf in ListaAlunosAD):
+                            try:
+                                alunoobj = ExisteAlunoCadastrado(cpf)
+                                if alunoobj:
+                                    pessoaobj = pessoa.objects.get(usuario=cpf) #pega uma instancia da pessoa com o cpf listado
+                                    aluno = ExisteAlunoCadastrado(pessoaobj.id)
+                                else:
+                                    retorno = SalvaAluno(cpf)
+                                    aluno = retorno['aluno']
+                                    pessoaobj = retorno['pessoa']
+                                colab = alunoscolaboradores(id_pessoa=pessoaobj)
+                                colab.save()
+                                ListaAcertos.append("O CPF: "+ cpf+ " Foi adicionado com sucesso!")
+                            except:
+                                ListaErros.append("O CPF: "+ cpf+ " Não foi adicionado")
+                        else:
+                            ListaErros.append("O CPF: "+ cpf+ " Não é de um aluno do IFTO")
+                    return render(request, 'administracao/admin_cadastro_colaboradores.html', {
+                        'title': 'Cadastro de Alunos Colaboradores',
+                        'ListaErros': ListaErros,
+                        'ListaAcertos': ListaAcertos,
+                        'itemselec': menu,
+                        'form': CadastroAlunosColaboradoresForm(),
+                    })
+            return render(request, 'administracao/admin_cadastro_colaboradores.html', {
+                'title': 'Cadastro de Alunos Colaboradores',
+                'itemselec': menu,
+                'form': form,
+            })
+        else:
+            messages.error(request, "Você não tem permissão para acessar esta página, redirecionando para HOME")
+            return redirect(r('Home'))
+    else:
+        return redirect(r('Login'))
+
+
+def ExcluirColaboradores(request):
+    if dict(request.session).get('nome'):# verifica se o usurário está logado
+        if (dict(request.session).get('usertip') == 'glanchonete')or(dict(request.session).get('usertip') == 'admin'):  # Verifica permissão de gerente ou admin
+            menu = 'CONFIGURAÇÃO'
+            if (dict(request.session).get('usertip') == 'admin'):
+                menu = 'ADMINISTRAÇÃO'
+            colaboradores = alunoscolaboradores.objects.select_related('id_pessoa')
+            if request.method == 'POST':
+                check = False
+                for aluno in colaboradores:
+                    if request.POST.get(str(aluno.id)):
+                        check = True
+                        try:
+                            aluno.delete()
+                            messages.success(request, 'Aluno Colaborador '+ str(aluno.id_pessoa.nome)+ ' excluído')
+                        except:
+                            messages.error(request, 'Erro ao exluir colaborador '+ str(aluno.id))
+                if not check:
+                    messages.error(request, 'Selecione pelo menos 1 aluno para excluir')
+                return redirect(r('ExcluirColaboradores'))
+            else:
+                return render(request, 'administracao/admin_conferir_cadastro_colaboradores.html', {
+                    'title': 'Lista de Alunos Colaboradores',
+                    'itemselec': menu,
+                    'colaboradores': colaboradores,
+                })
         else:
             messages.error(request, "Você não tem permissão para acessar esta página, redirecionando para HOME")
             return redirect(r('Home'))

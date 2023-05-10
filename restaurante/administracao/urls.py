@@ -13,4 +13,6 @@ urlpatterns = [
     url(r'^configuracao/$', views.Configuracao, name='Configuracao'),
     url(r'^cadastrobolsistas/$', views.CadastroBolsistas, name='CadastroBolsistas'),
     url(r'^excluirbolsistas/$', views.ExcluirBolsistas, name='ExcluirBolsistas'),
+    url(r'^cadastrocolaboradores/$', views.CadastroColaboradores, name='CadastroColaboradores'),
+    url(r'^excluircolaboradores/$', views.ExcluirColaboradores, name='ExcluirColaboradores'),
 ]

@@ -134,3 +134,18 @@ class CadastroAlunosBolsistasForm(forms.Form):
 
         # Sempre retorne a coleção completa de dados válidos.
         return cleaned_data
+
+
+class CadastroAlunosColaboradoresForm(forms.Form):
+    usuarios = forms.CharField(label="", max_length=2000, widget=forms.Textarea(attrs={'placeholder': 'Lista de Matrículas'}))
+
+    def __init__(self, *args, **kwargs):
+        super(CadastroAlunosColaboradoresForm, self).__init__(*args, **kwargs)
+
+
+    def clean(self):
+        cleaned_data = self.cleaned_data
+        usuarios = cleaned_data.get("usuarios")
+
+        # Sempre retorne a coleção completa de dados válidos.
+        return cleaned_data

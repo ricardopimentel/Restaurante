@@ -50,5 +50,10 @@ class venda (models.Model):
     id_usuario_restaurante = models.ForeignKey(usuariorestaurante, on_delete=models.PROTECT)
     id_aluno = models.ForeignKey(aluno, on_delete=models.PROTECT)
 
+
 class alunoscem (models.Model):
+    id_pessoa = models.ForeignKey(pessoa, on_delete=models.PROTECT, unique=True)
+
+
+class alunoscolaboradores (models.Model):
     id_pessoa = models.ForeignKey(pessoa, on_delete=models.PROTECT, unique=True)

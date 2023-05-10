@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from restaurante.administracao.models import config
 from restaurante.core.libs.calendario import calendario
 from restaurante.core.libs.conexaoAD3 import conexaoAD
-from restaurante.core.models import pessoa, aluno, prato, usuariorestaurante, venda, alunoscem
+from restaurante.core.models import pessoa, aluno, prato, usuariorestaurante, venda, alunoscem, alunoscolaboradores
 import datetime
 
 from restaurante.venda.forms import ConfirmacaoVendaForm
@@ -91,9 +91,10 @@ def Vender(request, id_pessoa):
         form = ConfirmacaoVendaForm(request, id_pessoa, data=request.POST)
         if form.is_valid():
             id_aluno = request.POST['id_aluno']
-            restricoes = Restricoes(id_aluno)
+            id_prato = ExistePratoCadastrado(id_pessoa).id
+            restricoes = Restricoes(id_aluno, id_prato)
             if not restricoes['status']:
-                vendaobj = SalvarVenda(request, id_aluno, ExistePratoCadastrado(id_pessoa).id, id_pessoa)
+                vendaobj = SalvarVenda(request, id_aluno, id_prato, id_pessoa)
                 if vendaobj:
                     messages.success(request, "Venda realizada com sucesso")
                 return redirect(r('Venda'))
@@ -195,16 +196,42 @@ def VerificarUsuarioCem(id_pessoa):
         return False
 
 
-def Restricoes(id_aluno):
+def Restricoes(id_aluno, id_prato):#tem que trazer a instacia nova da venda e comparar com a instancia antiga, pra saber se foi o mesmo prato
     try:
         horafechamento = config.objects.get(id=1).hora_fechamento_vendas
         hoje = datetime.datetime.today()
-        if hoje.time() < horafechamento:
-            vendaobj = venda.objects.filter(data__contains=hoje.date(), id_aluno=id_aluno)
-            if vendaobj:
-                return {'status': True, 'erro': "Aluno já realizou compra hoje"}
+        print('hoje: '+str(hoje.time())+' fechamento: '+str(horafechamento))
+        if hoje.time() < horafechamento:#verifica a hora do fechamento das vendas
+            try:
+                vendaobj = venda.objects.get(data__contains=hoje.date(), id_aluno=id_aluno)#tenta encontrar uma venda para o aluno especifico na data de hoje
+            except:
+                return {'status': True, 'erro': "Já existem duas vendas para esse aluno hoje"}
+            if vendaobj:#verifica se a venda existe
+                #verifica se o aluno é bolsista
+                try:
+                    alunoobj = aluno.objects.get(id=id_aluno)
+                    alunocem = alunoscem.objects.get(id_pessoa=alunoobj.id_pessoa)
+                except:
+                    alunocem = False
+                if alunocem:
+                    return {'status': True, 'erro': "O aluno é bolsista e já realizou a compra hoje"}
+                else:
+                    #verifica se o aluno é colaborador
+                    try:
+                        alunoobj = aluno.objects.get(id=id_aluno)
+                        alunocolaborador = alunoscolaboradores.objects.get(id_pessoa=alunoobj.id_pessoa)
+                    except Exception as e:
+                        print(str(e))
+                        alunocolaborador = False
+                    if alunocolaborador:#valida se o aluno é colaborador
+                        #verifica o prato
+                        if vendaobj.id_prato == prato.objects.get(id=id_prato):# se o aluno é colaborador e a ultima venda realizada tem o mesmo prato do horário atual
+                            return {'status': True, 'erro': "Aluno já realizou compra desse mesmo prato hoje"}
             return {'status': False, 'erro': "Não há restrições"}
-    except:
-        return {'status': True, 'erro': "Falha ao verificar o horário de fechamento"}
-    else:
-        return {'status': True, 'erro': "O horário das vendas está encerrado"}
+        else:
+            return {'status': True, 'erro': "O horário das vendas está encerrado"}
+    except Exception as e:
+        print(e)
+        #return {'status': True, 'erro': "Falha ao verificar o horário de fechamento"}
+        return {'status': True, 'erro': str(e)}
+

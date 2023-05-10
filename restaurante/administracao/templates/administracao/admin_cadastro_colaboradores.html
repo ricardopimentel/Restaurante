@@ -56,10 +56,9 @@
 {%endblock%}
 
 {%block conteudo%}
-    <form id="frm" method="post" action="{% url 'ExcluirBolsistas' %}"> {%csrf_token%}
     <div class="cartao">
-        <img src="{% static 'images/lupa.png' %}" alt="" width="70"/>
-        <h1>{{title}}</h1>
+        <img src="{% static 'images/aluno2.png' %}" alt="" width="70"/>
+        <h1>Cadastro de Colaboradores</h1>
         <br>
         <div class="navegation_bar">
             {% if itemselec == 'CONFIGURAÇÃO' %}
@@ -67,66 +66,28 @@
             {% elif itemselec == 'ADMINISTRAÇÃO' %}
                 <a href="{% url 'Administracao' %}">Administração</a>
             {% endif %}
-            <a href="{% url 'ExcluirBolsistas' %}">Listar Bolsistas</a>
+            <a href="{% url 'ExcluirColaboradores' %}">Listar Colaboradores</a>
+            <a href="{% url 'CadastroColaboradores' %}">Cadastro Colaboradores</a>
+        </div>
+        <br>
+        <div class="Erro-form">
+            {%for item in ListaErros %}
+                <p>{{item}}</p>
+            {%endfor%}
         </div>
 
-        <div class="action_bar_tuto" style="height: 18px">
-            <a style="padding: 0px 5px 7px 5px; display: inline-flex;" href="{% url 'CadastroBolsistas' %}" title="Cadastro dos estudantes com bolsa de 100%"><img title="Cadastrar Bolsistas"  src="{% static 'images/add24b.png' %}" onmouseover="this.src='{% static 'images/add24.png' %}'" onmouseout="this.src='{% static 'images/add24b.png' %}'"></a>
-            <input type="image" name="commit" value="" title="Excluir Bolsistas" src="{% static 'images/delete24b.png' %}" onmouseover="this.src='{% static 'images/delete24.png' %}'" onmouseout="this.src='{% static 'images/delete24b.png' %}'">
+        <div class="Acerto-form">
+            {%for item in ListaAcertos %}
+                <p>{{item}}</p>
+            {%endfor%}
         </div>
-
-        <div class="card-progressao-container">
-            <table id="minhaTabela">
-                <thead>
-                    <tr id="tr-no-shadow">
-                        <th>Marcar</th>
-                        <th>Nome</th>
-                        <th>CPF</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {%for aluno in bolsistas%}
-                        <tr>
-                            <td id="td-vermelho"><input type="checkbox" name="{{ aluno.id }}" ></td>
-                            <td style="text-align: left;">{{ aluno.id_pessoa.nome }}</td>
-                            <td>{{ aluno.id_pessoa.usuario }}</td>
-                        </tr>
-                    {%endfor%}
-                </tbody>
-            </table>
-            <p><input type="checkbox"  id="all" name=all>Marcar Todos</p>
+        <div class="formulario">
+            <form method="post" action="{% url 'CadastroColaboradores' %}"> {%csrf_token%}
+                {{form.as_p}}
+                <p><input type="submit" name="commit" value="Salvar" id="botao" ></p>
+            </form>
         </div>
-     </div>
-
-    <script>
-        $(document).ready(function () {
-            $('#minhaTabela').DataTable({
-                "bPaginate": true,
-                "bLengthChange": false,
-                "bFilter": true,
-                "bInfo": true,
-                "bAutoWidth": true,
-                "language": {
-                    "sEmptyTable": "Nenhum registro encontrado",
-                    "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
-                    "sInfoEmpty": "Mostrando 0 até 0 de 0 registros",
-                    "sInfoFiltered": "(Filtrados de _MAX_ registros)",
-                    "sInfoThousands": ".",
-                    "sLengthMenu": "_MENU_ resultados por página",
-                    "sLoadingRecords": "Carregando...",
-                    "sProcessing": "Processando...",
-                    "sZeroRecords": "Nenhum registro encontrado",
-                    "sSearch": "Pesquisar",
-                    "oPaginate": {
-                    "sNext": "»",
-                    "sPrevious": "«",
-                    "sFirst": "Primeiro",
-                    "sLast": "Último"
-                    }
-                },
-            });
-        });
-    </script>
+    </div>
 
      <script>
         function mostrarocultar(mostrar, ocultar){
@@ -145,13 +106,6 @@
             document.getElementById(ID).style.display = "none";
             $("#"+ID).hide("slow");
         }
-        document.getElementById("all").addEventListener("click", function(){
-            checkBoxs = document.querySelectorAll('input[type="checkbox"]:not([id=all])');
-            //"Hack": http://toddmotto.com/ditch-the-array-foreach-call-nodelist-hack/
-            [].forEach.call(checkBoxs, function(checkbox) {
-                checkbox.checked = checkbox.checked ? false : true;
-            });
-        });
     </script>
 
     {% if messages %}
