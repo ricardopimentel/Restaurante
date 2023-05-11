@@ -233,6 +233,4 @@ def Restricoes(id_aluno, id_prato):#tem que trazer a instacia nova da venda e co
         else:
             return {'status': True, 'erro': "O horário das vendas está encerrado"}
     except Exception as e:
-        #return {'status': True, 'erro': "Falha ao verificar o horário de fechamento"}
-        return {'status': True, 'erro': str(e)}
-
+        return {'status': True, 'erro': "Falha ao verificar o horário de fechamento"}
