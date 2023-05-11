@@ -147,7 +147,7 @@ def ExistePratoCadastrado(id_pessoa):
     if VerificarUsuarioCem(id_pessoa):
         id = "Almoço"
     else:
-        if hora <= 14:
+        if hora <= 15:
             id = "Almoço"
         else:
             id = "Janta"
@@ -200,10 +200,11 @@ def Restricoes(id_aluno, id_prato):#tem que trazer a instacia nova da venda e co
     try:
         horafechamento = config.objects.get(id=1).hora_fechamento_vendas
         hoje = datetime.datetime.today()
-        print('hoje: '+str(hoje.time())+' fechamento: '+str(horafechamento))
         if hoje.time() < horafechamento:#verifica a hora do fechamento das vendas
             try:
                 vendaobj = venda.objects.get(data__contains=hoje.date(), id_aluno=id_aluno)#tenta encontrar uma venda para o aluno especifico na data de hoje
+            except venda.DoesNotExist:
+                vendaobj = venda.objects.filter(data__contains=hoje.date(), id_aluno=id_aluno)#quando é a primeira venda do dia para esse aluno
             except:
                 return {'status': True, 'erro': "Já existem duas vendas para esse aluno hoje"}
             if vendaobj:#verifica se a venda existe
@@ -221,17 +222,17 @@ def Restricoes(id_aluno, id_prato):#tem que trazer a instacia nova da venda e co
                         alunoobj = aluno.objects.get(id=id_aluno)
                         alunocolaborador = alunoscolaboradores.objects.get(id_pessoa=alunoobj.id_pessoa)
                     except Exception as e:
-                        print(str(e))
                         alunocolaborador = False
                     if alunocolaborador:#valida se o aluno é colaborador
                         #verifica o prato
                         if vendaobj.id_prato == prato.objects.get(id=id_prato):# se o aluno é colaborador e a ultima venda realizada tem o mesmo prato do horário atual
                             return {'status': True, 'erro': "Aluno já realizou compra desse mesmo prato hoje"}
+                    else:#se não é colaborador não pode repetir a venda
+                        return {'status': True, 'erro': "Aluno já realizou compra hoje"}
             return {'status': False, 'erro': "Não há restrições"}
         else:
             return {'status': True, 'erro': "O horário das vendas está encerrado"}
     except Exception as e:
-        print(e)
         #return {'status': True, 'erro': "Falha ao verificar o horário de fechamento"}
         return {'status': True, 'erro': str(e)}
 
