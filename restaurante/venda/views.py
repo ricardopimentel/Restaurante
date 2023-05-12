@@ -147,7 +147,7 @@ def ExistePratoCadastrado(id_pessoa):
     if VerificarUsuarioCem(id_pessoa):
         id = "Almoço"
     else:
-        if hora <= 15:
+        if hora <= 14:
             id = "Almoço"
         else:
             id = "Janta"
