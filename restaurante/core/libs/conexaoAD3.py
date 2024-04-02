@@ -6,22 +6,22 @@ from restaurante.administracao.models import config
 
 class conexaoAD(object):
 
-    def __init__(self, username, password):
+    def __init__(self, username, password, base, filter):
         try:
             conf = config.objects.get(id=1)
             self.username = username
             self.password = password
-            self.base = conf.ou
+            self.base = base
             self.dominio = conf.dominio
             self.endservidor = conf.endservidor
             self.filter = conf.filter
         except:
             self.username = username
             self.password = password
-            self.base = ''
+            self.base = base
             self.dominio = ''
             self.endservidor = ''
-            self.filter = ''
+            self.felter = ''
 
         # servidor ad
         self.LDAP_SERVER = 'ldap://%s' % self.endservidor
@@ -38,22 +38,24 @@ class conexaoAD(object):
                             check_names=True,
                             user=self.LDAP_USERNAME, password=self.password) as c:
                 user_filter = '(&' + self.filter + '(|(name=%s)))' % self.username
-                c.search(search_base=self.base, search_filter=user_filter, search_scope=SUBTREE, attributes=['displayName', 'memberof', 'mail', 'telephoneNumber'], get_operational_attributes=False)
+                c.search(search_base=self.base, search_filter=user_filter, search_scope=SUBTREE, attributes=['displayName', 'memberof'], get_operational_attributes=False)
 
+            #print(c.response_to_json())
+            #print(c.result)
             res = (c.response)
-
             if 'searchResEntry' in str(res):
                 return res[0]['attributes']
             else:
-                print(sys.exc_info())
                 return 'o'  # Usuario fora do escopo permitido
-
         except:
             if 'invalidCredentials' in str(sys.exc_info()):
                 return 'i'  # Credenciais Invalidas
             elif 'LDAPSocketOpenError' in str(sys.exc_info()):
                 print(sys.exc_info())
-                return 'n'  # Servidor não encontrado
+                return 'n'  # Servidor não encotrado
+            else:
+                print(sys.exc_info())
+                print("\n\n\nto aki\n\n\n")
 
 
     def ListaAlunos(self):
@@ -63,10 +65,10 @@ class conexaoAD(object):
                             read_only=True,
                             check_names=True,
                             user=self.LDAP_USERNAME, password=self.password) as c:
+
                 user_filter = '(&(!(extensionAttribute14=514))(memberof=CN=G_CA-PARAISO_ALUNOS, OU=Alunos, OU=CA-PARAISO, OU=IFTO,DC=ifto,DC=local))'
-                c.search(search_base='OU=Alunos, OU=CA-PARAISO, OU=IFTO, '+ self.base, search_filter=user_filter, search_scope=SUBTREE,
-                         attributes=['description', 'mail', 'sAMAccountName', 'displayName'],
-                         get_operational_attributes=False)
+                c.search(search_base=self.base, search_filter=user_filter, search_scope=SUBTREE,
+                         attributes=['description', 'mail', 'sAMAccountName', 'displayName'], get_operational_attributes=False)
 
             res = (c.response)
             return res

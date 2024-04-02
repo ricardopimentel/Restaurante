@@ -24,8 +24,18 @@ def Vendas(request):
     return redirect(r('Login'))
 
 def Venda(request):
+    # tenta conectar ao banco de dados para pegar parametros do ldap
+    ou = ''
+    filter = ''
+    try:
+        conf = config.objects.get(id=1)
+        ou = conf.ou
+        filter = conf.filter
+    except:
+        pass
+    # Inicia variáveis
     ListaAlunos = []
-    con = conexaoAD(usuario, senha)
+    con = conexaoAD(usuario, senha, ou, filter)
     retorno = con.ListaAlunos()
 
     if str(retorno) == 'i':
@@ -129,7 +139,18 @@ def Vender(request, id_pessoa):
 
 # Métodos aplicados nas views
 def SalvaAluno(cpf):
-    con = conexaoAD(usuario, senha)
+    # tenta conectar ao banco de dados para pegar parametros do ldap
+    ou = ''
+    filter = ''
+    try:
+        conf = config.objects.get(id=1)
+        ou = conf.ou
+        filter = conf.filter
+    except:
+        pass
+
+    # Inicializa váriaveis
+    con = conexaoAD(usuario, senha, ou, filter)
     nomealuno = (con.DadosAluno(cpf)[0]['raw_attributes']['displayName'][0]).decode('UTF-8')
 
     pessoaobj = pessoa(nome=nomealuno, usuario=cpf, status=True)
@@ -145,7 +166,7 @@ def ExistePratoCadastrado(id_pessoa):
     hora = datetime.datetime.now().hour
     id = False
     if VerificarUsuarioCem(id_pessoa):
-        id = "Almoço"
+        id = "Cem"
     else:
         if hora <= 14:
             id = "Almoço"
@@ -176,7 +197,7 @@ def SalvarVenda(request, id_aluno, id_prato, id_pessoa):
         cem = VerificarUsuarioCem(id_pessoa) #verifica se a bolsa é 100%
         #criar objeto da venda
         if cem: #verifica se a bolsa é 100%
-            vendaobj = venda(data=data, valor=(pratoobj.preco*2), id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj)
+            vendaobj = venda(data=data, valor=(pratoobj.preco), id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj, cem=True)
         else:
             vendaobj = venda(data=data, valor=(pratoobj.preco), id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj)
         vendaobj.save()#salva venda

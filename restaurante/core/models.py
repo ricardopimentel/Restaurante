@@ -46,6 +46,7 @@ class aluno (models.Model):
 class venda (models.Model):
     data = models.DateTimeField()
     valor = models.FloatField()
+    cem = models.BooleanField(default=False)
     id_prato = models.ForeignKey(prato, on_delete=models.PROTECT)
     id_usuario_restaurante = models.ForeignKey(usuariorestaurante, on_delete=models.PROTECT)
     id_aluno = models.ForeignKey(aluno, on_delete=models.PROTECT)

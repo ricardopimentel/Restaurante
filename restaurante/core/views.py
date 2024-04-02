@@ -1,5 +1,5 @@
 from django.http import Http404
-from django.shortcuts import render, redirect, resolve_url as r, render_to_response
+from django.shortcuts import render, redirect, resolve_url as r
 
 
 # Create your views here.

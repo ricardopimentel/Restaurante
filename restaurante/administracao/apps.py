@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class AdministracaoConfig(AppConfig):
-    name = 'admin'
+    name = 'restaurante.administracao'

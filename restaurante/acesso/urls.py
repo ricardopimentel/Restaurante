@@ -1,7 +1,7 @@
-from django.conf.urls import url
+from django.urls import re_path
 from restaurante.acesso import views
 
 urlpatterns = [
-    url(r'^login/$', views.Login, name='Login'),
-    url(r'^logout/$', views.Logout, name='Logout'),
+    re_path(r'^login/$', views.Login, name='Login'),
+    re_path(r'^logout/$', views.Logout, name='Logout'),
 ]

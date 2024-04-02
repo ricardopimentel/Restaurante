@@ -1,5 +1,7 @@
 import os
 import platform
+from datetime import datetime
+
 import pdfkit
 
 from django import forms
@@ -39,7 +41,7 @@ def RelatorioVendas(request):
         CHOICES = [(-1, 'Todos')]
         alunoobj = aluno.objects.all()
         for al in alunoobj:
-            CHOICES.append((al.id, str(al.id_pessoa).title()))
+            CHOICES.append((al.id, str(al.id_pessoa.usuario).title()))
 
         # Pega valores da sessao para jogar no formulario
         form = RelatorioVendasForm(request, CHOICES, initial={
@@ -55,16 +57,17 @@ def RelatorioVendas(request):
                 datainicial = request.POST['campo_data_inicial']
                 datafinal = request.POST['campo_data_final']
                 alunoselecionado = form.cleaned_data['campo_aluno']
+
                 # Pega no bd os dados da vas vendas, filtrando por aluno
                 if alunoselecionado == '-1':
                     vd = venda.objects.select_related().filter(
                         data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59']
-                    )
+                    ).order_by('data')
                 else:
                     vd = venda.objects.select_related().filter(
                         data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59'],
                         id_aluno=alunoselecionado
-                    )
+                    ).order_by('data')
                 # Salva valores na sessão p preencher automaticamente posteriormente
                 request.session['data-inicial'] = datainicial
                 request.session['data-final'] = datafinal
@@ -73,18 +76,20 @@ def RelatorioVendas(request):
         # Somar valor das vendas no periodo
         almoco = prato.objects.get(descricao='Almoço')
         janta = prato.objects.get(descricao='Janta')
+        cem = prato.objects.get(descricao='Cem')
         for vend in vd:
-            if vend.valor == almoco.preco:# resolvido, puxando agora do banco de dados, gratidão
-                contalmoco = contalmoco + 1
-            elif vend.valor == janta.preco:
-                contjanta = contjanta + 1
-            elif vend.valor == almoco.preco*2:
+            if vend.cem: #se for bolsista 100%
                 contcem = contcem + 1
+            else:
+                if (vend.id_prato == almoco):  # resolvido, verificando se é almoço pelo horário da venda, gratidão
+                    contalmoco = contalmoco + 1
+                else:
+                    contjanta = contjanta + 1
             soma = soma + vend.valor
 
         return render(request, 'relatorios/relatoriovendas.html', {
             'soma': soma, 'datainicial': datainicial, 'datafinal': datafinal,
-            'itemselec': 'RELATÓRIOS', 'venda': vd, 'contcem': contcem, 'valorcem': (contcem*(almoco.preco*2)), 'contjanta': contjanta, 'contalmoco': contalmoco, 'valorjanta': (contjanta*janta.preco), 'valoralmoco': (contalmoco*almoco.preco), 'form': form, 'title': 'Relatórios',
+            'itemselec': 'RELATÓRIOS', 'venda': vd, 'contcem': contcem, 'valorcem': (contcem*(cem.preco)), 'contjanta': contjanta, 'contalmoco': contalmoco, 'valorjanta': (contjanta*janta.preco), 'valoralmoco': (contalmoco*almoco.preco), 'form': form, 'title': 'Relatórios',
         })
 
 
@@ -99,7 +104,7 @@ def RelatorioCustoAlunoPeriodo(request):
         CHOICES = [(-1, 'Todos')]
         alunoobj = aluno.objects.all()
         for al in alunoobj:
-            CHOICES.append((al.id, str(al.id_pessoa).title()))
+            CHOICES.append((al.id, str(al.id_pessoa.usuario).title()))
 
         # Pega valores da sessao para jogar no formulario
         form = RelatorioVendasForm(request, CHOICES, initial={
@@ -217,26 +222,27 @@ def PdfVendas(request):
     if campo_aluno == '-1':
         vd = venda.objects.select_related().filter(
             data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59']
-        )
+        ).order_by('data')
         alunoobj = ''
     else:
         vd = venda.objects.select_related().filter(
             data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59'],
             id_aluno=campo_aluno
-        )
+        ).order_by('data')
         alunoobj = aluno.objects.get(id=campo_aluno)
 
     # Somar valor das vendas no periodo
     almoco = prato.objects.get(descricao='Almoço')
     janta = prato.objects.get(descricao='Janta')
-    prat = prato.objects.get(id=1)
+    cem = prato.objects.get(descricao='Cem')
     for vend in vd:
-        if vend.valor == almoco.preco:  # resolvido, puxando agora do banco de dados, gratidão
-            contalmoco = contalmoco + 1
-        elif vend.valor == janta.preco:
-            contjanta = contjanta + 1
-        elif vend.valor == almoco.preco * 2:
+        if vend.cem:  # se for bolsista 100%
             contcem = contcem + 1
+        else:
+            if (vend.id_prato == almoco):  # resolvido, verificando se é almoço pelo tipo de prato, gratidão
+                contalmoco = contalmoco + 1
+            else:
+                contjanta = contjanta + 1
         soma = soma + vend.valor
 
     # Template
@@ -253,7 +259,7 @@ def PdfVendas(request):
         'aluno': alunoobj,
         'base_dir': BASE_DIR,
         'contcem': contcem,
-        'valorcem': (contcem * (almoco.preco * 2)),
+        'valorcem': (contcem * cem.preco),
         'contalmoco': contalmoco,
         'valoralmoco': (contalmoco * almoco.preco),
         'contjanta': contjanta,

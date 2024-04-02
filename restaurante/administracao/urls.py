@@ -1,18 +1,18 @@
-from django.conf.urls import url
+from django.urls import re_path
 from restaurante.administracao import views
 
 urlpatterns = [
-    url(r'^$', views.Administracao, name='Administracao'),
-    url(r'^activedirectory/$', views.Dados_ad, name='ConfigAD'),
-    url(r'^configuracaoinicial/$', views.ConfigInicial, name='ConfigInicial'),
-    url(r'^cadastroprato/$', views.CadastroPrato, name='CadastroPrato'),
-    url(r'^excluirpratos/$', views.ExcluirPratos, name='ExcluirPratos'),
-    url(r'^editarpratos/(?P<id_prato>.+)$', views.EditarPrato, name='EditarPrato'),
-    url(r'^horariolimitevendas/$', views.HorarioLimiteVendas, name='HorarioLimiteVendas'),
-    url(r'^tutoriais/(?P<action>.+)$', views.Tutoriais, name='Tutoriais'),
-    url(r'^configuracao/$', views.Configuracao, name='Configuracao'),
-    url(r'^cadastrobolsistas/$', views.CadastroBolsistas, name='CadastroBolsistas'),
-    url(r'^excluirbolsistas/$', views.ExcluirBolsistas, name='ExcluirBolsistas'),
-    url(r'^cadastrocolaboradores/$', views.CadastroColaboradores, name='CadastroColaboradores'),
-    url(r'^excluircolaboradores/$', views.ExcluirColaboradores, name='ExcluirColaboradores'),
+    re_path(r'^$', views.Administracao, name='Administracao'),
+    re_path(r'^activedirectory/$', views.Dados_ad, name='ConfigAD'),
+    re_path(r'^configuracaoinicial/$', views.ConfigInicial, name='ConfigInicial'),
+    re_path(r'^cadastroprato/$', views.CadastroPrato, name='CadastroPrato'),
+    re_path(r'^excluirpratos/$', views.ExcluirPratos, name='ExcluirPratos'),
+    re_path(r'^editarpratos/(?P<id_prato>.+)$', views.EditarPrato, name='EditarPrato'),
+    re_path(r'^horariolimitevendas/$', views.HorarioLimiteVendas, name='HorarioLimiteVendas'),
+    re_path(r'^tutoriais/(?P<action>.+)$', views.Tutoriais, name='Tutoriais'),
+    re_path(r'^configuracao/$', views.Configuracao, name='Configuracao'),
+    re_path(r'^cadastrobolsistas/$', views.CadastroBolsistas, name='CadastroBolsistas'),
+    re_path(r'^excluirbolsistas/$', views.ExcluirBolsistas, name='ExcluirBolsistas'),
+    re_path(r'^cadastrocolaboradores/$', views.CadastroColaboradores, name='CadastroColaboradores'),
+    re_path(r'^excluircolaboradores/$', views.ExcluirColaboradores, name='ExcluirColaboradores'),
 ]

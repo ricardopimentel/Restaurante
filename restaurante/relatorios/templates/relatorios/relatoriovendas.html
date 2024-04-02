@@ -1,7 +1,7 @@
 <meta charset="UTF-8"/>
 {% extends "base.html" %}
 {% load restaurante_extras %}
-{% load staticfiles %}
+{% load static %}
 {%block titulo%}{{title}}{%endblock%}
 
 {%block top%}
@@ -115,6 +115,14 @@
                             </tr>
                         {%endfor%}
                     </tbody>
+                    <tfoot>
+                    <tr>
+                        <th>Data</th>
+                        <th>Aluno</th>
+                        <th>Matrícula</th>
+                        <th>Preço</th>
+                    </tr>
+        </tfoot>
                 </table>
             </div>
 
@@ -126,6 +134,7 @@
                         "bFilter": true,
                         "bInfo": true,
                         "bAutoWidth": true,
+                        "bSort": false,
                         "language": {
                             "sEmptyTable": "Nenhum registro encontrado",
                             "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",

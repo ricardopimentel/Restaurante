@@ -1,6 +1,6 @@
 <meta charset="UTF-8"/>
 {% extends "base.html" %}
-{% load staticfiles %}
+{% load static %}
 {% load restaurante_extras %}
 {% load pagination_tags %}
 {%block titulo%}{{title}}{%endblock%}
@@ -92,7 +92,7 @@
 						{% if not cem %}
 							<p style="text-align: left"><b>Valor: </b>{{prato.preco}}</p>
 						{% else %}
-							<p style="text-align: left"><b>Valor: </b>{{prato.preco|dobro}}</p>
+							<p style="text-align: left"><b>Valor: </b>{{prato.preco}}</p>
 							<p style="text-align: left; color: green"><b>Tipo: </b>Bolsa 100%</p>
 						{%endif%}
                         {{ formulario.as_p }}

@@ -386,8 +386,17 @@ def ExcluirColaboradores(request):
 
 
 def GetListaEstudantesAD():
+    # tenta conectar ao banco de dados para pegar parametros do ldap
+    ou = ''
+    filter = ''
+    try:
+        conf = config.objects.get(id=1)
+        ou = conf.ou
+        filter = conf.filter
+    except:
+        pass
     ListaAlunos = []
-    con = conexaoAD(usuario, senha)
+    con = conexaoAD(usuario, senha, ou, filter)
     retorno = con.ListaAlunos()
 
     if str(retorno) == 'i':
