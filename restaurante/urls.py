@@ -23,4 +23,5 @@ urlpatterns = [
     re_path(r'^restaurante/acesso/', include('restaurante.acesso.urls')),
     re_path(r'^restaurante/administracao/', include('restaurante.administracao.urls')),
     re_path(r'^restaurante/venda/', include('restaurante.venda.urls')),
+    re_path(r'^restaurante/voucher/', include('restaurante.voucher.urls')),
 ]

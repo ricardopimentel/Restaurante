@@ -246,14 +246,14 @@ def CadastroBolsistas(request):
                                 ListaErros.append("O CPF: "+ cpf+ " Não foi adicionado")
                         else:
                             ListaErros.append("O CPF: "+ cpf+ " Não é de um aluno do IFTO")
-                    return render(request, 'administracao/admin_cadastro_bolsistas.html', {
+                    return render(request, 'administracao/voucher_cadastro_bolsistas.html', {
                         'title': 'Cadastro de Bolsistas',
                         'ListaErros': ListaErros,
                         'ListaAcertos': ListaAcertos,
                         'itemselec': menu,
                         'form': CadastroAlunosBolsistasForm(),
                     })
-            return render(request, 'administracao/admin_cadastro_bolsistas.html', {
+            return render(request, 'administracao/voucher_cadastro_bolsistas.html', {
                 'title': 'Cadastro de Bolsistas',
                 'itemselec': menu,
                 'form': form,

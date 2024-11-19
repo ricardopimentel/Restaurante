@@ -51,7 +51,7 @@ class AdForm(forms.ModelForm):
 
         if Usuario and Senha:  # Usuário e senha OK
             # Cria Conexão LDAP ou = 'OU=ca-paraiso, OU=reitoria, OU=ifto, DC=ifto, DC=local'
-            c = conexaoAD(Usuario, Senha)
+            c = conexaoAD(Usuario, Senha, Ou, Filter)
             result = c.PrimeiroLogin(Usuario, Senha, Dominio, Endservidor, Filter)  # tenta login no ldap e salva resultado em result
             if (result == ('i')):  # Credenciais invalidas (usuario e/ou senha)
                 # Adiciona erro na validação do formulário

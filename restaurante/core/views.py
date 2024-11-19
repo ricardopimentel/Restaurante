@@ -1,4 +1,3 @@
-from django.http import Http404
 from django.shortcuts import render, redirect, resolve_url as r
 
 

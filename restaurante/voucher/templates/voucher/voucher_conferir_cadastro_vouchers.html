@@ -1,0 +1,168 @@
+<meta charset="UTF-8"/>
+{% extends "base.html" %}
+{% load static %}
+{% load restaurante_extras %}
+{% load pagination_tags %}
+{%block titulo%}{{title}}{%endblock%}
+
+{%block top%}
+	{% if request.session.nome%}
+			<h1>{{request.session.nome}}</h1>
+			<a href="{% url 'Logout' %}"><h2>Sair</h2></a>
+		{%endif%}
+{%endblock%}
+
+{%block menu%}
+	{% if request.session.menu%}
+		{%for item in request.session.menu%}
+			{% if item == itemselec %}
+				<li>
+					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
+						<div class="item-menu-selec">
+							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
+							<p>{{item}}</p>
+						</div>
+					</a>
+				</li>
+			{%else%}
+				<li>
+                    {% if item == 'logo' %}
+                        <div id="hidemenu">
+                            <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
+                        </div>
+                    {% elif item == 'sair' %}
+                        <div id="hidemenusair">
+                            <div class="background-nome">
+                                {% if request.session.nome %}
+                                    <h1>{{request.session.nome}}</h1>
+                                    <a href="{% url 'Logout' %}"><h2>Sair</h2></a>
+                                {%else%}
+                                    <h1>Faça Login</h1>
+                                {%endif%}
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
+                            <div class="item-menu">
+                                <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
+                                <p>{{item}}</p>
+                            </div>
+                        </a>
+                    {% endif %}
+				</li>
+			{%endif%}
+		{%endfor%}
+	{%endif%}
+{%endblock%}
+
+{%block conteudo%}
+    <form id="frm" method="post" action="{% url 'ExcluirVouchers' %}"> {%csrf_token%}
+    <div class="cartao">
+        <img src="{% static 'images/lupa.png' %}" alt="" width="70"/>
+        <h1>{{title}}</h1>
+        <br>
+        <div class="navegation_bar">
+            {% if itemselec == 'CONFIGURAÇÃO' %}
+                <a href="{% url 'Configuracao' %}">Configuração</a>
+            {% elif itemselec == 'ADMINISTRAÇÃO' %}
+                <a href="{% url 'Administracao' %}">Administração</a>
+            {% endif %}
+            <a href="{% url 'ExcluirVouchers' %}">Listar Vouchers</a>
+        </div>
+
+        <div class="action_bar_tuto" style="height: 18px">
+            <a style="padding: 0px 5px 7px 5px; display: inline-flex;" href="{% url 'CadastroVouchers' %}" title="Cadastro dos vouchers"><img title="Cadastrar Vouchers"  src="{% static 'images/add24b.png' %}" onmouseover="this.src='{% static 'images/add24.png' %}'" onmouseout="this.src='{% static 'images/add24b.png' %}'"></a>
+            <input type="image" name="commit" value="" title="Excluir Vouchers" src="{% static 'images/delete24b.png' %}" onmouseover="this.src='{% static 'images/delete24.png' %}'" onmouseout="this.src='{% static 'images/delete24b.png' %}'">
+        </div>
+
+        <div class="card-progressao-container">
+            <table id="minhaTabela">
+                <thead>
+                    <tr id="tr-no-shadow">
+                        <th>Marcar</th>
+                        <th>Código</th>
+                        <th>Usado?</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for voucher in vouchers%}
+                        <tr>
+                            <td id="td-vermelho"><input type="checkbox" name="{{ aluno.id }}" ></td>
+                            <td style="text-align: left;">{{ voucher.codigo }}</td>
+                            <td>{{ voucher.usado }}</td>
+                        </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+            <p><input type="checkbox"  id="all" name=all>Marcar Todos</p>
+        </div>
+     </div>
+
+    <script>
+        $(document).ready(function () {
+            $('#minhaTabela').DataTable({
+                "bPaginate": true,
+                "bLengthChange": false,
+                "bFilter": true,
+                "bInfo": true,
+                "bAutoWidth": true,
+                "language": {
+                    "sEmptyTable": "Nenhum registro encontrado",
+                    "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
+                    "sInfoEmpty": "Mostrando 0 até 0 de 0 registros",
+                    "sInfoFiltered": "(Filtrados de _MAX_ registros)",
+                    "sInfoThousands": ".",
+                    "sLengthMenu": "_MENU_ resultados por página",
+                    "sLoadingRecords": "Carregando...",
+                    "sProcessing": "Processando...",
+                    "sZeroRecords": "Nenhum registro encontrado",
+                    "sSearch": "Pesquisar",
+                    "oPaginate": {
+                    "sNext": "»",
+                    "sPrevious": "«",
+                    "sFirst": "Primeiro",
+                    "sLast": "Último"
+                    }
+                },
+            });
+        });
+    </script>
+
+     <script>
+        function mostrarocultar(mostrar, ocultar){
+            $("#"+mostrar).show(500);
+            document.getElementById(ocultar).style.display = "none";
+        }
+        function ocultarmostrar(mostrar, ocultar){
+            $("#"+ocultar).hide(500);
+            $("#"+mostrar).show(500);
+        }
+        function  mostrar(ID){
+            document.getElementById(ID).style.display = "block";
+
+        }
+        function  ocultar(ID){
+            document.getElementById(ID).style.display = "none";
+            $("#"+ID).hide("slow");
+        }
+        document.getElementById("all").addEventListener("click", function(){
+            checkBoxs = document.querySelectorAll('input[type="checkbox"]:not([id=all])');
+            //"Hack": http://toddmotto.com/ditch-the-array-foreach-call-nodelist-hack/
+            [].forEach.call(checkBoxs, function(checkbox) {
+                checkbox.checked = checkbox.checked ? false : true;
+            });
+        });
+    </script>
+
+    {% if messages %}
+        <div class="msg-popup-container">
+            {% for message in messages %}
+                <div id="{{ forloop.counter0 }}" class="msg-popup {{ message.tags }}">
+                    <img src="{% static 'images/'%}{{ message.tags }}.png" alt="" width="70" height="70"/>
+                    <p>{{ message }}</p>
+                    <a onclick="ocultar('{{ forloop.counter0 }}')">x</a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{%endblock%}
