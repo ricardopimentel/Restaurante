@@ -47,7 +47,8 @@ def RelatorioVendas(request):
         form = RelatorioVendasForm(request, CHOICES, initial={
             'campo_data_inicial': request.session.get('data-inicial'),
             'campo_data_final': request.session.get('data-final'),
-            'campo_aluno': request.session.get('aluno-selecionado')
+            'campo_aluno': request.session.get('aluno-selecionado'),
+            'campotipo': request.session.get('campo_tipo')
         })
 
         if request.method == 'POST':
@@ -57,21 +58,27 @@ def RelatorioVendas(request):
                 datainicial = request.POST['campo_data_inicial']
                 datafinal = request.POST['campo_data_final']
                 alunoselecionado = form.cleaned_data['campo_aluno']
+                campotipo = form.cleaned_data['campo_tipo']
+
+                if campotipo == '-1':
+                    campotipo = ''
+
 
                 # Pega no bd os dados da vas vendas, filtrando por aluno
                 if alunoselecionado == '-1':
                     vd = venda.objects.select_related().filter(
-                        data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59']
+                        data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59'], cem__contains=campotipo
                     ).order_by('data')
                 else:
                     vd = venda.objects.select_related().filter(
-                        data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59'],
+                        data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59'], cem__contains=campotipo,
                         id_aluno=alunoselecionado
                     ).order_by('data')
                 # Salva valores na sessão p preencher automaticamente posteriormente
                 request.session['data-inicial'] = datainicial
                 request.session['data-final'] = datafinal
                 request.session['aluno-selecionado'] = alunoselecionado
+                request.session['campo_tipo'] = campotipo
 
         # Somar valor das vendas no periodo
         almoco = prato.objects.get(descricao='Almoço')
@@ -110,7 +117,7 @@ def RelatorioCustoAlunoPeriodo(request):
         form = RelatorioVendasForm(request, CHOICES, initial={
             'campo_data_inicial': request.session.get('data-inicial'),
             'campo_data_final': request.session.get('data-final'),
-            'campo_aluno': request.session.get('aluno-selecionado')
+            'campo_aluno': request.session.get('aluno-selecionado'),
         })
 
         if request.method == 'POST':
@@ -217,16 +224,21 @@ def PdfVendas(request):
     campo_aluno = request.session.get('aluno-selecionado')
     datainicial = request.session['data-inicial']
     datafinal = request.session['data-final']
+    campotipo = request.session['campo_tipo']
+
+    if campotipo == '-1':
+        campotipo = ''
+
     soma = 0
 
     if campo_aluno == '-1':
         vd = venda.objects.select_related().filter(
-            data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59']
+            data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59'], cem__contains=campotipo
         ).order_by('data')
         alunoobj = ''
     else:
         vd = venda.objects.select_related().filter(
-            data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59'],
+            data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59'], cem__contains=campotipo,
             id_aluno=campo_aluno
         ).order_by('data')
         alunoobj = aluno.objects.get(id=campo_aluno)
