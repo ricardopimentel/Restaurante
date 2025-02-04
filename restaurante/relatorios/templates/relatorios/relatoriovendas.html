@@ -166,7 +166,7 @@
 
     <div class="action-container">
         <a onclick="window.print();">
-            <div class="fab-container" tooltip="Salvar em PDF">
+            <div class="fab-container" tooltip="Imprimir">
                 <div class="fab" id="root"><span></span>
 
                 </div>
@@ -174,6 +174,10 @@
         </a>
         <a href="{% url 'PdfVendas' %}" class="fab-container" tooltip="Salvar em PDF">
             <div class="fab" id="point"><span></span>
+            </div>
+        </a>
+        <a href="{% url 'CsvVendas' %}" class="fab-container" tooltip="Salvar em CSV">
+            <div class="fab" id="csv"><span></span>
             </div>
         </a>
         <a href="#" class="fab-container" tooltip="Topo">

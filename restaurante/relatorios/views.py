@@ -1,19 +1,16 @@
+import csv
+import datetime
 import os
 import platform
-from datetime import datetime
-
 import pdfkit
 
-from django import forms
 from django.db.models import Sum
-from django.http import HttpResponse
 from django.shortcuts import render, resolve_url as r, redirect
-
+from django.http import HttpResponse
+from django.template import loader, Context
 # Create your views here.
 from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_exempt
-
-
 from restaurante.core.models import venda, aluno, prato
 from restaurante.relatorios.forms import RelatorioVendasForm
 
@@ -31,6 +28,9 @@ def Relatorios(request):
 def RelatorioVendas(request):
     if dict(request.session).get('nome'):# Verificar se usuário está logado
         soma = 0
+        somaalmoco = 0
+        somajanta = 0
+        somacem = 0
         contcem = 0
         contalmoco = 0
         contjanta = 0
@@ -80,23 +80,41 @@ def RelatorioVendas(request):
                 request.session['aluno-selecionado'] = alunoselecionado
                 request.session['campo_tipo'] = campotipo
 
-        # Somar valor das vendas no periodo
-        almoco = prato.objects.get(descricao='Almoço')
-        janta = prato.objects.get(descricao='Janta')
-        cem = prato.objects.get(descricao='Cem')
+        #Fazer as somas do relatório
         for vend in vd:
             if vend.cem: #se for bolsista 100%
                 contcem = contcem + 1
+                somacem = somacem + vend.valor
+
+            # Pega o horário pra definir o que é janta e o que é almoço
+            now = datetime.datetime.now()
+            hotariojanta = now.replace(hour=15, minute=0, second=0, microsecond=0)
+            # Pega o horário da venda
+            data = vend.data
+
+            if (data.time() <= hotariojanta.time()):  # resolvido, verificando se é almoço pelo horário da venda, gratidão, dessa vez é verdade
+                contalmoco = contalmoco + 1
+                somaalmoco = somaalmoco + vend.valor
             else:
-                if (vend.id_prato == almoco):  # resolvido, verificando se é almoço pelo horário da venda, gratidão
-                    contalmoco = contalmoco + 1
-                else:
-                    contjanta = contjanta + 1
+                contjanta = contjanta + 1
+                somajanta = somajanta + vend.valor
+
             soma = soma + vend.valor
 
         return render(request, 'relatorios/relatoriovendas.html', {
-            'soma': soma, 'datainicial': datainicial, 'datafinal': datafinal,
-            'itemselec': 'RELATÓRIOS', 'venda': vd, 'contcem': contcem, 'valorcem': (contcem*(cem.preco)), 'contjanta': contjanta, 'contalmoco': contalmoco, 'valorjanta': (contjanta*janta.preco), 'valoralmoco': (contalmoco*almoco.preco), 'form': form, 'title': 'Relatórios',
+            'soma': soma,
+            'datainicial': datainicial,
+            'datafinal': datafinal,
+            'itemselec': 'RELATÓRIOS',
+            'venda': vd,
+            'contcem': contcem,
+            'valorcem': somacem,
+            'contjanta': contjanta,
+            'contalmoco': contalmoco,
+            'valorjanta': somajanta,
+            'valoralmoco': somaalmoco,
+            'form': form,
+            'title': 'Relatórios',
         })
 
 
@@ -217,6 +235,10 @@ def PdfCustoAlunoPeriodo(request):
 
 
 def PdfVendas(request):
+    soma = 0
+    somaalmoco = 0
+    somajanta = 0
+    somacem = 0
     contcem = 0
     contalmoco = 0
     contjanta = 0
@@ -243,18 +265,25 @@ def PdfVendas(request):
         ).order_by('data')
         alunoobj = aluno.objects.get(id=campo_aluno)
 
-    # Somar valor das vendas no periodo
-    almoco = prato.objects.get(descricao='Almoço')
-    janta = prato.objects.get(descricao='Janta')
-    cem = prato.objects.get(descricao='Cem')
     for vend in vd:
         if vend.cem:  # se for bolsista 100%
             contcem = contcem + 1
+            somacem = somacem + vend.valor
+
+        # Pega o horário pra definir o que é janta e o que é almoço
+        now = datetime.datetime.now()
+        hotariojanta = now.replace(hour=15, minute=0, second=0, microsecond=0)
+        # Pega o horário da venda
+        data = vend.data
+
+        if (
+                data.time() <= hotariojanta.time()):  # resolvido, verificando se é almoço pelo horário da venda, gratidão, dessa vez é verdade
+            contalmoco = contalmoco + 1
+            somaalmoco = somaalmoco + vend.valor
         else:
-            if (vend.id_prato == almoco):  # resolvido, verificando se é almoço pelo tipo de prato, gratidão
-                contalmoco = contalmoco + 1
-            else:
-                contjanta = contjanta + 1
+            contjanta = contjanta + 1
+            somajanta = somajanta + vend.valor
+
         soma = soma + vend.valor
 
     # Template
@@ -271,11 +300,11 @@ def PdfVendas(request):
         'aluno': alunoobj,
         'base_dir': BASE_DIR,
         'contcem': contcem,
-        'valorcem': (contcem * cem.preco),
+        'valorcem': somacem,
         'contalmoco': contalmoco,
-        'valoralmoco': (contalmoco * almoco.preco),
+        'valoralmoco': somaalmoco,
         'contjanta': contjanta,
-        'valorjanta': (contjanta * janta.preco),
+        'valorjanta': somajanta,
     }
 
     html = template.render(contexto)
@@ -298,5 +327,40 @@ def PdfVendas(request):
     # Use False instead of output path to save pdf to a variable
     pdf = pdfkit.from_string(html, False, configuration=config, options=options)
     response = HttpResponse(pdf, content_type='application/pdf')
+
+    return response
+
+
+def CsvVendas(request):
+    campo_aluno = request.session.get('aluno-selecionado')
+    datainicial = request.session['data-inicial']
+    datafinal = request.session['data-final']
+    campotipo = request.session['campo_tipo']
+
+    # Cria o objeto HttpResponse com o cabeçalho CSV apropriado.
+    response = HttpResponse(
+        content_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="somefilename.csv"'},
+    )
+    writer = csv.writer(response)
+    # Cria cabeçalho do arquivo, 1ª linha
+    writer.writerow(["Data", "Aluno", "Matrícula", "Preço"])
+
+    if campotipo == '-1':
+        campotipo = ''
+
+    if campo_aluno == '-1':
+        vd = venda.objects.select_related().filter(
+            data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59'], cem__contains=campotipo
+        ).order_by('data')
+    else:
+        vd = venda.objects.select_related().filter(
+            data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59'], cem__contains=campotipo,
+            id_aluno=campo_aluno
+        ).order_by('data')
+
+    for vend in vd:
+        #Adiciona linha ao arquivo
+        writer.writerow([vend.data, vend.id_aluno.id_pessoa, vend.id_aluno.id_pessoa.usuario, str(vend.valor).replace('.', ',')])
 
     return response

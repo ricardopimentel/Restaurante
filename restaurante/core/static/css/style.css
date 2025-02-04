@@ -1834,9 +1834,14 @@ a.icon:hover:before {
 #root {
   background: #D32F2F;
 }
-#fence {
+#csv {
   background: #43A047;
 }
+
+#fence {
+  background: #408080;
+}
+
 #root > span {
   background: url('../images/print24.png');
   background-size: 43%;
@@ -1845,6 +1850,12 @@ a.icon:hover:before {
 }
 #point > span {
   background: url('../images/pdf24.png');
+  background-size: 55%;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+#csv > span {
+  background: url('../images/xls24.png');
   background-size: 55%;
   background-repeat: no-repeat;
   background-position: center;
