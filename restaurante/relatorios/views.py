@@ -7,8 +7,6 @@ import pdfkit
 from django.db.models import Sum
 from django.shortcuts import render, resolve_url as r, redirect
 from django.http import HttpResponse
-from django.template import loader, Context
-# Create your views here.
 from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_exempt
 from restaurante.core.models import venda, aluno, prato
