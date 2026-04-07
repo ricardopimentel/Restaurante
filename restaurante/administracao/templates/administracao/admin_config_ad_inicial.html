@@ -4,63 +4,188 @@
 {% load restaurante_extras %}
 {%block titulo%}{{title}}{%endblock%}
 
-{%block top%}
-	<h1>Configuração Incompleta</h1>
-{%endblock%}
-
-{%block menu%}
-	{% if request.session.menu%}
-		{%for item in request.session.menu%}
-			{% if item == itemselec %}
-				<li>
-					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-						<div class="item-menu-selec">
-							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-							<p>{{item}}</p>
-						</div>
-					</a>
-				</li>
-			{%else%}
-				<li>
-                    {% if item == 'logo' %}
-                        <div id="hidemenu">
-                            <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-                        </div>
-                    {% elif item == 'sair' %}
-                        <div id="hidemenusair">
-                            <div class="background-nome">
-                                {% if request.session.nome %}
-                                    <h1>{{request.session.nome}}</h1>
-                                    <a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-                                {%else%}
-                                    <h1>Faça Login</h1>
-                                {%endif%}
-                            </div>
-                        </div>
-                    {% else %}
-                        <a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-                            <div class="item-menu">
-                                <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-                                <p>{{item}}</p>
-                            </div>
-                        </a>
-                    {% endif %}
-				</li>
-			{%endif%}
-		{%endfor%}
-	{%endif%}
-{%endblock%}
-
 {%block conteudo%}
-	<div class="card">
-		<img src="{% static 'images/shared-folder.png' %}" alt="" />
-		<h1>Configurações Iniciais</h1>
-		<h4>Desculpe, nós detectamos que alguns dados importantes estão faltando.</h4>
-		<div class="formulario">
-			<form method="post" action="{% url 'ConfigInicial' %}"> {%csrf_token%}
-		 		{{form.as_p}}
-			   	<p><input type="submit" name="commit" value="Salvar" id="botao" ></p>
-			</form>
-		</div>
-	</div>
+    <style>
+        :root {
+            --admin-primary: #6366f1;
+            --admin-secondary: #4f46e5;
+        }
+
+        .admin-page-header {
+            display: flex; justify-content: center; align-items: flex-start;
+            margin-bottom: 30px; text-align: center;
+        }
+
+        /* Config Card */
+        .admin-form-card {
+            background: white; border-radius: 24px; padding: 40px; border: 1px solid #e5e7eb;
+            box-shadow: var(--shadow-sm); max-width: 650px; margin: 0 auto;
+        }
+        .admin-form-card h2 {
+            margin: 0 0 15px 0; font-size: 1.5em; color: var(--text-main); font-weight: 800;
+        }
+        .admin-form-card h4 {
+            color: #ef4444; margin-bottom: 30px; font-weight: 600; line-height: 1.4;
+        }
+
+        .formulario form p { margin-bottom: 20px; }
+        .formulario label {
+            display: block; font-weight: 700; font-size: 0.8em; color: var(--text-muted);
+            text-transform: uppercase; margin-bottom: 8px;
+        }
+        .formulario input[type="text"], .formulario input[type="password"], .formulario select, .formulario textarea {
+            width: 100%; padding: 12px 18px; border-radius: 12px; border: 1px solid #e2e8f0;
+            background: #f8fafc; font-family: inherit; outline: none; transition: all 0.2s; box-sizing: border-box;
+        }
+        .formulario input:focus, .formulario textarea:focus {
+            border-color: var(--admin-primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); background: white;
+        }
+
+        .btn-save {
+            width: 100%; background: var(--admin-primary); color: white; padding: 14px;
+            border-radius: 12px; border: none; font-weight: 700; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-save:hover { background: var(--admin-secondary); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
+
+        /* Visual Filter Builder */
+        #filter-builder {
+            background: #f1f5f9; padding: 20px; border-radius: 16px; margin-top: 10px; border: 1px dashed #cbd5e1;
+        }
+        .builder-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .builder-title h4 { margin: 0; font-size: 0.9em; color: var(--text-main); font-weight: 700; }
+        .group-row { display: flex; gap: 10px; margin-bottom: 10px; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .group-input { flex: 1; padding: 10px 14px !important; font-size: 0.85em !important; font-family: monospace !important; }
+        .btn-remove {
+            background: #fee2e2; color: #ef4444; border: none; width: 38px; height: 38px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+        }
+        .btn-remove:hover { background: #ef4444; color: white; }
+        .btn-add {
+            background: white; color: var(--admin-primary); border: 1px solid var(--admin-primary);
+            padding: 8px 15px; border-radius: 8px; font-size: 0.8em; font-weight: 700;
+            cursor: pointer; margin-top: 5px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-add:hover { background: var(--admin-primary); color: white; }
+        .builder-footer { margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .toggle-manual { font-size: 0.75em; color: var(--text-muted); text-decoration: underline; cursor: pointer; }
+    </style>
+
+    <div class="admin-page-header">
+        <h1>Configuração do Sistema</h1>
+    </div>
+
+    <!-- Configuration Card -->
+    <div class="admin-form-card">
+        <div style="text-align: center; margin-bottom: 25px;">
+            <div style="width: 70px; height: 70px; background: rgba(239, 68, 68, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                <i class="fas fa-database" style="color: #ef4444; font-size: 1.8em;"></i>
+            </div>
+            <h2>Configurações Iniciais</h2>
+            <h4>Alguns dados obrigatórios estão faltando para o funcionamento do sistema.</h4>
+        </div>
+
+        <div class="formulario">
+            <form id="ad-form" method="post" action="{% url 'ConfigInicial' %}">
+                {% csrf_token %}
+                {{ form.as_p }}
+                
+                <div id="filter-builder-wrapper" style="display: none; margin-bottom: 25px;">
+                    <label>Filtros de Grupo (MemberOf)</label>
+                    <div id="filter-builder">
+                        <div class="builder-title">
+                            <h4>Grupos Permitidos</h4>
+                            <span class="toggle-manual" onclick="toggleManualMode()">Modo Manual</span>
+                        </div>
+                        <div id="group-list"></div>
+                        <button type="button" class="btn-add" onclick="addGroupRow()">
+                            <i class="fas fa-plus"></i> Adicionar Grupo
+                        </button>
+                        <div class="builder-footer">
+                            <p style="font-size: 0.7em; color: var(--text-muted); margin: 0;">
+                                <i class="fas fa-info-circle"></i> O sistema irá gerar o filtro LDAP automaticamente.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" name="commit" class="btn-save">
+                    <i class="fas fa-save" style="margin-right: 8px;"></i> Salvar e Iniciar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const filterTextarea = document.querySelector('textarea[name="filter"]');
+        const builderWrapper = document.getElementById('filter-builder-wrapper');
+        const groupList = document.getElementById('group-list');
+        let manualMode = false;
+
+        function initFilterBuilder() {
+            if (!filterTextarea) return;
+            const pParent = filterTextarea.closest('p');
+            pParent.parentNode.insertBefore(builderWrapper, pParent);
+            builderWrapper.style.display = 'block';
+            pParent.style.display = 'none';
+            const val = filterTextarea.value.trim();
+            if (val) {
+                const matches = [...val.matchAll(/memberof=([^)]+)/g)];
+                if (matches.length > 0) {
+                    matches.forEach(m => addGroupRow(m[1]));
+                } else if (val !== '') {
+                    manualMode = true;
+                    toggleManualMode(true);
+                }
+            }
+            if (groupList.children.length === 0 && !manualMode) addGroupRow();
+        }
+
+        function addGroupRow(value = '') {
+            const row = document.createElement('div');
+            row.className = 'group-row';
+            row.innerHTML = `<input type="text" class="group-input" placeholder="CN=Grupo,OU=Caminho..." value="${value}" oninput="syncToTextarea()">
+                <button type="button" class="btn-remove" onclick="removeRow(this)"><i class="fas fa-times"></i></button>`;
+            groupList.appendChild(row);
+            syncToTextarea();
+        }
+
+        function removeRow(btn) {
+            btn.closest('.group-row').remove();
+            if (groupList.children.length === 0) addGroupRow();
+            syncToTextarea();
+        }
+
+        function syncToTextarea() {
+            if (manualMode) return;
+            const inputs = groupList.querySelectorAll('.group-input');
+            const groups = Array.from(inputs).map(i => i.value.trim()).filter(v => v !== '');
+            if (groups.length === 0) { filterTextarea.value = ''; return; }
+            let filter = groups.map(g => `(memberof=${g})`).join('');
+            filterTextarea.value = `(|${filter})`;
+        }
+
+        function toggleManualMode(forceManual = null) {
+            const pParent = filterTextarea.closest('p');
+            manualMode = (forceManual !== null) ? forceManual : !manualMode;
+            if (manualMode) {
+                builderWrapper.style.display = 'none';
+                pParent.style.display = 'block';
+                document.querySelector('.toggle-manual').innerText = "Voltar para Assistente";
+            } else {
+                builderWrapper.style.display = 'block';
+                pParent.style.display = 'none';
+                initFilterBuilderFromManual();
+            }
+        }
+
+        function initFilterBuilderFromManual() {
+            groupList.innerHTML = '';
+            const val = filterTextarea.value.trim();
+            const matches = [...val.matchAll(/memberof=([^)]+)/g)];
+            if (matches.length > 0) matches.forEach(m => addGroupRow(m[1]));
+            else addGroupRow();
+        }
+        document.addEventListener('DOMContentLoaded', initFilterBuilder);
+    </script>
 {%endblock%}

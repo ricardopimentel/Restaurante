@@ -5,261 +5,303 @@
 {% load pagination_tags %}
 {%block titulo%}{{title}}{%endblock%}
 
-{%block top%}
-	{% if request.session.nome %}
-		<h1>{{request.session.nome}}</h1>
-		<a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-	{%else%}
-		<h1>Faça Login</h1>
-	{%endif%}
-{%endblock%}
 
-{%block menu%}
-	{% if request.session.menu%}
-		{%for item in request.session.menu%}
-			{% if item == itemselec %}
-				<li> 
-					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-						<div class="item-menu-selec">
-							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-							<p>{{item}}</p>
-						</div>
-					</a>
-				</li>
-			{%else%}
-				<li>
-                    {% if item == 'logo' %}
-                        <div id="hidemenu">
-                            <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-                        </div>
-                    {% elif item == 'sair' %}
-                        <div id="hidemenusair">
-                            <div class="background-nome">
-                                {% if request.session.nome %}
-                                    <h1>{{request.session.nome}}</h1>
-                                    <a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-                                {%else%}
-                                    <h1>Faça Login</h1>
-                                {%endif%}
-                            </div>
-                        </div>
-                    {% else %}
-                        <a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-                            <div class="item-menu">
-                                <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-                                <p>{{item}}</p>
-                            </div>
-                        </a>
-                    {% endif %}
-				</li>
-			{%endif%}
-		{%endfor%}
-	{%endif%}
-{%endblock%}
+
+
 
 {%block conteudo%}
 	{%if request.session.usertip == 'lanchonete' or request.session.usertip == 'admin' %}
-
-        {% if step == 'notprato' %}
-			<div class="card">
-				<img src="{% static 'images/comida.png' %}" alt="" width="70">
-				<h1>Pratos</h1>
-				<br>
-				<div class="navegation_bar">
-					<a href="javascript:window.history.go(-1)">Voltar</a>
-				</div>
-                <p>Não há pratos cadastrados</p>
-                <a href="{% url 'CadastroPrato' %}">Cadastrar Prato</a>
-			</div>
-		{%endif%}
-	
-		{% if step == 'fim' %}
-			<div class="card">
-				<img src="{% static 'images/comida.png' %}" alt="" width="70">
-				<h1>Finalizar Venda</h1>
-				<br>
-				<div class="navegation_bar">
-					<a href="javascript:window.history.go(-1)">Voltar</a>
-				</div>
-				<div class="formulario">
-					<form id="frm" method="post" action="{% url 'Vender' id_pessoa=dados.pessoa.usuario %}"> {%csrf_token%}
-						<p style="text-align: center">Descrição da Venda</p>
-						<p style="text-align: left"><b>Aluno: </b>{{dados.pessoa.nome}}</p>
-                        <p style="text-align: left"><b>ID Aluno: </b><input style="display: none" type="text" id="id_aluno" name="id_aluno" value="{{dados.aluno.id}}"/>{{dados.aluno.id}}</p>
-						<p style="text-align: left"><b>Data: </b>{{data}}</p>
-						<p style="text-align: left"><b>Prato: </b>{{prato.descricao}}</p>
-
-						{% if not cem %}
-							<p style="text-align: left"><b>Valor: </b>{{prato.preco}}</p>
-						{% else %}
-							<p style="text-align: left"><b>Valor: </b>{{prato.preco}}</p>
-							<p style="text-align: left; color: green"><b>Tipo: </b>Bolsa 100%</p>
-						{%endif%}
-                        {{ formulario.as_p }}
-						<p><input type="submit" name="commit" value="Finalizar" id="botao" ></p>
-					</form>
-				</div>
-			</div>
-		{%endif%}
-		
-		{% if pratos %}
-			{% if step == 'ter' %}
-				<div class="card-progressao">
-					<div class="progressao">
-						<img src="{% static 'images/aluno.png' %}" alt="" width="70">
-						<img src="{% static 'images/ticket.png' %}" alt="" width="70">
-						<img src="{% static 'images/comida.png' %}" alt="" width="70">
-						<!--- <h1>Alunos</h1> --->
-					</div>
-					<div class="progressao-rotulo">
-						<h1>Pratos</h1>
-					</div>
-					<p id="nome-aluno">{{nome.id_pessoa.nome}}</p>
-					<div class="navegation_bar">
-						<a href="javascript:window.history.go(-1)">Voltar</a>
-					</div>
-					{% autopaginate pratos 4 %}
-						{%for prato in pratos%}
-							<div class="list_card">
-                                <a href="{% url 'Venda' %}"><!---"Antiga URL /restaurante/venda/{{idaluno}}/{{idticket}}/{{prato.id}}--->
-									<li>
-										<table>
-											<tbody>
-												<tr>
-													<td><b>NOME</b></td>
-													<td><b>VALOR</b></td>
-												</tr>
-												
-												<tr>
-													<td>{{prato.descricao}}</td>
-													<td>{{prato.preco}}</td>
-												</tr>
-											</tbody>
-										</table>
-									</li>
-								</a>
-							</div>
-						{%endfor%}
-					{% paginate %}
-				</div>
-			{%endif%}
-		{%endif%}
-	
-		{% if step == 'seg' %}
-			<div class="card-progressao">
-				<div class="progressao">
-					<img src="{% static 'images/aluno.png' %}" alt="" width="70">
-                    <img src="{% static 'images/ticket.png' %}" alt="" width="70">
-                    <img src="{% static 'images/comida.png' %}" alt="" width="70">
-					<!--- <h1>Alunos</h1> --->
-				</div>
-				<div class="progressao-rotulo">
-					<h1>Tickets</h1>
-				</div>
-				<br><br>
-				<div class="navegation_bar">
-					<a href="javascript:window.history.go(-1)">Voltar</a>
-				</div>
-				<br>
-				<p><b>{{nome.id_pessoa.nome}}</b>, Não há tiquetes disponíveis</p>
-			</div>
-		{%endif%}
-	
-		{% if step == 'pri' %}
-			<div class="card-progressao">
-				<div class="progressao">
-					<img src="{% static 'images/aluno.png' %}" alt="" width="70">
-                    <img src="{% static 'images/ticket.png' %}" alt="" width="70">
-                    <img src="{% static 'images/comida.png' %}" alt="" width="70">
-					<!--- <h1>Alunos</h1> --->
-				</div>
-				<div class="progressao-rotulo">
-					<h1>Alunos</h1>
-				</div>
-				<div class="card-progressao-container">
-                    <div class="navegation_bar">
-                        <a href="javascript:window.history.go(-1)">Voltar</a>
-                    </div>
-                    <table id="minhaTabela">
-                        <thead>
-                            <tr id="tr-no-shadow">
-                                <th>Nome</th>
-                                <th>Matrícula</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {%for aluno in alunos%}
-                                <tr>
-                                    <td id="td-vermelho"><a href="{% url 'Vender' id_pessoa=aluno.cpf %}">{{ aluno.nome }}</a></td>
-                                    <td><a href="{% url 'Vender' id_pessoa=aluno.cpf %}">{{ aluno.cpf }}</a></td>
-                                </tr>
-                            {%endfor%}
-                        </tbody>
-                    </table>
+        <!-- MODERN SALES STEPPER -->
+        <div style="width: 100%; max-width: 1000px; margin: 0 auto 30px auto; padding: 20px; background: var(--surface-glass); backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.4); box-shadow: var(--shadow-md); display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 40px; flex: 1; justify-content: center;">
+                <!-- Step 1: Identificação -->
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: {% if step == 'pri' %}1{% else %}0.5{% endif %};">
+                    <div style="width: 40px; height: 40px; border-radius: 12px; background: {% if step == 'pri' %}var(--primary){% else %}#e5e7eb{% endif %}; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">1</div>
+                    <span style="font-size: 0.8em; font-weight: 600; color: var(--text-main);">Identificação</span>
                 </div>
-			</div>
-            <script>
-                $(document).ready(function () {
-                    $('#minhaTabela').DataTable({
-                        "bPaginate": true,
-                        "bLengthChange": false,
-                        "bFilter": true,
-                        "bInfo": true,
-                        "bAutoWidth": true,
-                        "language": {
-                            "sEmptyTable": "Nenhum registro encontrado",
-                            "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
-                            "sInfoEmpty": "Mostrando 0 até 0 de 0 registros",
-                            "sInfoFiltered": "(Filtrados de _MAX_ registros)",
-                            "sInfoThousands": ".",
-                            "sLengthMenu": "_MENU_ resultados por página",
-                            "sLoadingRecords": "Carregando...",
-                            "sProcessing": "Processando...",
-                            "sZeroRecords": "Nenhum registro encontrado",
-                            "sSearch": "Pesquisar",
-                            "oPaginate": {
-                            "sNext": "»",
-                            "sPrevious": "«",
-                            "sFirst": "Primeiro",
-                            "sLast": "Último"
+                <div style="height: 2px; width: 40px; background: #e5e7eb;"></div>
+                <!-- Step 2: Escolha -->
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: {% if step == 'seg' or step == 'ter' %}1{% else %}0.5{% endif %};">
+                    <div style="width: 40px; height: 40px; border-radius: 12px; background: {% if step == 'seg' or step == 'ter' %}var(--primary){% else %}#e5e7eb{% endif %}; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">2</div>
+                    <span style="font-size: 0.8em; font-weight: 600; color: var(--text-main);">Prato/Ticket</span>
+                </div>
+                <div style="height: 2px; width: 40px; background: #e5e7eb;"></div>
+                <!-- Step 3: Confirmação -->
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: {% if step == 'fim' %}1{% else %}0.5{% endif %};">
+                    <div style="width: 40px; height: 40px; border-radius: 12px; background: {% if step == 'fim' %}var(--primary){% else %}#e5e7eb{% endif %}; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">3</div>
+                    <span style="font-size: 0.8em; font-weight: 600; color: var(--text-main);">Confirmação</span>
+                </div>
+            </div>
+            <a href="{% url 'Vendas' %}" style="padding: 10px 15px; border-radius: 12px; background: #fee2e2; color: #b91c1c; text-decoration: none !important; border-bottom: none !important; font-size: 0.85em; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
+                <i class="fas fa-times"></i> Cancelar
+            </a>
+        </div>
+
+        <!-- MAIN CONTENT AREA -->
+        <div style="width: 100%; max-width: 1000px; margin: 0 auto;">
+            {% if step == 'notprato' %}
+                <div class="card" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-exclamation-circle" style="font-size: 60px; color: #f59e0b; margin-bottom: 20px;"></i>
+                    <h2 style="margin: 0; color: var(--text-main);">Sem Cardápio</h2>
+                    <p style="color: var(--text-muted); margin: 15px 0 25px 0;">Não há pratos cadastrados para o dia de hoje.</p>
+                    <a href="{% url 'CadastroPrato' %}" style="display: inline-block; padding: 12px 25px; border-radius: 12px; background: var(--primary); color: white; text-decoration: none; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                         Cadastrar Prato agora
+                    </a>
+                </div>
+            {% endif %}
+
+            {% if step == 'fim' %}
+                <div class="card" style="padding: 0; overflow: hidden; border: 1px solid rgba(16, 185, 129, 0.2); width: 100%; margin: 0;">
+                    <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); padding: 30px; text-align: center; color: white;">
+                        <i class="fas fa-receipt" style="font-size: 40px; margin-bottom: 15px; opacity: 0.8;"></i>
+                        <h2 style="margin: 0; font-size: 1.5em; letter-spacing: -0.5px;">Resumo da Venda</h2>
+                    </div>
+                    <div style="padding: 40px;">
+                        <div style="background: #f9fafb; border-radius: 16px; padding: 25px; border: 1px dashed #e5e7eb;">
+                            <div style="display: grid; gap: 15px;">
+                                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                                    <span style="color: var(--text-muted); font-weight: 500;">Aluno:</span>
+                                    <span style="color: var(--text-main); font-weight: 700;">{{dados.pessoa.nome}}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                                    <span style="color: var(--text-muted); font-weight: 500;">Data:</span>
+                                    <span style="color: var(--text-main); font-weight: 600;">{{data}}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                                    <span style="color: var(--text-muted); font-weight: 500;">Refeição:</span>
+                                    <span style="color: var(--text-main); font-weight: 600;">{{prato.descricao}}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                                    <span style="color: var(--text-main); font-size: 1.2em; font-weight: 700;">Total:</span>
+                                    <span style="color: var(--primary-dark); font-size: 1.2em; font-weight: 800;">{% if cem %}BOLSA 100%{% else %}R$ {{prato.preco}}{% endif %}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form id="frm" method="post" action="{% url 'Vender' id_pessoa=dados.pessoa.usuario %}" style="margin-top: 30px;"> {%csrf_token%}
+                            <input type="hidden" id="id_aluno" name="id_aluno" value="{{dados.aluno.id}}"/>
+                            <div style="margin: 30px 0; text-align: center;">
+                                <style>
+                                    #frm p label { display: none; } /* Hide the 'Senha' label as we have a placeholder */
+                                    #frm .errorlist {
+                                        list-style: none;
+                                        padding: 12px 15px;
+                                        margin: 0 auto 20px auto;
+                                        max-width: 320px;
+                                        background: rgba(239, 68, 68, 0.1);
+                                        border: 1px solid rgba(239, 68, 68, 0.2);
+                                        border-radius: 12px;
+                                        color: #b91c1c;
+                                        font-size: 0.85em;
+                                        font-weight: 600;
+                                        text-align: center;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        gap: 8px;
+                                    }
+                                    #frm .errorlist::before {
+                                        content: '\f06a';
+                                        font-family: 'Font Awesome 6 Free';
+                                        font-weight: 900;
+                                    }
+                                    #frm input[type="password"] {
+                                        width: 100%;
+                                        max-width: 320px;
+                                        padding: 16px 20px;
+                                        border-radius: 14px;
+                                        border: 2px solid #f3f4f6;
+                                        background: #ffffff;
+                                        font-family: 'Outfit', sans-serif;
+                                        font-size: 1.1em;
+                                        text-align: center;
+                                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                                        outline: none;
+                                        color: var(--text-main);
+                                        box-shadow: var(--shadow-sm);
+                                    }
+                                    #frm input[type="password"]::placeholder {
+                                        color: #9ca3af;
+                                        font-weight: 400;
+                                    }
+                                    #frm input[type="password"]:focus {
+                                        border-color: var(--primary);
+                                        background: white;
+                                        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15), var(--shadow-md);
+                                        transform: translateY(-2px);
+                                    }
+                                    #frm p { margin: 0; }
+                                </style>
+                                {{ formulario.as_p }}
+                            </div>
+                            <button type="submit" style="width: 100%; padding: 18px; border-radius: 16px; background: var(--primary); color: white; border: none; font-size: 1.1em; font-weight: 700; cursor: pointer; transition: all 0.3s; box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 20px 25px -5px rgba(16, 185, 129, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 15px -3px rgba(16, 185, 129, 0.3)'">
+                                <i class="fas fa-check-circle" style="margin-right: 10px;"></i> Finalizar e Registrar Venda
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if pratos %}
+                {% if step == 'ter' %}
+                    <div class="card" style="padding: 30px; width: 100%; margin: 0;">
+                        <h2 style="margin: 0 0 20px 0; font-size: 1.2em; color: var(--text-main);">Escolha o Prato</h2>
+                        <p style="margin-bottom: 20px; padding: 12px; background: rgba(16, 185, 129, 0.1); border-radius: 10px; color: var(--primary-dark); font-weight: 600;">
+                            <i class="fas fa-user-graduate"></i> Aluno: {{nome.id_pessoa.nome}}
+                        </p>
+                        <div style="display: grid; gap: 15px;">
+                            {%for prato in pratos%}
+                                <a href="{% url 'Vender' id_pessoa=nome.id_pessoa.usuario %}" style="text-decoration: none !important; border-bottom: none !important;">
+                                    <div style="padding: 20px; border-radius: 16px; background: #f9fafb; border: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.background='white'; this.style.transform='scale(1.01)'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='#f9fafb'; this.style.transform='scale(1)'">
+                                        <div>
+                                            <h4 style="margin: 0; color: var(--text-main); font-size: 1.1em;">{{prato.descricao}}</h4>
+                                            <span style="font-size: 0.85em; color: var(--text-muted);">Disponível para venda direta</span>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <div style="font-size: 1.2em; font-weight: 800; color: var(--primary-dark);">R$ {{prato.preco}}</div>
+                                            <span style="font-size: 0.75em; font-weight: 700; color: var(--primary); text-transform: uppercase;">Selecionar <i class="fas fa-chevron-right"></i></span>
+                                        </div>
+                                    </div>
+                                </a>
+                            {%endfor%}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+
+            {% if step == 'seg' %}
+                <div class="card" style="text-align: center; padding: 50px; width: 100%; margin: 0;">
+                    <i class="fas fa-ticket-alt" style="font-size: 60px; color: #9ca3af; margin-bottom: 20px; opacity: 0.5;"></i>
+                    <h2 style="margin: 0; color: var(--text-main);">Nenhum Ticket</h2>
+                    <p style="color: var(--text-muted); margin: 15px 0 25px 0;">O aluno <b>{{nome.id_pessoa.nome}}</b> não possui tickets ativos para uso.</p>
+                    <a href="javascript:window.history.go(-1)" style="display: inline-block; padding: 12px 25px; border-radius: 12px; background: #f3f4f6; color: var(--text-main); text-decoration: none; font-weight: 600; border: 1px solid #ddd;">
+                        <i class="fas fa-arrow-left"></i> Voltar e tentar outro
+                    </a>
+                </div>
+            {% endif %}
+
+            {% if step == 'pri' %}
+                <div class="card" style="padding: 30px; width: 100%; margin: 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                        <div>
+                            <h2 style="margin: 0; font-size: 1.4em; color: var(--text-main);">Identificar Aluno</h2>
+                            <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 0.9em;">Busque na lista ou use o leitor de QR Code</p>
+                        </div>
+                        <button type="button" onclick="iniciarLeitor()" style="padding: 12px 20px; background: var(--primary); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.transform='translateY(0)'">
+                            <i class="fas fa-qrcode" style="font-size: 1.2em;"></i> Abrir Scanner
+                        </button>
+                    </div>
+
+                    <!-- MODERN SCANNER AREA -->
+                    <div id="reader-container" style="display:none; text-align:center; padding:20px; background: #000; border-radius: 20px; margin-bottom: 30px; position: relative; overflow: hidden;">
+                        <div id="reader" style="width:100%; max-width:400px; margin:0 auto; border-radius: 15px; overflow: hidden;"></div>
+                        <div style="position: absolute; bottom: 20px; left: 0; right: 0; display: flex; justify-content: center; gap: 10px;">
+                            <button type="button" onclick="fecharLeitor()" style="padding: 10px 20px; background: #ef4444; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.85em;">
+                                <i class="fas fa-times-circle"></i> Fechar Câmera
+                            </button>
+                        </div>
+                    </div>
+
+                    <form id="form-scan" action="{% url 'ValidarTicket' %}" method="post" style="display:none;">
+                        {% csrf_token %}
+                        <input type="hidden" name="uuid" id="scan-uuid" />
+                    </form>
+                    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+                    <script>
+                        let html5QrcodeScanner;
+                        function iniciarLeitor() {
+                            document.getElementById('reader-container').style.display = 'block';
+                            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, /* verbose= */ false);
+                            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+                        }
+                        function fecharLeitor() {
+                            if (html5QrcodeScanner) {
+                                html5QrcodeScanner.clear();
                             }
-                        },
-                    });
+                            document.getElementById('reader-container').style.display = 'none';
+                        }
+                        function onScanSuccess(decodedText, decodedResult) {
+                            fecharLeitor();
+                            document.getElementById('scan-uuid').value = decodedText;
+                            document.getElementById('form-scan').submit();
+                        }
+                        function onScanFailure(error) { }
+                    </script>
+                    
+                    <!-- DATA TABLE MODERNIZED -->
+                    <div style="overflow-x: auto;">
+                        <table id="minhaTabela" style="width: 100%; border-collapse: separate; border-spacing: 0 10px;">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 15px; text-align: left; color: var(--text-muted); font-weight: 600; font-size: 0.85em; text-transform: uppercase;">Nome do Aluno</th>
+                                    <th style="padding: 15px; text-align: left; color: var(--text-muted); font-weight: 600; font-size: 0.85em; text-transform: uppercase;">CPF / Matrícula</th>
+                                    <th style="padding: 15px; text-align: right; color: var(--text-muted); font-weight: 600; font-size: 0.85em; text-transform: uppercase;">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {%for aluno in alunos%}
+                                    <tr style="background: white; transition: all 0.2s;" onmouseover="this.style.boxShadow='0 4px 10px rgba(0,0,0,0.05)'" onmouseout="this.style.boxShadow='none'">
+                                        <td style="padding: 15px; border-radius: 12px 0 0 12px; font-weight: 600; color: var(--text-main);">
+                                            {{ aluno.nome }}
+                                        </td>
+                                        <td style="padding: 15px; color: var(--text-muted); font-family: monospace; font-size: 1.1em;">
+                                            {{ aluno.cpf }}
+                                        </td>
+                                        <td style="padding: 15px; border-radius: 0 12px 12px 0; text-align: right;">
+                                            <a href="{% url 'Vender' id_pessoa=aluno.cpf %}" style="display: inline-block; padding: 8px 15px; border-radius: 8px; background: rgba(16, 185, 129, 0.1); color: var(--primary-dark); text-decoration: none !important; border-bottom: none !important; font-weight: 700; font-size: 0.85em; transition: all 0.2s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='rgba(16, 185, 129, 0.1)'; this.style.color='var(--primary-dark)'">
+                                                Selecionar <i class="fas fa-chevron-right" style="font-size: 0.8em; margin-left: 5px;"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {%endfor%}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <script>
+            $(document).ready(function () {
+                $('#minhaTabela').DataTable({
+                    "bPaginate": true,
+                    "bLengthChange": false,
+                    "bFilter": true,
+                    "bInfo": true,
+                    "bAutoWidth": true,
+                    "language": {
+                        "sEmptyTable": "Nenhum registro encontrado",
+                        "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
+                        "sInfoEmpty": "Mostrando 0 até 0 de 0 registros",
+                        "sInfoFiltered": "(Filtrados de _MAX_ registros)",
+                        "sInfoThousands": ".",
+                        "sLengthMenu": "_MENU_ resultados por página",
+                        "sLoadingRecords": "Carregando...",
+                        "sProcessing": "Processando...",
+                        "sZeroRecords": "Nenhum registro encontrado",
+                        "sSearch": "Pesquisar Aluno",
+                        "oPaginate": {
+                        "sNext": "»",
+                        "sPrevious": "«",
+                        "sFirst": "Primeiro",
+                        "sLast": "Último"
+                        }
+                    },
                 });
-            </script>
-		{%endif%}
+            });
+        </script>
 	{%endif%}
 
-    <script>
-        function mostrarocultar(mostrar, ocultar){
-            $("#"+mostrar).show(500);
-            document.getElementById(ocultar).style.display = "none";
-        }
-        function ocultarmostrar(mostrar, ocultar){
-            $("#"+ocultar).hide(500);
-            $("#"+mostrar).show(500);
-        }
-        function  mostrar(ID){
-            document.getElementById(ID).style.display = "block";
-
-        }
-        function  ocultar(ID){
-            document.getElementById(ID).style.display = "none";
-            $("#"+ID).hide("slow");
-        }
-    </script>
-
     {% if messages %}
-        <div class="msg-popup-container">
+        <div class="msg-popup-container" style="z-index: 9999;">
             {% for message in messages %}
-                <div id="{{ forloop.counter0 }}" class="msg-popup {{ message.tags }}">
-                    <img src="{% static 'images/'%}{{ message.tags }}.png" alt="" width="70" height="70"/>
-                    <p>{{ message }}</p>
-                    <a onclick="ocultar('{{ forloop.counter0 }}')">x</a>
+                <div id="msg-{{ forloop.counter0 }}" class="msg-popup {{ message.tags }}" style="padding: 15px; border-radius: 8px; box-shadow: var(--shadow-md); margin-bottom: 10px; background: white; border-left: 5px solid {% if message.tags == 'error' %}#ef4444{% else %}#10b981{% endif %}; display: flex; align-items: center; gap: 15px; min-width: 300px;">
+                    <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %}" style="font-size: 1.5em; color: {% if message.tags == 'error' %}#ef4444{% else %}#10b981{% endif %};"></i>
+                    <p style="margin: 0; font-weight: 500; color: var(--text-main); flex: 1;">{{ message }}</p>
+                    <a onclick="$(this).parent().fadeOut()" title="Fechar">✖</a>
                 </div>
             {% endfor %}
         </div>
     {% endif %}
-
 {%endblock%}
 

@@ -2,113 +2,87 @@
 {% extends "base.html" %}
 {% load restaurante_extras %}
 {% load static %}
-{% load pagination_tags %}
-{%block titulo%}{{title}}{%endblock%}
+{% blocks titulo %}{{title}}{% endblocks %}
 
-{%block top%}
-	{% if request.session.nome%}
-			<h1>{{request.session.nome}}</h1>
-			<a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-		{%endif%}
-{%endblock%}
+{% block conteudo %}
+    {% if not request.session.userl %}
+        <meta http-equiv="refresh" content="0; url=/login/">
+    {% else %}
+        <style>
+            :root {
+                --admin-primary: #6366f1;
+                --admin-secondary: #4f46e5;
+                --admin-bg: rgba(99, 102, 241, 0.05);
+            }
+            
+            .admin-header {
+                margin-bottom: 35px;
+                text-align: left;
+            }
+            .admin-title {
+                font-size: 2.2em;
+                font-weight: 800;
+                color: var(--text-main);
+                margin: 0;
+                display: flex;
+                align-items: center; gap: 15px;
+            }
+            .admin-subtitle {
+                color: var(--text-muted);
+                margin-top: 8px;
+            }
+            
+            .admin-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: 25px;
+                margin-top: 20px;
+            }
+            
+            .admin-card {
+                background: white; border-radius: 24px; padding: 25px; border: 1px solid #e5e7eb;
+                text-decoration: none !important; display: flex; flex-direction: column; gap: 15px;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: var(--shadow-sm);
+                position: relative; overflow: hidden;
+            }
+            .admin-card:hover {
+                transform: translateY(-6px); border-color: var(--admin-primary);
+                box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.1);
+            }
+            
+            .admin-icon-box {
+                width: 54px; height: 54px; border-radius: 14px; background: var(--admin-bg);
+                display: flex; align-items: center; justify-content: center;
+                font-size: 1.4em; color: var(--admin-primary); transition: all 0.3s ease;
+            }
+            .admin-card:hover .admin-icon-box {
+                background: var(--admin-primary); color: white; transform: scale(1.1) rotate(5deg);
+            }
+            
+            .admin-info h3 { margin: 0; font-size: 1.15em; color: var(--text-main); font-weight: 700; }
+            .admin-info p { margin: 5px 0 0 0; color: var(--text-muted); font-size: 0.85em; line-height: 1.5; }
+        </style>
 
-{%block menu%}
-	{% if request.session.menu%}
-		{%for item in request.session.menu%}
-			{% if item == itemselec %}
-				<li>
-					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-						<div class="item-menu-selec">
-							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-							<p>{{item}}</p>
-						</div>
-					</a>
-				</li>
-			{%else%}
-				<li>
-                    {% if item == 'logo' %}
-                        <div id="hidemenu">
-                            <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-                        </div>
-                    {% elif item == 'sair' %}
-                        <div id="hidemenusair">
-                            <div class="background-nome">
-                                {% if request.session.nome %}
-                                    <h1>{{request.session.nome}}</h1>
-                                    <a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-                                {%else%}
-                                    <h1>Faça Login</h1>
-                                {%endif%}
-                            </div>
-                        </div>
-                    {% else %}
-                        <a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-                            <div class="item-menu">
-                                <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-                                <p>{{item}}</p>
-                            </div>
-                        </a>
-                    {% endif %}
-				</li>
-			{%endif%}
-		{%endfor%}
-	{%endif%}
-{%endblock%}
-
-{%block conteudo%}
-	{% if not request.session.userl %}
-		<meta http-equiv="refresh" content="0; url=/login/">
-	{%else%}
-		<div class="cartao">
-			<img src="{% static 'images/relatorio.png' %}" alt="" width="70"/>
-			<h1>Painel Administrativo</h1>
-			<br>
-			<div class="navegation_bar">
-				<a href="{% url 'Configuracao' %}">Configuração</a>
-			</div>
-			
-			<div class="box-file">
-				<div class="box_folder">
-					<a href="{% url 'ExcluirBolsistas' %}" title="Cadastro dos estudantes com bolsa de 100%">
-						<div class="folder">
-							<br><img src="{% static 'images/aluno2.png' %}" alt="" />
-						</div>
-						<p>Estudantes Bolsistas</p>
-					</a>
-				</div>
-
-			</div>
-		</div>
-	{%endif%}
-
-    <script>
-        function mostrarocultar(mostrar, ocultar){
-            $("#"+mostrar).show(500);
-            document.getElementById(ocultar).style.display = "none";
-        }
-        function ocultarmostrar(mostrar, ocultar){
-            $("#"+ocultar).hide(500);
-            $("#"+mostrar).show(500);
-        }
-        function  mostrar(ID){
-            document.getElementById(ID).style.display = "block";
-
-        }
-        function  ocultar(ID){
-            document.getElementById(ID).style.display = "none";
-            $("#"+ID).hide("slow");
-        }
-    </script>
-
-    {% if messages %}
-        <div class="msg-popup-container">
-            {% for message in messages %}
-                <div id="{{ forloop.counter0 }}" class="msg-popup {{ message.tags }}">
-                    <img src="{% static 'images/'%}{{ message.tags }}.png" alt="" width="70" height="70"/>
-                    <p>{{ message }}</p>
-                    <a onclick="ocultar('{{ forloop.counter0 }}')">x</a>
-                </div>
-            {% endfor %}
+        <div class="admin-header">
+            <h1 class="admin-title">
+                <i class="fas fa-cogs" style="color: var(--admin-primary);"></i>
+                Configurações do Perfil
+            </h1>
+            <p class="admin-subtitle">Gerencie suas preferências e acessos administrativos.</p>
         </div>
+
+        <div class="admin-grid">
+            <!-- Estudantes Bolsistas -->
+            <a href="{% url 'ExcluirBolsistas' %}" class="admin-card">
+                <div class="admin-icon-box">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <div class="admin-info">
+                    <h3>Estudantes Bolsistas</h3>
+                    <p>Gestão rápida da lista de alunos com subsídio integral.</p>
+                </div>
+            </a>
+        </div>
+
     {% endif %}
-{%endblock%}
+{% endblock %}

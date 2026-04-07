@@ -5,79 +5,62 @@
 {% load pagination_tags %}
 {%block titulo%}{{title}}{%endblock%}
 
-{%block top%}
-	{% if request.session.nome%}
-			<h1>{{request.session.nome}}</h1>
-			<a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-		{%endif%}
-{%endblock%}
 
-{%block menu%}
-	{% if request.session.menu%}
-		{%for item in request.session.menu%}
-			{% if item == itemselec %}
-				<li>
-					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-						<div class="item-menu-selec">
-							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-							<p>{{item}}</p>
-						</div>
-					</a>
-				</li>
-			{%else%}
-				<li>
-                    {% if item == 'logo' %}
-                        <div id="hidemenu">
-                            <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-                        </div>
-                    {% elif item == 'sair' %}
-                        <div id="hidemenusair">
-                            <div class="background-nome">
-                                {% if request.session.nome %}
-                                    <h1>{{request.session.nome}}</h1>
-                                    <a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-                                {%else%}
-                                    <h1>Faça Login</h1>
-                                {%endif%}
-                            </div>
-                        </div>
-                    {% else %}
-                        <a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-                            <div class="item-menu">
-                                <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-                                <p>{{item}}</p>
-                            </div>
-                        </a>
-                    {% endif %}
-				</li>
-			{%endif%}
-		{%endfor%}
-	{%endif%}
-{%endblock%}
+
+
 
 {%block conteudo%}
 	{% if not request.session.userl %}
 		<meta http-equiv="refresh" content="0; url=/login/">
 	{%else%}
-		<div class="cartao">
-			<img src="{% static 'images/loja1.png' %}" alt="" width="70"/>
-			<h1>Vendas</h1>
-			<br>
-			<div class="navegation_bar">
-                <a href="{% url 'Home' %}">Home</a>
-				<a href="{% url 'Vendas' %}">Vendas</a>
+		<!-- SALES DASHBOARD HEADER -->
+		<div style="width: 100%; max-width: 800px; margin: 0 auto 30px auto; display: flex; align-items: center; justify-content: space-between;">
+			<div>
+				<h1 style="margin: 0; font-size: 1.8em; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px;">Painel de Vendas</h1>
+				<p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 0.95em;">Selecione o tipo de operação desejada</p>
 			</div>
-			
-			<div class="box-file">
-				<div class="box_folder">
-					<a href="{% url 'Venda' %}" title="Abrir Página de Vendas">
-						<div class="folder">
-							<br><img src="{% static 'images/money.png' %}" alt="" />
-						</div>
-						<p>Venda Individual</p>
-					</a>
+			<div style="display: flex; gap: 10px;">
+				<a href="{% url 'Home' %}" style="padding: 10px 20px; border-radius: 12px; background: rgba(255,255,255,0.5); color: var(--text-main); text-decoration: none; font-weight: 600; font-size: 0.9em; border: 1px solid rgba(0,0,0,0.05); transition: all 0.2s;" onmouseover="this.style.background='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.5)'">
+					<i class="fas fa-home"></i> Home
+				</a>
+			</div>
+		</div>
+
+		<!-- SALES ACTION CARDS -->
+		<div style="width: 100%; max-width: 800px; margin: 0 auto; display: grid; gap: 25px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+			<a href="{% url 'Venda' %}" style="text-decoration: none !important; border-bottom: none !important;">
+				<div class="card" style="margin: 0; padding: 40px 30px; text-align: center; border: 1px solid rgba(16, 185, 129, 0.1); background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(209, 250, 229, 0.4) 100%); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; overflow: hidden;" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 25px -5px rgba(16, 185, 129, 0.15), 0 10px 10px -5px rgba(16, 185, 129, 0.05)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-md)'">
+					<!-- Decorative Background Circle -->
+					<div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(16, 185, 129, 0.05); border-radius: 50%;"></div>
+					
+					<div style="width: 80px; height: 80px; margin: 0 auto 25px auto; border-radius: 24px; background: rgba(16, 185, 129, 0.1); display: flex; align-items: center; justify-content: center; color: var(--primary);">
+						<i class="fas fa-cash-register" style="font-size: 36px;"></i>
+					</div>
+					<h3 style="margin: 0; font-size: 1.4em; color: var(--text-main); font-weight: 700;">Venda Individual</h3>
+					<p style="margin: 10px 0 0 0; color: var(--text-muted); font-size: 0.9em; line-height: 1.5;">Realizar venda direta ou por ticket<br>para um único aluno.</p>
+					
+					<div style="margin-top: 30px; padding: 12px; border-radius: 12px; background: var(--primary); color: white; font-weight: 700; font-size: 0.9em; transition: all 0.2s;">
+						Iniciar Venda <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
+					</div>
 				</div>
-			</div>
+			</a>
+
+			<!-- Placeholder for Venda em Lote if applicable -->
+			<a href="{% url 'VendaEmLotes' %}" style="text-decoration: none !important; border-bottom: none !important;">
+				<div class="card" style="margin: 0; padding: 40px 30px; text-align: center; border: 1px solid rgba(139, 92, 246, 0.1); background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(237, 233, 254, 0.4) 100%); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; overflow: hidden;" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 25px -5px rgba(139, 92, 246, 0.15), 0 10px 10px -5px rgba(139, 92, 246, 0.05)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-md)'">
+					<div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(139, 92, 246, 0.05); border-radius: 50%;"></div>
+					
+					<div style="width: 80px; height: 80px; margin: 0 auto 25px auto; border-radius: 24px; background: rgba(139, 92, 246, 0.1); display: flex; align-items: center; justify-content: center; color: var(--accent);">
+						<i class="fas fa-users" style="font-size: 36px;"></i>
+					</div>
+					<h3 style="margin: 0; font-size: 1.4em; color: var(--text-main); font-weight: 700;">Venda em Lotes</h3>
+					<p style="margin: 10px 0 0 0; color: var(--text-muted); font-size: 0.9em; line-height: 1.5;">Registrar múltiplas vendas<br>simultaneamente por turma.</p>
+					
+					<div style="margin-top: 30px; padding: 12px; border-radius: 12px; background: var(--accent); color: white; font-weight: 700; font-size: 0.9em; transition: all 0.2s;">
+						Ir para Lotes <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
+					</div>
+				</div>
+			</a>
 		</div>
 	{%endif%}
 {%endblock%}

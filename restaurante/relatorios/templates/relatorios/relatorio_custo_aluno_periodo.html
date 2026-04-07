@@ -4,193 +4,342 @@
 {% load static %}
 {%block titulo%}{{title}}{%endblock%}
 
-{%block top%}
-    {% if request.session.nome%}
-        <h1>{{request.session.nome}}</h1>
-        <a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-    {%endif%}
-{%endblock%}
-
-{%block menu%}
-	{% if request.session.menu%}
-		{%for item in request.session.menu%}
-			{% if item == itemselec %}
-				<li>
-					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-						<div class="item-menu-selec">
-							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-							<p>{{item}}</p>
-						</div>
-					</a>
-				</li>
-			{%else%}
-				<li>
-                    {% if item == 'logo' %}
-                        <div id="hidemenu">
-                            <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-                        </div>
-                    {% elif item == 'sair' %}
-                        <div id="hidemenusair">
-                            <div class="background-nome">
-                                {% if request.session.nome %}
-                                    <h1>{{request.session.nome}}</h1>
-                                    <a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-                                {%else%}
-                                    <h1>Faça Login</h1>
-                                {%endif%}
-                            </div>
-                        </div>
-                    {% else %}
-                        <a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-                            <div class="item-menu">
-                                <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-                                <p>{{item}}</p>
-                            </div>
-                        </a>
-                    {% endif %}
-				</li>
-			{%endif%}
-		{%endfor%}
-	{%endif%}
-{%endblock%}
-
 {%block conteudo%}
-    <div class="limit">
-        <div class="card_noprinter">
-            <div id="show" class="show">
-                <div class="card_noprinter_cab">
-                    <a onclick="mostrarocultar('hide', 'show')">
-                        <img src="{% static 'images/filter.png' %}" border="0" onmouseover="this.src='{% static 'images/filterexpand.png' %}'" onmouseout="this.src='{% static 'images/filter.png' %}'">
-                    </a>
-                </div>
+    <style>
+        :root {
+            --report-primary: #6366f1;
+            --report-secondary: #4f46e5;
+            --report-bg: rgba(99, 102, 241, 0.05);
+        }
+        
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 20px;
+            width: 100%;
+        }
+        
+        .report-breadcrumb {
+            display: flex;
+            gap: 10px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .report-breadcrumb a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .report-breadcrumb a:hover {
+            color: var(--report-primary);
+        }
+        
+        .report-breadcrumb span {
+            color: #ddd;
+        }
+        
+        /* KPI Cards */
+        .kpi-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+            width: 100%;
+        }
+        
+        .kpi-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid #f3f4f6;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 250px;
+        }
+        
+        .kpi-card .label {
+            font-size: 0.8em;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        
+        .kpi-card .value {
+            font-size: 1.5em;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        /* Floating Filter Card */
+        .filter-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 15px 25px;
+            border-radius: 20px;
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .filter-header h3 {
+            margin: 0;
+            font-size: 0.95em;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+        }
+        
+        .filter-form form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+            padding-top: 15px;
+            margin-top: 15px;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .filter-form form div {
+            flex: 1;
+            min-width: 160px;
+        }
+        
+        .filter-form label {
+            display: block;
+            font-weight: 700;
+            font-size: 0.7em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        
+        .filter-form input[type="text"], 
+        .filter-form input[type="date"],
+        .filter-form select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.2s;
+            box-sizing: border-box;
+            font-size: 0.9em;
+        }
+        
+        .btn-filter {
+            background: var(--report-primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            height: 40px;
+            font-size: 0.9em;
+            white-space: nowrap;
+        }
+        
+        .btn-filter:hover {
+            background: var(--report-secondary);
+            transform: scale(1.02);
+        }
+        
+        /* Table Area */
+        .table-area {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid #f3f4f6;
+            box-shadow: var(--shadow-sm);
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .table-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .btn-action {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            background: #f8fafc;
+            color: var(--text-main);
+            text-decoration: none !important;
+            font-weight: 600;
+            font-size: 0.8em;
+            transition: all 0.2s;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+        }
+        
+        .btn-action:hover {
+            background: white;
+            border-color: var(--report-primary);
+            color: var(--report-primary);
+        }
+        
+        #minhaTabela { width: 100% !important; border-collapse: collapse; }
+        #minhaTabela thead th {
+            padding: 12px 15px;
+            background: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 0.8em;
+            text-transform: uppercase;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        #minhaTabela tbody td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--text-main);
+            font-size: 0.9em;
+        }
+    </style>
+
+    <div class="report-header">
+        <div>
+            <div class="report-breadcrumb">
+                <a href="{% url 'Relatorios' %}">Relatórios</a>
+                <span>/</span>
+                <a href="{% url 'RelatorioCustoAlunoPeriodo' %}">Custo por Aluno</a>
             </div>
-            <div id="hide" class="hide">
-                <div class="card_noprinter_cab">
-                    <a onclick="ocultarmostrar('show', 'hide')">
-                        <img src="{% static 'images/filter.png' %}" border="0" onmouseover="this.src='{% static 'images/filterecolhe.png' %}'" onmouseout="this.src='{% static 'images/filter.png' %}'">
-                    </a>
-                    <h1>Filtros</h1>
-                </div>
-                <div class="formulario">
-                    <form method="post" action="{% url 'RelatorioCustoAlunoPeriodo' %}">
-                        {{ form.as_p }}
-                        <h5><input type="submit" id="botao" name="commit" value="Pesquisar"></h5>
-                    </form>
-                </div>
-            </div>
+            <h1 style="margin: 0; font-size: 1.6em; color: var(--text-main); font-weight: 800;">
+                <i class="fas fa-chart-column" style="color: var(--report-primary); margin-right: 10px;"></i>
+                {% if datainicial and datafinal %}
+                    Custo Aluno: {{datainicial|convert_date}} a {{datafinal|convert_date}}
+                {% else %}
+                    Relatório Custo Aluno Período
+                {% endif%}
+            </h1>
+        </div>
+        
+        <div class="table-toolbar">
+            <button onclick="window.print();" class="btn-action">
+                <i class="fas fa-print"></i> Imprimir
+            </button>
+            <a href="{% url 'PdfCustoAlunoPeriodo' %}" class="btn-action">
+                <i class="fas fa-file-pdf" style="color: #ef4444;"></i> Exportar PDF
+            </a>
         </div>
     </div>
 
-    <div class="cartao print">
-        <img src="{% static 'images/dinheiroorange.png' %}" alt="" width="70"/>
-        {% if datainicial and datafinal %}
-            <h1>Custo aluno período de {{datainicial|convert_date}} a {{datafinal|convert_date}}</h1>
-        {% else %}
-            <h1>Relatório Custo Aluno Período</h1>
-        {% endif%}
-        <br>
-        <div class="navegation_bar">
-            <a href="{% url 'Relatorios' %}">Relatórios</a>
-            <a href="{% url 'RelatorioVendas' %}">Custo Aluno Período</a>
+    <!-- Summary Dashboard at Top -->
+    {% if venda %}
+        <div class="kpi-container">
+            <div class="kpi-card" style="border-left: 3px solid var(--report-primary);">
+                <span class="label">Total Gasto no Período</span>
+                <span class="value">{{soma|real}}</span>
+            </div>
         </div>
-        <br>
-        {% if venda %}
-            <div class="tab-rel">
-                <table id="minhaTabela">
-                    <thead>
+    {% endif %}
+
+    <!-- Smart Floating Filter Card -->
+    <div class="filter-card card_noprinter">
+        <div class="filter-header" onclick="$('#filter-body').slideToggle();">
+            <h3>
+                <i class="fas fa-filter" style="color: var(--report-primary);"></i> Filtros de Pesquisa
+                {% if datainicial %}
+                    <span style="font-size: 0.8em; font-weight: 500; color: var(--text-muted); margin-left: 10px; background: #f3f4f6; padding: 2px 8px; border-radius: 6px;">Ativos</span>
+                {% endif %}
+            </h3>
+            <i class="fas fa-chevron-down" style="color: var(--text-muted); font-size: 0.8em;"></i>
+        </div>
+        <div id="filter-body" style="{% if venda %}display: none;{% else %}display: block;{% endif %}">
+            <form method="post" action="{% url 'RelatorioCustoAlunoPeriodo' %}" class="filter-form">{% csrf_token %}
+                {% for field in form %}
+                    <div>
+                        <label>{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                {% endfor %}
+                <div style="flex: 0 0 auto;">
+                    <button type="submit" class="btn-filter">
+                        <i class="fas fa-search" style="margin-right: 5px;"></i> Pesquisar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if venda %}
+        <div class="table-area">
+            <table id="minhaTabela">
+                <thead>
+                    <tr>
+                        <th>Aluno</th>
+                        <th>CPF / Matrícula</th>
+                        <th>Custo Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for item in venda%}
                         <tr>
-                            <th><b>Aluno</b></td>
-                            <th><b>CPF</b></td>
-                            <th><b>Custo</b></td>
+                            <td style="font-weight: 700;">{{item.id_aluno__id_pessoa__nome|title}}</td>
+                            <td style="font-family: monospace; color: var(--text-muted);">{{item.id_aluno__id_pessoa__usuario}}</td>
+                            <td style="font-weight: 800; color: var(--report-secondary);">{{item.soma|real}}</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {%for item in venda%}
-                            <tr>
-                                <td>{{item.id_aluno__id_pessoa__nome|title}}</td>
-                                <td>{{item.id_aluno__id_pessoa__usuario}}</td>
-                                <td>{{item.soma|real}}</td>
-                            </tr>
-                        {%endfor%}
-                    </tbody>
-                </table>
-            </div>
+                    {%endfor%}
+                </tbody>
+            </table>
+        </div>
 
-            <script>
-                $(document).ready(function () {
-                    $('#minhaTabela').DataTable({
-                        "bPaginate": true,
-                        "bLengthChange": true,
-                        "bFilter": true,
-                        "bInfo": true,
-                        "bAutoWidth": true,
-                        "language": {
-                            "sEmptyTable": "Nenhum registro encontrado",
-                            "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
-                            "sInfoEmpty": "Mostrando 0 até 0 de 0 registros",
-                            "sInfoFiltered": "(Filtrados de _MAX_ registros)",
-                            "sInfoThousands": ".",
-                            "sLengthMenu": "_MENU_ resultados por página",
-                            "sLoadingRecords": "Carregando...",
-                            "sProcessing": "Processando...",
-                            "sZeroRecords": "Nenhum registro encontrado",
-                            "sSearch": "Pesquisar",
-                            "oPaginate": {
-                            "sNext": "»",
-                            "sPrevious": "«",
-                            "sFirst": "Primeiro",
-                            "sLast": "Último"
-                            }
-                        },
-                    });
+        <script>
+            $(document).ready(function () {
+                $('#minhaTabela').DataTable({
+                    "bPaginate": true,
+                    "bLengthChange": true,
+                    "language": {
+                        "sEmptyTable": "Nenhum registro encontrado",
+                        "sSearch": "<i class='fas fa-search' style='color:#999'></i> ",
+                        "oPaginate": {
+                            "sNext": "<i class='fas fa-chevron-right'></i>",
+                            "sPrevious": "<i class='fas fa-chevron-left'></i>"
+                        }
+                    },
+                    "dom": '<"top"f>rt<"bottom"p><"clear">'
                 });
-            </script>
-            <br>
-            <p id="direita">O total gasto no periodo é <b>{{soma|real}}</b></p>
-        {% endif%}
-    </div>
+            });
+        </script>
+    {% elif request.method == 'POST' %}
+        <div style="text-align: center; padding: 60px; background: white; border-radius: 20px; border: 1px dashed #e2e8f0; width: 100%;">
+            <i class="fas fa-search" style="font-size: 3em; color: #e2e8f0; margin-bottom: 20px;"></i>
+            <h3 style="color: var(--text-muted); margin: 0; font-weight: 600;">Nenhum registro encontrado para este filtro.</h3>
+        </div>
+    {% endif%}
 
-    <div class="action-container">
-        <a onclick="window.print();">
-            <div class="fab-container" tooltip="Salvar em PDF">
-                <div class="fab" id="root"><span></span>
-
-                </div>
-            </div>
-        </a>
-        <a href="{% url 'PdfCustoAlunoPeriodo' %}" class="fab-container" tooltip="Salvar em PDF">
-            <div class="fab" id="point"><span></span>
-            </div>
-        </a>
-        <a href="#" class="fab-container" tooltip="Topo">
-            <div class="fab" id="fence"><span></span>
-            </div>
-        </a>
-    </div>
-	
-	<script>
-		function mostrarocultar(mostrar, ocultar){
-			$("#"+mostrar).show(500);
-			document.getElementById(ocultar).style.display = "none";
-		}
-		function ocultarmostrar(mostrar, ocultar){
-			$("#"+ocultar).hide(500);
-			$("#"+mostrar).show(500);
-		}
-		function  mostrar(ID){
-			document.getElementById(ID).style.display = "block";
-		
-		}
-		function  ocultar(ID){
-			document.getElementById(ID).style.display = "none";
-			$("#"+ID).hide("slow");
-		}
-	</script>
-	
-	{% if form.errors %}
-		<script type="text/javascript">
-			console.log(mostrarocultar.call( 'contexto', 'hide', 'show' ));
-		</script>
-	{%endif%}
-	
+    {% if form.errors %}
+        <script type="text/javascript">
+            $('#filter-body').show();
+        </script>
+    {%endif%}
 {%endblock%}

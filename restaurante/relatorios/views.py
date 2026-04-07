@@ -84,18 +84,16 @@ def RelatorioVendas(request):
                 contcem = contcem + 1
                 somacem = somacem + vend.valor
 
-            # Pega o horário pra definir o que é janta e o que é almoço
-            now = datetime.datetime.now()
-            hotariojanta = now.replace(hour=15, minute=0, second=0, microsecond=0)
-            # Pega o horário da venda
-            data = vend.data
-
-            if (data.time() <= hotariojanta.time()):  # resolvido, verificando se é almoço pelo horário da venda, gratidão, dessa vez é verdade
+            # Contabilizar por tipo de prato (Almoço ou Janta) usando o registro oficial do prato
+            if vend.id_prato.descricao == "Almoço":
                 contalmoco = contalmoco + 1
                 somaalmoco = somaalmoco + vend.valor
-            else:
+            elif vend.id_prato.descricao == "Janta":
                 contjanta = contjanta + 1
                 somajanta = somajanta + vend.valor
+            else:
+                # Caso haja outros tipos de pratos futuramente
+                pass
 
             soma = soma + vend.valor
 
@@ -268,17 +266,11 @@ def PdfVendas(request):
             contcem = contcem + 1
             somacem = somacem + vend.valor
 
-        # Pega o horário pra definir o que é janta e o que é almoço
-        now = datetime.datetime.now()
-        hotariojanta = now.replace(hour=15, minute=0, second=0, microsecond=0)
-        # Pega o horário da venda
-        data = vend.data
-
-        if (
-                data.time() <= hotariojanta.time()):  # resolvido, verificando se é almoço pelo horário da venda, gratidão, dessa vez é verdade
+        # Contabilizar por tipo de prato (Almoço ou Janta) usando o registro oficial do prato
+        if vend.id_prato.descricao == "Almoço":
             contalmoco = contalmoco + 1
             somaalmoco = somaalmoco + vend.valor
-        else:
+        elif vend.id_prato.descricao == "Janta":
             contjanta = contjanta + 1
             somajanta = somajanta + vend.valor
 

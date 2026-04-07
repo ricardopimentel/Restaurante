@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect, resolve_url as r
 # Create your views here.
 from restaurante.acesso.forms import LoginForm
 from restaurante.administracao.models import config
-from restaurante.core.models import pessoa, administrador, usuariorestaurante
+from restaurante.core.models import pessoa, administrador, usuariorestaurante, aluno
 
 
 def Login(request):
@@ -38,6 +38,10 @@ def Login(request):
                 elif (request.session['usertip'] == 'lanchonete'):  # Usuário da lanchonete
                     lanchoneteobj = usuariorestaurante(id_pessoa=pessoaobj)
                     lanchoneteobj.save()
+                elif (request.session['usertip'] == 'aluno'):  # Estudante
+                    from restaurante.core.models import aluno
+                    alunoobj = aluno(id_pessoa=pessoaobj)
+                    alunoobj.save()
                 return redirect(r('Home'))
         return render(request, 'acesso/login.html', {'form': form, 'err': '', 'itemselec': 'HOME', })
     else:  # se não veio nada no post cria uma instancia vazia

@@ -2,168 +2,312 @@
 {% extends "base.html" %}
 {% load static %}
 {% load restaurante_extras %}
-{% load pagination_tags %}
 {%block titulo%}{{title}}{%endblock%}
 
-{%block top%}
-	{% if request.session.nome%}
-			<h1>{{request.session.nome}}</h1>
-			<a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-		{%endif%}
-{%endblock%}
-
-{%block menu%}
-	{% if request.session.menu%}
-		{%for item in request.session.menu%}
-			{% if item == itemselec %}
-				<li>
-					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-						<div class="item-menu-selec">
-							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-							<p>{{item}}</p>
-						</div>
-					</a>
-				</li>
-			{%else%}
-				<li>
-                    {% if item == 'logo' %}
-                        <div id="hidemenu">
-                            <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-                        </div>
-                    {% elif item == 'sair' %}
-                        <div id="hidemenusair">
-                            <div class="background-nome">
-                                {% if request.session.nome %}
-                                    <h1>{{request.session.nome}}</h1>
-                                    <a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-                                {%else%}
-                                    <h1>Faça Login</h1>
-                                {%endif%}
-                            </div>
-                        </div>
-                    {% else %}
-                        <a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-                            <div class="item-menu">
-                                <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-                                <p>{{item}}</p>
-                            </div>
-                        </a>
-                    {% endif %}
-				</li>
-			{%endif%}
-		{%endfor%}
-	{%endif%}
-{%endblock%}
-
 {%block conteudo%}
-    <div class="limit" style="max-width: none; margin: 0px">
-        <div class="card">
-            <img src="{% static 'images/comida.png' %}" alt="" width="70"/>
-            <h1>Cadastrar Pratos</h1>
-            <br>
-            <div class="navegation_bar">
-                <a href="{% url 'Administracao' %}">Administração</a>
-                <a href="{% url 'CadastroPrato' %}">Cadastro de Prato</a>
-            </div>
-            <br>
-            <div class="formulario">
-                <form method="post" action="{% url 'CadastroPrato' %}"> {%csrf_token%}
-                    {{form.as_p}}
-                    <p><input type="submit" name="commit" value="Salvar" id="botao" ></p>
-                </form>
-            </div>
+    <style>
+        :root {
+            --admin-primary: #6366f1;
+            --admin-secondary: #4f46e5;
+        }
+
+        .admin-page-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        .admin-breadcrumb {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .admin-breadcrumb a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+        .admin-breadcrumb a:hover { color: var(--admin-primary); }
+        .admin-breadcrumb span { color: #ddd; }
+
+        /* Table Card */
+        .admin-table-card {
+            background: white;
+            border-radius: 24px;
+            padding: 30px;
+            border: 1px solid #e5e7eb;
+            box-shadow: var(--shadow-sm);
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .table-header h2 {
+            margin: 0;
+            font-size: 1.4em;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+        }
+
+        .btn-new-dish {
+            background: var(--admin-primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 700;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-new-dish:hover {
+            background: var(--admin-secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+
+        #minhaTabela { width: 100% !important; border-collapse: collapse; }
+        #minhaTabela thead th {
+            padding: 15px;
+            background: #f9fafb;
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            text-align: left;
+            border-bottom: 2px solid #f3f4f6;
+        }
+        #minhaTabela tbody td {
+            padding: 15px;
+            border-bottom: 1px solid #f3f4f6;
+            color: var(--text-main);
+        }
+
+        .btn-delete-action {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: transform 0.2s;
+        }
+        .btn-delete-action:hover { transform: scale(1.2); }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-container {
+            background: white;
+            border-radius: 28px;
+            width: 100%;
+            max-width: 550px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            position: relative;
+            animation: slideUp 0.4s cubic-bezier(0.17, 0.89, 0.32, 1.28);
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1.0); opacity: 1; } }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .modal-header h2 { margin: 0; font-size: 1.5em; font-weight: 800; color: var(--text-main); }
+        .btn-close-modal {
+            background: #f1f5f9;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+        .btn-close-modal:hover { background: #fee2e2; color: #ef4444; }
+
+        .form-row { margin-bottom: 20px; }
+        .form-row label {
+            display: block; font-weight: 700; font-size: 0.8em; color: var(--text-muted);
+            text-transform: uppercase; margin-bottom: 8px;
+        }
+        .form-row input, .form-row select {
+            width: 100%; padding: 12px 18px; border-radius: 14px; border: 1px solid #e2e8f0;
+            background: #f8fafc; font-family: inherit; outline: none; transition: all 0.2s; box-sizing: border-box;
+        }
+        .form-row input:focus { border-color: var(--admin-primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); background: white; }
+
+        .btn-save-modal {
+            width: 100%;
+            background: var(--admin-primary);
+            color: white;
+            padding: 16px;
+            border-radius: 14px;
+            border: none;
+            font-weight: 700;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 20px;
+        }
+        .btn-save-modal:hover { background: var(--admin-secondary); transform: translateY(-2px); box-shadow: 0 8px 15px rgba(99, 102, 241, 0.3); }
+
+    </style>
+
+    <div class="admin-page-header">
+        <div class="admin-breadcrumb">
+            <a href="{% url 'Administracao' %}">Administração</a>
+            <span>/</span>
+            <a href="{% url 'CadastroPrato' %}">Gestão de Cardápio</a>
         </div>
+        <h1 style="margin: 0; font-size: 2em; color: var(--text-main); font-weight: 800;">Cardápio do Restaurante</h1>
     </div>
 
-    <form id="frm" method="post" action="{% url 'ExcluirPratos' %}"> {%csrf_token%}
-    <div class="card">
-        <img src="{% static 'images/lupa.png' %}" alt="" width="70"/>
-        <h1>Pratos Cadastrados</h1>
-        <br>
-        <div class="action_bar_tuto" style="height: 18px">
-            <input type="image" name="commit" value="" title="Excluir Prato" style="width: 24px; margin-top: -3px;" src="{% static 'images/delete24b.png' %}" onmouseover="this.src='{% static 'images/delete24.png' %}'" onmouseout="this.src='{% static 'images/delete24b.png' %}'">
-        </div>
+    <!-- Dish List -->
+    <form id="frm" method="post" action="{% url 'ExcluirPratos' %}">
+        {% csrf_token %}
+        <div class="admin-table-card">
+            <div class="table-header">
+                <h2><i class="fas fa-utensils" style="color: var(--admin-primary);"></i> Pratos Registrados</h2>
+                <div style="display: flex; gap: 15px;">
+                    <button type="button" class="btn-new-dish" onclick="openModal()">
+                        <i class="fas fa-plus"></i> Novo Prato
+                    </button>
+                    <button type="submit" class="btn-delete-action" title="Excluir Selecionados">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
 
-        <div class="card-progressao-container">
             <table id="minhaTabela">
                 <thead>
-                    <tr id="tr-no-shadow">
+                    <tr>
                         <th>Descrição</th>
-                        <th>Preço</th>
-                        <th>Marcar</th>
+                        <th>Preço (Normal)</th>
+                        <th>Preço (Estudante)</th>
+                        <th style="text-align: center;">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     {%for prato in pratos%}
                         <tr>
-                            <td id="td-vermelho"><a href="{% url 'EditarPrato' id_prato=prato.id %}">{{ prato.descricao }}</a></td>
-                            <td><a href="{% url 'EditarPrato' id_prato=prato.id %}">{{ prato.preco }}</a></td>
-                            <td><input type="checkbox" name="{{ prato.id }}" ></td>
+                            <td style="font-weight: 700;">
+                                <a href="{% url 'EditarPrato' id_prato=prato.id %}" style="color: var(--admin-primary); text-decoration: none;">
+                                    {{ prato.descricao }}
+                                </a>
+                            </td>
+                            <td style="font-family: monospace; font-weight: 600;">R$ {{ prato.preco }}</td>
+                            <td style="font-family: monospace; font-weight: 600;">R$ {{ prato.preco_aluno }}</td>
+                            <td style="text-align: center;">
+                                <input type="checkbox" name="{{ prato.id }}" style="width: 18px; height: 18px;">
+                            </td>
                         </tr>
                     {%endfor%}
                 </tbody>
             </table>
         </div>
-     </div>
+    </form>
+
+    <!-- Modal for Create/Edit -->
+    <div id="dishModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>{% if id %}Editar Prato{% else %}Novo Prato{% endif %}</h2>
+                <button type="button" class="btn-close-modal" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="formulario">
+                <form id="dish-form" method="post" action="{% if id %}{% url 'EditarPrato' id_prato=id %}{% else %}{% url 'CadastroPrato' %}{% endif %}">
+                    {% csrf_token %}
+                    <div class="form-body">
+                        {{ form.as_p }}
+                    </div>
+                    <button type="submit" name="commit" class="btn-save-modal">
+                        <i class="fas fa-save" style="margin-right: 8px;"></i> Salvar Alterações
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <script>
         $(document).ready(function () {
             $('#minhaTabela').DataTable({
                 "bPaginate": true,
                 "bLengthChange": false,
-                "bFilter": true,
-                "bInfo": true,
-                "bAutoWidth": true,
                 "language": {
                     "sEmptyTable": "Nenhum registro encontrado",
-                    "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
-                    "sInfoEmpty": "Mostrando 0 até 0 de 0 registros",
-                    "sInfoFiltered": "(Filtrados de _MAX_ registros)",
-                    "sInfoThousands": ".",
-                    "sLengthMenu": "_MENU_ resultados por página",
-                    "sLoadingRecords": "Carregando...",
-                    "sProcessing": "Processando...",
-                    "sZeroRecords": "Nenhum registro encontrado",
-                    "sSearch": "Pesquisar",
+                    "sSearch": "<i class='fas fa-search' style='color:#999'></i> ",
                     "oPaginate": {
-                    "sNext": "»",
-                    "sPrevious": "«",
-                    "sFirst": "Primeiro",
-                    "sLast": "Último"
+                        "sNext": "<i class='fas fa-chevron-right'></i>",
+                        "sPrevious": "<i class='fas fa-chevron-left'></i>"
                     }
-                },
+                }
             });
+
+            // Check if we are in Edit mode (id exists)
+            {% if id %}
+                openModal();
+            {% endif %}
         });
+
+        function openModal() {
+            document.getElementById('dishModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent scroll
+        }
+
+        function closeModal() {
+            // If we are in edit mode, redirect to the main registration page to clear the state
+            {% if id %}
+                window.location.href = "{% url 'CadastroPrato' %}";
+            {% else %}
+                document.getElementById('dishModal').style.display = 'none';
+                document.body.style.overflow = 'auto';
+            {% endif %}
+        }
+
+        // Close modal on click outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('dishModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
     </script>
-
-     <script>
-        function mostrarocultar(mostrar, ocultar){
-            $("#"+mostrar).show(500);
-            document.getElementById(ocultar).style.display = "none";
-        }
-        function ocultarmostrar(mostrar, ocultar){
-            $("#"+ocultar).hide(500);
-            $("#"+mostrar).show(500);
-        }
-        function  mostrar(ID){
-            document.getElementById(ID).style.display = "block";
-
-        }
-        function  ocultar(ID){
-            document.getElementById(ID).style.display = "none";
-            $("#"+ID).hide("slow");
-        }
-    </script>
-
-    {% if messages %}
-        <div class="msg-popup-container">
-            {% for message in messages %}
-                <div id="{{ forloop.counter0 }}" class="msg-popup {{ message.tags }}">
-                    <img src="{% static 'images/'%}{{ message.tags }}.png" alt="" width="70" height="70"/>
-                    <p>{{ message }}</p>
-                    <a onclick="ocultar('{{ forloop.counter0 }}')">x</a>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
 {%endblock%}

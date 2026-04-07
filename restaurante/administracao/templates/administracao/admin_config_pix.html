@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titulo %}{{title}}{% endblock %}
+
+{% block conteudo %}
+    <style>
+        .config-card {
+            max-width: 600px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 28px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .config-header {
+            background: linear-gradient(135deg, #009ee3 0%, #007dba 100%);
+            padding: 35px;
+            text-align: center;
+            color: white;
+        }
+
+        .config-header i {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .config-header h2 {
+            margin: 0;
+            font-size: 1.6em;
+            font-weight: 800;
+        }
+
+        .config-body {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85em;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 14px;
+            border: 2px solid #f1f5f9;
+            background: #f8fafc;
+            color: var(--text-main);
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #009ee3;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(0, 158, 227, 0.1);
+        }
+
+        .help-text {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 15px;
+            background: #fff9db;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border-left: 4px solid #fcc419;
+        }
+
+        .help-text i {
+            color: #f08c00;
+            margin-top: 2px;
+        }
+
+        .help-text p {
+            margin: 0;
+            font-size: 0.85em;
+            line-height: 1.5;
+            color: #868e96;
+        }
+
+        .btn-save {
+            width: 100%;
+            padding: 16px;
+            background: #009ee3;
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-save:hover {
+            background: #007dba;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(0, 158, 227, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+
+    <div class="config-card">
+        <div class="config-header">
+            <i class="fas fa-university"></i>
+            <h2>Configurações do Mercado Pago</h2>
+        </div>
+
+        <div class="config-body">
+            <div class="help-text">
+                <i class="fas fa-info-circle"></i>
+                <div>
+                    <p>
+                        <strong>Dica:</strong> Você encontra suas credenciais em: 
+                        <a href="https://www.mercadopago.com.br/developers/panel" target="_blank" style="color: #009ee3; font-weight: 700;">Painel do Desenvolvedor</a>.
+                        Certifique-se de configurar a <strong>Webhook URL</strong> no painel do MP para receber notificações automáticas.
+                    </p>
+                </div>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                
+                {% for field in form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <p style="color: #ef4444; font-size: 0.8em; margin-top: 5px;">{{ field.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <button type="submit" class="btn-save">
+                    <i class="fas fa-save"></i>
+                    Salvar Configurações
+                </button>
+            </form>
+
+            <a href="{% url 'Configuracao' %}" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 25px; color: var(--text-muted); text-decoration: none; font-size: 0.9em; font-weight: 600;">
+                <i class="fas fa-arrow-left"></i> Voltar para Configurações
+            </a>
+        </div>
+    </div>
+{% endblock %}

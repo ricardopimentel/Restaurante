@@ -29,6 +29,11 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = ['*']
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://campusparaiso.ifto.edu.br',
+    'http://campusparaiso.ifto.edu.br',
+]
+
 
 # Application definition
 
@@ -48,6 +53,7 @@ INSTALLED_APPS = [
     'restaurante.administracao',
     'restaurante.venda',
     'restaurante.voucher',
+    'restaurante.ticket_estudante',
 ]
 
 MIDDLEWARE = [

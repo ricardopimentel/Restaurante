@@ -64,7 +64,7 @@ def MontarMenu(request, ret, usuario):
         request.session['menu'] = ['logo', 'HOME', 'VENDAS', 'RELATÓRIOS', 'ADMINISTRAÇÃO', 'sair']
         request.session['url'] = [r('Home').replace('/restaurante/', 'restaurante/'),
                                   r('Home').replace('/restaurante/', 'restaurante/'),
-                                  r('Vendas').replace('/restaurante/', 'restaurante/'),
+                                  r('Venda').replace('/restaurante/', 'restaurante/'),
                                   r('Relatorios').replace('/restaurante/', 'restaurante/'),
                                   r('Administracao').replace('/restaurante/', 'restaurante/'), '']
         request.session['img'] = ['if.png', 'home24.png', 'dinheiro24b.png', 'relatorio24.png', 'admin24.png', '']
@@ -86,9 +86,30 @@ def MontarMenu(request, ret, usuario):
         request.session['menu'] = ['logo', 'HOME', 'VENDAS', 'RELATÓRIOS', 'sair']
         request.session['url'] = [r('Home').replace('/restaurante/', 'restaurante/'),
                                   r('Home').replace('/restaurante/', 'restaurante/'),
-                                  r('Vendas').replace('/restaurante/', 'restaurante/'),
+                                  r('Venda').replace('/restaurante/', 'restaurante/'),
                                   r('Relatorios').replace('/restaurante/', 'restaurante/'), '']
         request.session['img'] = ['if.png', 'home24.png', 'dinheiro24b.png', 'relatorio24.png', '']
+        # logou então, adicionar os dados do usuário na sessão
+        request.session['userl'] = usuario
+        request.session['nome'] = result['displayName'].title()
+        try:
+            request.session['mail'] = result['mail']
+        except KeyError:
+            request.session['mail'] = 'Não informado'
+        try:
+            request.session['phone'] = result['telephoneNumber']
+        except KeyError:
+            request.session['phone'] = 'Não informado'
+
+    elif (ret.find(str('G_CA-PARAISO_ALUNOS')) > -1):
+        request.session['usertip'] = 'aluno'
+        # Preparar menu aluno
+        request.session['menu'] = ['logo', 'HOME', 'TICKETS', 'COMPRAR', 'sair']
+        request.session['url'] = [r('Home').replace('/restaurante/', 'restaurante/'),
+                                  r('Home').replace('/restaurante/', 'restaurante/'),
+                                  r('TicketsEstudante').replace('/restaurante/', 'restaurante/'),
+                                  r('ComprarTicket').replace('/restaurante/', 'restaurante/'), '']
+        request.session['img'] = ['if.png', 'home24.png', 'ticket.png', 'dinheiro24b.png', '']
         # logou então, adicionar os dados do usuário na sessão
         request.session['userl'] = usuario
         request.session['nome'] = result['displayName'].title()

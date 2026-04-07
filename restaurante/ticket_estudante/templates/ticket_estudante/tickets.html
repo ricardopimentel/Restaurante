@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+{% load restaurante_extras %}
+{% block titulo %}{{title}}{% endblock %}
+
+
+
+
+
+{% block conteudo %}
+	<div class="card" style="width: 100%; max-width: 600px; margin: 20px auto; background: transparent; box-shadow: none; padding: 0;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="font-size: 2em; font-weight: 700; color: var(--primary-dark);">Meus Tickets</h1>
+            <p style="color: var(--text-muted);">Acesse ou compre seus vouchers digitais</p>
+        </div>
+        
+        {% if pendentes %}
+            <div style="margin-bottom: 25px;">
+                <h2 style="font-size: 1.1em; color: #b45309; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-exclamation-triangle"></i> Pagamentos Pendentes
+                </h2>
+                {% for ticket in pendentes %}
+                    <div style="margin-bottom: 15px; background: #fffbeb; border: 1px solid #fef3c7; padding: 20px; border-radius: 16px; display: flex; align-items: center; justify-content: space-between; border-left: 6px solid #f59e0b;">
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-size: 0.85em; font-weight: 600; color: #b45309; text-transform: uppercase;">Aguardando Pix</span>
+                            <span style="font-size: 1.1em; font-weight: 700; color: #92400e; margin-top: 5px;">{{ ticket.tipo_refeicao }} - {{ ticket.data_compra|date:"H:i" }}</span>
+                        </div>
+                        <div style="text-align: right; margin-right: 15px;">
+                            <span style="font-size: 0.85em; color: #b45309;">Valor</span><br>
+                            <span style="font-weight: 700; color: #92400e;">R$ {{ ticket.valor|floatformat:2 }}</span>
+                        </div>
+                        <a href="{% url 'RevisarPagamento' ticket.uuid %}" style="background: #f59e0b; color: white; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-weight: 700; font-size: 0.9em; transition: all 0.3s ease;" onmouseover="this.style.background='#d97706'" onmouseout="this.style.background='#f59e0b'">Concluir</a>
+                    </div>
+                {% endfor %}
+            </div>
+            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+        {% endif %}
+
+        {% if not tickets and not pendentes %}
+            <div style="text-align:center; padding: 40px 20px; background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-sm);">
+                <div style="font-size: 40px; margin-bottom: 15px;">🎟️</div>
+                <p style="text-align:center; margin-bottom: 25px; color: var(--text-muted); font-size: 1.1em;">Você não possui tickets comprados.</p>
+                <a href="{% url 'ComprarTicket' %}" id="botao" style="display:inline-block; max-width: 250px; text-decoration: none;">Comprar Agora</a>
+            </div>
+        {% else %}
+            {% if tickets %}
+                {% for ticket in tickets %}
+                    <a href="{% url 'VisualizarTicket' ticket.uuid %}" style="text-decoration: none;">
+                        <div style="margin: 15px auto; width: 100%; display: flex; align-items: center; justify-content: space-between; background: var(--surface-glass); backdrop-filter: blur(10px); padding: 20px 25px; border-radius: 16px; box-shadow: var(--shadow-sm); border-left: 6px solid var(--primary); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='var(--shadow-md)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)';">
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-size: 0.85em; font-weight: 600; color: var(--primary-middle); text-transform: uppercase; letter-spacing: 1px;">Ticket {{ ticket.tipo_refeicao }}</span>
+                                <span style="font-size: 1.2em; font-weight: 700; color: var(--text-main); margin-top: 5px;">{{ ticket.data_compra|date:"d M Y - H:i" }}</span>
+                            </div>
+                            <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
+                                <span style="font-size: 0.85em; color: var(--text-muted);">Confirmado</span>
+                                <span style="font-weight: 700; color: var(--text-main); font-size: 1.1em;">R$ {{ ticket.valor|floatformat:2 }}</span>
+                            </div>
+                            <div style="background: rgba(16, 185, 129, 0.1); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-left: 15px;">
+                                <i class="fas fa-chevron-right" style="color: #10b981;"></i>
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            {% endif %}
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="{% url 'ComprarTicket' %}" id="botao" style="display:inline-block; max-width: 250px; text-decoration: none;">+ Comprar Novo Ticket</a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

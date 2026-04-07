@@ -2,167 +2,201 @@
 {% extends "base.html" %}
 {% load static %}
 {% load restaurante_extras %}
-{% load pagination_tags %}
 {%block titulo%}{{title}}{%endblock%}
 
-{%block top%}
-	{% if request.session.nome%}
-			<h1>{{request.session.nome}}</h1>
-			<a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-		{%endif%}
-{%endblock%}
-
-{%block menu%}
-	{% if request.session.menu%}
-		{%for item in request.session.menu%}
-			{% if item == itemselec %}
-				<li>
-					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-						<div class="item-menu-selec">
-							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-							<p>{{item}}</p>
-						</div>
-					</a>
-				</li>
-			{%else%}
-				<li>
-                    {% if item == 'logo' %}
-                        <div id="hidemenu">
-                            <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-                        </div>
-                    {% elif item == 'sair' %}
-                        <div id="hidemenusair">
-                            <div class="background-nome">
-                                {% if request.session.nome %}
-                                    <h1>{{request.session.nome}}</h1>
-                                    <a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-                                {%else%}
-                                    <h1>Faça Login</h1>
-                                {%endif%}
-                            </div>
-                        </div>
-                    {% else %}
-                        <a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-                            <div class="item-menu">
-                                <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-                                <p>{{item}}</p>
-                            </div>
-                        </a>
-                    {% endif %}
-				</li>
-			{%endif%}
-		{%endfor%}
-	{%endif%}
-{%endblock%}
-
 {%block conteudo%}
-    <form id="frm" method="post" action="{% url 'ExcluirBolsistas' %}"> {%csrf_token%}
-    <div class="cartao">
-        <img src="{% static 'images/lupa.png' %}" alt="" width="70"/>
-        <h1>{{title}}</h1>
-        <br>
-        <div class="navegation_bar">
-            {% if itemselec == 'CONFIGURAÇÃO' %}
-                <a href="{% url 'Configuracao' %}">Configuração</a>
-            {% elif itemselec == 'ADMINISTRAÇÃO' %}
-                <a href="{% url 'Administracao' %}">Administração</a>
-            {% endif %}
-            <a href="{% url 'ExcluirBolsistas' %}">Listar Bolsistas</a>
+    <style>
+        :root {
+            --admin-primary: #6366f1;
+            --admin-secondary: #4f46e5;
+        }
+
+        .admin-page-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 25px;
+            width: 100%;
+        }
+
+        .admin-breadcrumb {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .admin-breadcrumb a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+        .admin-breadcrumb a:hover { color: var(--admin-primary); }
+        .admin-breadcrumb span { color: #ddd; }
+
+        /* Table Card */
+        .admin-table-card {
+            background: white;
+            border-radius: 24px;
+            padding: 30px;
+            border: 1px solid #e5e7eb;
+            box-shadow: var(--shadow-sm);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .table-header h2 {
+            margin: 0;
+            font-size: 1.4em;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+        }
+
+        .action-toolbar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+            justify-content: flex-start;
+        }
+        .btn-action {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 10px;
+            background: white;
+            color: var(--text-main);
+            text-decoration: none !important;
+            font-weight: 700;
+            font-size: 0.85em;
+            transition: all 0.2s;
+            border: 1px solid #e5e7eb;
+            box-shadow: var(--shadow-sm);
+        }
+        .btn-action:hover {
+            border-color: var(--admin-primary);
+            color: var(--admin-primary);
+            transform: translateY(-2px);
+        }
+        .btn-action.danger:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+            background: #fef2f2;
+        }
+
+        #minhaTabela { width: 100% !important; border-collapse: collapse; }
+        #minhaTabela thead th {
+            padding: 15px;
+            background: #f9fafb;
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            text-align: left;
+            border-bottom: 2px solid #f3f4f6;
+        }
+        #minhaTabela tbody td {
+            padding: 15px;
+            border-bottom: 1px solid #f3f4f6;
+            color: var(--text-main);
+        }
+        
+        .select-all-box {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+    </style>
+
+    <div class="admin-page-header">
+        <div class="admin-breadcrumb">
+            <a href="{% url 'Administracao' %}">Administração</a>
+            <span>/</span>
+            <a href="{% url 'ExcluirBolsistas' %}">Bolsistas</a>
+        </div>
+        <h1 style="margin: 0; font-size: 1.8em; color: var(--text-main); font-weight: 800;">Estudantes Bolsistas (100%)</h1>
+    </div>
+
+    <form id="frm" method="post" action="{% url 'ExcluirBolsistas' %}">
+        {% csrf_token %}
+        
+        <div class="action-toolbar">
+            <a href="{% url 'CadastroBolsistas' %}" class="btn-action">
+                <i class="fas fa-plus-circle"></i> Novo Cadastro
+            </a>
+            <button type="submit" class="btn-action danger" title="Remover Estudantes Selecionados">
+                <i class="fas fa-trash-alt"></i> Excluir Selecionados
+            </button>
         </div>
 
-        <div class="action_bar_tuto" style="height: 18px">
-            <a style="padding: 0px 5px 7px 5px; display: inline-flex;" href="{% url 'CadastroBolsistas' %}" title="Cadastro dos estudantes com bolsa de 100%"><img title="Cadastrar Bolsistas"  src="{% static 'images/add24b.png' %}" onmouseover="this.src='{% static 'images/add24.png' %}'" onmouseout="this.src='{% static 'images/add24b.png' %}'"></a>
-            <input type="image" name="commit" value="" title="Excluir Bolsistas" src="{% static 'images/delete24b.png' %}" onmouseover="this.src='{% static 'images/delete24.png' %}'" onmouseout="this.src='{% static 'images/delete24b.png' %}'">
-        </div>
+        <div class="admin-table-card">
+            <div class="table-header">
+                <h2><i class="fas fa-user-graduate" style="color: var(--admin-primary);"></i> Alunos Cadastrados</h2>
+            </div>
 
-        <div class="card-progressao-container">
             <table id="minhaTabela">
                 <thead>
-                    <tr id="tr-no-shadow">
-                        <th>Marcar</th>
-                        <th>Nome</th>
-                        <th>CPF</th>
+                    <tr>
+                        <th style="width: 40px; text-align: center;">Marcar</th>
+                        <th>Nome Completo</th>
+                        <th>CPF / Matrícula</th>
                     </tr>
                 </thead>
                 <tbody>
                     {%for aluno in bolsistas%}
                         <tr>
-                            <td id="td-vermelho"><input type="checkbox" name="{{ aluno.id }}" ></td>
-                            <td style="text-align: left;">{{ aluno.id_pessoa.nome }}</td>
-                            <td>{{ aluno.id_pessoa.usuario }}</td>
+                            <td style="text-align: center;">
+                                <input type="checkbox" name="{{ aluno.id }}" style="width: 18px; height: 18px;">
+                            </td>
+                            <td style="font-weight: 700; color: var(--text-main);">{{ aluno.id_pessoa.nome|title }}</td>
+                            <td style="font-family: monospace; color: var(--text-muted);">{{ aluno.id_pessoa.usuario }}</td>
                         </tr>
                     {%endfor%}
                 </tbody>
             </table>
-            <p><input type="checkbox"  id="all" name=all>Marcar Todos</p>
+
+            <label class="select-all-box">
+                <input type="checkbox" id="all" style="width: 18px; height: 18px;">
+                <span>Marcar / Desmarcar Todos</span>
+            </label>
         </div>
-     </div>
+    </form>
 
     <script>
         $(document).ready(function () {
             $('#minhaTabela').DataTable({
                 "bPaginate": true,
-                "bLengthChange": false,
-                "bFilter": true,
-                "bInfo": true,
-                "bAutoWidth": true,
+                "bLengthChange": true,
                 "language": {
                     "sEmptyTable": "Nenhum registro encontrado",
-                    "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
-                    "sInfoEmpty": "Mostrando 0 até 0 de 0 registros",
-                    "sInfoFiltered": "(Filtrados de _MAX_ registros)",
-                    "sInfoThousands": ".",
-                    "sLengthMenu": "_MENU_ resultados por página",
-                    "sLoadingRecords": "Carregando...",
-                    "sProcessing": "Processando...",
-                    "sZeroRecords": "Nenhum registro encontrado",
-                    "sSearch": "Pesquisar",
+                    "sSearch": "<i class='fas fa-search' style='color:#999'></i> ",
                     "oPaginate": {
-                    "sNext": "»",
-                    "sPrevious": "«",
-                    "sFirst": "Primeiro",
-                    "sLast": "Último"
+                        "sNext": "<i class='fas fa-chevron-right'></i>",
+                        "sPrevious": "<i class='fas fa-chevron-left'></i>"
                     }
                 },
+                "dom": '<"top"f>rt<"bottom"p><"clear">'
+            });
+
+            $('#all').on('click', function() {
+                var isChecked = $(this).is(':checked');
+                $('input[type="checkbox"]').not('#all').prop('checked', isChecked);
             });
         });
     </script>
-
-     <script>
-        function mostrarocultar(mostrar, ocultar){
-            $("#"+mostrar).show(500);
-            document.getElementById(ocultar).style.display = "none";
-        }
-        function ocultarmostrar(mostrar, ocultar){
-            $("#"+ocultar).hide(500);
-            $("#"+mostrar).show(500);
-        }
-        function  mostrar(ID){
-            document.getElementById(ID).style.display = "block";
-
-        }
-        function  ocultar(ID){
-            document.getElementById(ID).style.display = "none";
-            $("#"+ID).hide("slow");
-        }
-        document.getElementById("all").addEventListener("click", function(){
-            checkBoxs = document.querySelectorAll('input[type="checkbox"]:not([id=all])');
-            //"Hack": http://toddmotto.com/ditch-the-array-foreach-call-nodelist-hack/
-            [].forEach.call(checkBoxs, function(checkbox) {
-                checkbox.checked = checkbox.checked ? false : true;
-            });
-        });
-    </script>
-
-    {% if messages %}
-        <div class="msg-popup-container">
-            {% for message in messages %}
-                <div id="{{ forloop.counter0 }}" class="msg-popup {{ message.tags }}">
-                    <img src="{% static 'images/'%}{{ message.tags }}.png" alt="" width="70" height="70"/>
-                    <p>{{ message }}</p>
-                    <a onclick="ocultar('{{ forloop.counter0 }}')">x</a>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
 {%endblock%}

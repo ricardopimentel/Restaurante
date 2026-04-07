@@ -4,73 +4,224 @@
 {% load restaurante_extras %}
 {%block titulo%}{{title}}{%endblock%}
 
-{%block top%}
-	{% if request.session.nome %}
-		<h1>{{request.session.nome}}</h1>
-		<a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-	{%else%}
-		<h1>Faça Login</h1>
-	{%endif%}
-{%endblock%}
-
-{%block menu%}
-	{% if request.session.menu%}
-		{%for item in request.session.menu%}
-			{% if item == itemselec %}
-				<li> 
-					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-						<div class="item-menu-selec">
-							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-							<p>{{item}}</p>
-						</div>
-					</a>
-				</li>
-			{%else%}
-				<li>
-                    {% if item == 'logo' %}
-                        <div id="hidemenu">
-                            <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-                        </div>
-                    {% elif item == 'sair' %}
-                        <div id="hidemenusair">
-                            <div class="background-nome">
-                                {% if request.session.nome %}
-                                    <h1>{{request.session.nome}}</h1>
-                                    <a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-                                {%else%}
-                                    <h1>Faça Login</h1>
-                                {%endif%}
-                            </div>
-                        </div>
-                    {% else %}
-                        <a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-                            <div class="item-menu">
-                                <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-                                <p>{{item}}</p>
-                            </div>
-                        </a>
-                    {% endif %}
-				</li>
-			{%endif%}
-		{%endfor%}
-	{%endif%}
-{%endblock%}
-	
 {%block conteudo%}
-	<div class="card">
-		<div class="Erro-form">
-			{% if err %}
-	   			{{err}}
-	   		{%endif%}
-		</div>
-		<img src="/restaurante/static/images/login.png" alt="">
-		<h1>Faça Login</h1>
-		<br>
-		<div class="formulario">
-			<form method="post" action="{% url 'Login' %}"> {%csrf_token%}
-		 		{{form.as_p}}
-			   	<p><input type="submit" name="commit" value="Entrar" id="botao" ></p>
-			</form>
-		</div>
-	</div>	
+    <style>
+        /* Hide navbar and footer only on this login page */
+        nav#navbar, div.footer {
+            display: none !important;
+        }
+
+        /* Full page background wrapper */
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0f172a; /* Dark base color */
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .login-page-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 40%),
+                        radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+                        linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        /* Floating Blurry Shapes */
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.6;
+            animation: move 20s infinite alternate;
+        }
+        .shape-1 { width: 300px; height: 300px; background: #10b981; top: -100px; left: -100px; }
+        .shape-2 { width: 400px; height: 400px; background: #4f46e5; bottom: -150px; right: -150px; }
+
+        @keyframes move {
+            from { transform: translate(0, 0) scale(1); }
+            to { transform: translate(50px, 50px) scale(1.1); }
+        }
+
+        /* Glassmorphic Login Card */
+        .login-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 32px;
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            margin: 20px;
+        }
+
+        .login-logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 20px;
+            padding: 15px;
+            margin: 0 auto 20px;
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
+            transition: transform 0.3s ease;
+        }
+        .login-logo:hover { transform: scale(1.05); }
+
+        .login-header h1 {
+            color: white;
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .login-header p {
+            color: #94a3b8;
+            font-size: 0.9em;
+            margin-bottom: 30px;
+        }
+
+        /* Form Styling */
+        .login-form .input-group {
+            position: relative;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .login-form .input-group i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 1.1em;
+            transition: color 0.3s ease;
+        }
+
+        .login-form input[type="text"], 
+        .login-form input[type="password"] {
+            width: 100%;
+            padding: 14px 14px 14px 50px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            color: white;
+            font-size: 1em;
+            outline: none;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .login-form input:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #10b981;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        }
+        
+        .login-form input:focus + i {
+            color: #10b981;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-login:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Error Messaging */
+        .login-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 0.85em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        label { display: none; } /* Hide labels for the premium look */
+    </style>
+
+    <div class="login-page-wrapper">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+    </div>
+
+    <div class="login-card">
+        <div class="login-logo">
+            <img src="{% static 'images/if.png' %}" alt="Logo" style="width: 100%; height: auto;">
+        </div>
+
+        <div class="login-header">
+            <h1>Cantina IFTO</h1>
+            <p>Seja bem-vindo. Entre com suas credenciais.</p>
+        </div>
+
+        {% if err %}
+            <div class="login-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>{{ err }}</span>
+            </div>
+        {% endif %}
+
+        <div class="login-form">
+            <form method="post" action="{% url 'Login' %}">
+                {% csrf_token %}
+                
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" name="usuario" placeholder="Usuário ou Matrícula" required id="id_usuario">
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" name="senha" placeholder="Sua Senha" required id="id_senha">
+                </div>
+
+                <button type="submit" name="commit" class="btn-login">
+                    Entrar no Sistema <i class="fas fa-arrow-right" style="margin-left: 8px; font-size: 0.9em;"></i>
+                </button>
+            </form>
+        </div>
+        
+        <div style="margin-top: 25px; font-size: 0.8em; color: #64748b;">
+            Instituto Federal do Tocantins - CGTI
+        </div>
+    </div>
+
+    <!-- Script to auto-focus first input -->
+    <script>
+        document.getElementById('id_usuario').focus();
+    </script>
 {%endblock%}

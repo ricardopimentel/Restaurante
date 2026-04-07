@@ -2,105 +2,93 @@
 {% extends "base.html" %}
 {% load static %}
 {% load restaurante_extras %}
-{% load pagination_tags %}
 {%block titulo%}{{title}}{%endblock%}
 
-{%block top%}
-	{% if request.session.nome%}
-			<h1>{{request.session.nome}}</h1>
-			<a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-		{%endif%}
-{%endblock%}
-
-{%block menu%}
-	{% if request.session.menu%}
-		{%for item in request.session.menu%}
-			{% if item == itemselec %}
-				<li>
-					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-						<div class="item-menu-selec">
-							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-							<p>{{item}}</p>
-						</div>
-					</a>
-				</li>
-			{%else%}
-				<li>
-                    {% if item == 'logo' %}
-                        <div id="hidemenu">
-                            <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-                        </div>
-                    {% elif item == 'sair' %}
-                        <div id="hidemenusair">
-                            <div class="background-nome">
-                                {% if request.session.nome %}
-                                    <h1>{{request.session.nome}}</h1>
-                                    <a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-                                {%else%}
-                                    <h1>Faça Login</h1>
-                                {%endif%}
-                            </div>
-                        </div>
-                    {% else %}
-                        <a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-                            <div class="item-menu">
-                                <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-                                <p>{{item}}</p>
-                            </div>
-                        </a>
-                    {% endif %}
-				</li>
-			{%endif%}
-		{%endfor%}
-	{%endif%}
-{%endblock%}
-
 {%block conteudo%}
-    <div class="card">
-        <img src="{% static 'images/relogio.png' %}" alt="" width="70"/>
-        <h1>Horário Limite Vendas</h1>
-        <br>
-        <div class="navegation_bar">
-            <a href="{% url 'Administracao' %}">Administração</a>
-            <a href="{% url 'HorarioLimiteVendas' %}">Horário Fec. das Vendas</a>
-        </div>
-        <br>
-        <div class="formulario">
-            <form method="post" action="{% url 'HorarioLimiteVendas' %}"> {%csrf_token%}
-                {{form.as_p}}
-                <p><input type="submit" name="commit" value="Salvar" id="botao" ></p>
-            </form>
+    <style>
+        :root {
+            --admin-primary: #6366f1;
+            --admin-secondary: #4f46e5;
+        }
+
+        .admin-page-header {
+            display: flex; 
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 30px; 
+            width: 100%;
+        }
+        .admin-breadcrumb {
+            display: flex; 
+            justify-content: center;
+            gap: 10px; 
+            font-size: 0.85em; 
+            font-weight: 600; 
+            margin-bottom: 10px;
+        }
+        .admin-breadcrumb a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+        .admin-breadcrumb a:hover { color: var(--admin-primary); }
+        .admin-breadcrumb span { color: #ddd; }
+
+        /* Form Card */
+        .admin-form-card {
+            background: white; border-radius: 24px; padding: 35px; border: 1px solid #e5e7eb;
+            box-shadow: var(--shadow-sm); max-width: 500px; margin: 0 auto;
+        }
+        .admin-form-card h2 {
+            margin: 0 0 25px 0; font-size: 1.4em; color: var(--text-main); display: flex;
+            align-items: center; gap: 12px; font-weight: 800;
+        }
+
+        .formulario form p { margin-bottom: 25px; }
+        .formulario label {
+            display: block; font-weight: 700; font-size: 0.85em; color: var(--text-muted);
+            text-transform: uppercase; margin-bottom: 10px;
+        }
+        .formulario input[type="text"], .formulario input[type="time"] {
+            width: 100%; padding: 14px 18px; border-radius: 14px; border: 1px solid #e2e8f0;
+            background: #f8fafc; font-family: inherit; outline: none; transition: all 0.3s ease; box-sizing: border-box;
+            font-size: 1.1em; font-weight: 600;
+        }
+        .formulario input:focus {
+            border-color: var(--admin-primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); background: white;
+        }
+
+        .btn-save {
+            width: 100%; background: var(--admin-primary); color: white; padding: 16px;
+            border-radius: 14px; border: none; font-weight: 700; cursor: pointer; transition: all 0.3s ease; margin-top: 5px;
+        }
+        .btn-save:hover { background: var(--admin-secondary); transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3); }
+    </style>
+
+    <div class="admin-page-header">
+        <div style="width: 100%; text-align: center;">
+            <div class="admin-breadcrumb" style="justify-content: center;">
+                <a href="{% url 'Administracao' %}">Administração</a>
+                <span>/</span>
+                <a href="{% url 'HorarioLimiteVendas' %}">Configurar Horário</a>
+            </div>
+            <h1 style="margin: 0; font-size: 1.8em; color: var(--text-main); font-weight: 800;">Horário Limite das Vendas</h1>
         </div>
     </div>
 
-     <script>
-        function mostrarocultar(mostrar, ocultar){
-            $("#"+mostrar).show(500);
-            document.getElementById(ocultar).style.display = "none";
-        }
-        function ocultarmostrar(mostrar, ocultar){
-            $("#"+ocultar).hide(500);
-            $("#"+mostrar).show(500);
-        }
-        function  mostrar(ID){
-            document.getElementById(ID).style.display = "block";
-
-        }
-        function  ocultar(ID){
-            document.getElementById(ID).style.display = "none";
-            $("#"+ID).hide("slow");
-        }
-    </script>
-
-    {% if messages %}
-        <div class="msg-popup-container">
-            {% for message in messages %}
-                <div id="{{ forloop.counter0 }}" class="msg-popup {{ message.tags }}">
-                    <img src="{% static 'images/'%}{{ message.tags }}.png" alt="" width="70" height="70"/>
-                    <p>{{ message }}</p>
-                    <a onclick="ocultar('{{ forloop.counter0 }}')">x</a>
-                </div>
-            {% endfor %}
+    <!-- Configuration Card -->
+    <div class="admin-form-card">
+        <h2><i class="fas fa-clock" style="color: var(--admin-primary);"></i> Fechamento Automático</h2>
+        <div class="formulario">
+            <form method="post" action="{% url 'HorarioLimiteVendas' %}">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" name="commit" class="btn-save">
+                    <i class="fas fa-save" style="margin-right: 8px;"></i> Salvar Configuração
+                </button>
+            </form>
         </div>
-    {% endif %}
+        
+        <p style="margin-top: 25px; font-size: 0.85em; color: var(--text-muted); line-height: 1.5; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 20px;">
+            <i class="fas fa-info-circle" style="color: var(--admin-primary); margin-right: 5px;"></i>
+            Este horário impede que novas vendas sejam realizadas no sistema após o limite definido, garantindo o controle operacional da cantina.
+        </p>
+    </div>
 {%endblock%}

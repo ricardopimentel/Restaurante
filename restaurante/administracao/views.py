@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect, resolve_url as r
 
 # Create your views here.
 from restaurante.administracao.forms import AdForm, CadastroPratoForm, ConfigHorarioLimiteVendasForm, \
-    CadastroAlunosBolsistasForm, CadastroAlunosColaboradoresForm
+    CadastroAlunosBolsistasForm, CadastroAlunosColaboradoresForm, ConfigPixForm
 from restaurante.administracao.models import config
 from restaurante.core.libs.conexaoAD3 import conexaoAD
 from restaurante.core.models import prato, alunoscem, pessoa, alunoscolaboradores
@@ -145,7 +145,7 @@ def EditarPrato(request, id_prato):
         if dict(request.session).get('usertip') == 'admin':# Verifica permissão de administrador
             pratos = prato.objects.all()
             pratoobj = pratos.get(pk=id_prato)
-            form = CadastroPratoForm(initial={'descricao': pratoobj.descricao, 'preco': pratoobj.preco, 'status': pratoobj.status, 'id': id_prato})
+            form = CadastroPratoForm(initial={'descricao': pratoobj.descricao, 'preco': pratoobj.preco, 'preco_aluno': pratoobj.preco_aluno, 'status': pratoobj.status, 'id': id_prato})
 
             return render(request, 'administracao/admin_cadastro_prato.html', {
                 'title': 'Cadastro de Prato',
@@ -409,3 +409,32 @@ def GetListaEstudantesAD():
             except:
                 return False
         return ListaAlunos
+
+
+def ConfigPix(request):
+    if dict(request.session).get('nome'):# verifica se o usurário está logado
+        if dict(request.session).get('usertip') == 'admin':# Verifica permissão de administrador
+            try:
+                configobj = config.objects.get(id=1)
+            except config.DoesNotExist:
+                configobj = config.objects.create(id=1, dominio='', endservidor='', gadmin='', ou='', filter='')
+
+            if request.method == 'POST':
+                form = ConfigPixForm(data=request.POST, instance=configobj)
+                if form.is_valid():
+                    form.save()
+                    messages.success(request, 'Configurações de PIX salvas com sucesso!')
+                    return redirect(r('ConfigPix'))
+            else:
+                form = ConfigPixForm(instance=configobj)
+
+            return render(request, 'administracao/admin_config_pix.html', {
+                'title': 'Configuração PIX',
+                'itemselec': 'ADMINISTRAÇÃO',
+                'form': form,
+            })
+        else:
+            messages.error(request, "Você não tem permissão para acessar esta página.")
+            return redirect(r('Home'))
+    else:
+        return redirect(r('Login'))

@@ -1,16 +1,26 @@
 {% load static %}
+{% load restaurante_extras %}
 
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta name="theme-color" content="#004d40">
+		<meta name="theme-color" content="#10b981">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
 		<link rel="icon" href="{% static 'images/favicon.ico' %}" />
 		<title>{%block titulo%}{%endblock%}</title>
-		<link rel="stylesheet" href="{% static 'css/style.css' %}">
-        <link rel="stylesheet" media = "print" href="{% static 'css/print.css' %}">
-		<script language="JavaScript" type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.0/jquery.min.js"></script>
+		
+        <!-- Premium Typography: Google Fonts (Outfit) -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+		
+        <!-- FontAwesome Icons -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <link rel="stylesheet" media="print" href="{% static 'css/print.css' %}">
+		<script language="JavaScript" type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.0/jquery.min.js"></script>
 		
 		<link rel="stylesheet" href="{% static 'css/jquery.dataTables.min.css' %}">
 		<script src="{% static 'js/jquery.min.js' %}"></script>
@@ -22,34 +32,60 @@
 	</head>
 	
 	<body>
-		<div class="bar-top">
-			{%block top%}
-			
-			{%endblock%}
-		</div>
-		
-		<a id="header" href="/restaurante/">
-			<div class="header">
+        <nav class="navbar" id="navbar">
+            <div class="navbar-container">
+                <!-- Branding / Logo -->
+                <a href="/restaurante/" class="navbar-brand">
+                    <img alt="IFTO Logo" src="{% static 'images/if.png' %}" class="nav-logo">
+                    <span class="nav-brand-text">Cantina IFTO</span>
+                </a>
 
-			</div>
-            <div class="header-container-img">
-                <img alt="" src="{% static 'images/if.png' %}">
+                <!-- Mobile Toggle Button -->
+                <button class="navbar-toggle" id="navbar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <!-- Central Menu Items & User Controls (Mobile Wrap) -->
+                <div class="navbar-collapse" id="navbar-collapse">
+                    <div class="navbar-menu">
+                        {% if request.session.menu %}
+                            {% for item in request.session.menu %}
+                                {% if item != 'logo' and item != 'sair' %}
+                                    <a href="/{{ request.session.url|get_at_index:forloop.counter0 }}" class="nav-link {% if item == itemselec %}active{% endif %}">
+                                        <i class="fas fa-{% if item == 'HOME' %}home{% elif item == 'TICKETS' %}ticket-alt{% elif item == 'COMPRAR' %}shopping-cart{% elif item == 'VENDAS' %}store{% elif item == 'RELATÓRIOS' %}chart-pie{% elif item == 'CONFIGURAÇÃO' %}cog{% elif item == 'BOLSA CEM' or item == 'COLABORADORES' or item == 'PRATOS' %}list-alt{% else %}star{% endif %}"></i>
+                                        {{ item }}
+                                    </a>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="navbar-user">
+                        {% if request.session.nome %}
+                            <div class="user-profile-container">
+                                <button class="user-profile-trigger" id="profile-trigger" title="{{ request.session.nome }}">
+                                    <i class="fas fa-user-circle"></i>
+                                </button>
+                                <div class="user-dropdown" id="user-dropdown">
+                                    <div class="dropdown-header">
+                                        <span class="user-name">{{ request.session.nome }}</span>
+                                        <span class="user-role">Conectado</span>
+                                    </div>
+                                    <div class="dropdown-divider"></div>
+                                    <a href="{% url 'Logout' %}" class="dropdown-item logout">
+                                        <i class="fas fa-sign-out-alt"></i> Sair
+                                    </a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="user-greeting">
+                                <span>Visitante</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
-		</a>
-		<div id="menu" class="menu">
-			<input type="checkbox" id="control-nav" />
-			<label for="control-nav" class="control-nav"></label>
-			<label for="control-nav" class="control-nav-close"></label>
-			<div class="conteiner-menu">
-				<nav>
-					<ul>
-						{%block menu%}
-
-						{%endblock%}
-					</ul>
-				</nav>
-			</div>
-		</div>
+        </nav>
 		
 		<div class="container-geral">
 			{%block conteudo%}
@@ -64,14 +100,41 @@
 
     <script>
 		$(function(){
-			var nav = $('#menu');
+			var nav = $('#navbar');
 			$(window).scroll(function () {
-				if ($(this).scrollTop() > 148) {
-					nav.addClass("menu-fixo");
+				if ($(this).scrollTop() > 50) {
+					nav.addClass("navbar-scrolled");
 				} else {
-					nav.removeClass("menu-fixo");
+					nav.removeClass("navbar-scrolled");
 				}
 			});
+
+            // Toggle Mobile Menu
+            $('#navbar-toggle').on('click', function() {
+                $('#navbar-collapse').toggleClass('active');
+                $(this).find('i').toggleClass('fa-bars fa-times');
+            });
+
+            // Toggle Profile Dropdown
+            $('#profile-trigger').on('click', function(e) {
+                e.stopPropagation();
+                $('#user-dropdown').toggleClass('active');
+            });
+
+            // Close dropdown when clicking outside
+            $(document).on('click', function(event) {
+                if (!$(event.target).closest('.user-profile-container').length) {
+                    $('#user-dropdown').removeClass('active');
+                }
+            });
+
+            // Fechar menu ao clicar em um link (mobile)
+            $('.nav-link').on('click', function() {
+                if ($(window).width() < 991) {
+                    $('#navbar-collapse').removeClass('active');
+                    $('#navbar-toggle i').addClass('fa-bars').removeClass('fa-times');
+                }
+            });
 		});
 	</script>
 </html>

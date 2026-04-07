@@ -32,6 +32,7 @@ class usuariorestaurante (models.Model):
 class prato (models.Model):
     descricao = models.CharField('Descrição', max_length=200)
     preco = models.FloatField('Preço')
+    preco_aluno = models.FloatField('Preço Aluno', default=0.0)
     status = models.BooleanField('Ativo?', default=True)
 
 

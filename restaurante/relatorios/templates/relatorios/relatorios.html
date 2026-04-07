@@ -5,87 +5,150 @@
 {% load pagination_tags %}
 {%block titulo%}{{title}}{%endblock%}
 
-{%block top%}
-	{% if request.session.nome%}
-			<h1>{{request.session.nome}}</h1>
-			<a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-		{%endif%}
-{%endblock%}
 
-{%block menu%}
-	{% if request.session.menu%}
-		{%for item in request.session.menu%}
-			{% if item == itemselec %}
-				<li>
-					<a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-						<div class="item-menu-selec">
-							<img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-							<p>{{item}}</p>
-						</div>
-					</a>
-				</li>
-			{%else%}
-				<li>
-                    {% if item == 'logo' %}
-                        <div id="hidemenu">
-                            <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-                        </div>
-                    {% elif item == 'sair' %}
-                        <div id="hidemenusair">
-                            <div class="background-nome">
-                                {% if request.session.nome %}
-                                    <h1>{{request.session.nome}}</h1>
-                                    <a href="{% url 'Logout' %}"><h2>Sair</h2></a>
-                                {%else%}
-                                    <h1>Faça Login</h1>
-                                {%endif%}
-                            </div>
-                        </div>
-                    {% else %}
-                        <a href="/{{ request.session.url|get_at_index:forloop.counter0 }}">
-                            <div class="item-menu">
-                                <img src="{% static 'images/'%}{{request.session.img|get_at_index:forloop.counter0}}"  alt="" />
-                                <p>{{item}}</p>
-                            </div>
-                        </a>
-                    {% endif %}
-				</li>
-			{%endif%}
-		{%endfor%}
-	{%endif%}
-{%endblock%}
+
+
 
 {%block conteudo%}
-	{% if not request.session.userl %}
-		<meta http-equiv="refresh" content="0; url=/login/">
-	{%else%}
-		<div class="cartao">
-			<img src="{% static 'images/relatorio.png' %}" alt="" width="70"/>
-			<h1>Relatórios</h1>
-			<br>
-			<div class="navegation_bar">
-                <a href="{% url 'Home' %}">Home</a>
-				<a href="{% url 'Relatorios' %}">Relatórios</a>
-			</div>
-			
-			<div class="box-file">
-				<div class="box_folder">
-					<a href="{% url 'RelatorioVendas' %}" title="Abrir Relatório de Vendas">
-						<div class="folder">
-							<br><img src="{% static 'images/dinheiro.png' %}" alt="" />
-						</div>
-						<p>Rel. Vendas Realizadas</p>
-					</a>
-				</div>
-				<div class="box_folder">
-					<a href="{% url 'RelatorioCustoAlunoPeriodo' %}" title="Abrir Relatório Custo Alunos Período">
-						<div class="folder">
-							<br><img src="{% static 'images/dinheiroorange.png' %}" alt="" />
-						</div>
-						<p>Rel. Custo Aluno Período</p>
-					</a>
-				</div>
-			</div>
-		</div>
-	{%endif%}
+    {% if not request.session.userl %}
+        <meta http-equiv="refresh" content="0; url=/login/">
+    {% else %}
+        <style>
+            :root {
+                --report-primary: #6366f1;
+                --report-secondary: #818cf8;
+                --report-bg: rgba(99, 102, 241, 0.05);
+            }
+            .reports-header {
+                margin-bottom: 40px;
+                text-align: left;
+            }
+            .reports-title {
+                font-size: 2em;
+                font-weight: 800;
+                color: var(--text-main);
+                margin: 0;
+            }
+            .reports-subtitle {
+                color: var(--text-muted);
+                margin-top: 5px;
+            }
+            .reports-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                gap: 25px;
+                margin-top: 30px;
+            }
+            .report-card {
+                background: white;
+                border-radius: 24px;
+                padding: 30px;
+                border: 1px solid #e5e7eb;
+                text-decoration: none !important;
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                position: relative;
+                overflow: hidden;
+                box-shadow: var(--shadow-sm);
+            }
+            .report-card:hover {
+                transform: translateY(-8px);
+                border-color: var(--report-primary);
+                box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.15);
+            }
+            .report-card::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 150px;
+                height: 150px;
+                background: radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+                border-radius: 50%;
+                transform: translate(30%, -30%);
+                transition: transform 0.6s ease;
+            }
+            .report-card:hover::after {
+                transform: translate(10%, -10%) scale(1.5);
+            }
+            .report-icon-box {
+                width: 60px;
+                height: 60px;
+                border-radius: 16px;
+                background: var(--report-bg);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.5em;
+                color: var(--report-primary);
+                transition: all 0.3s ease;
+            }
+            .report-card:hover .report-icon-box {
+                background: var(--report-primary);
+                color: white;
+                transform: rotate(10deg);
+            }
+            .report-info h3 {
+                margin: 0;
+                font-size: 1.25em;
+                color: var(--text-main);
+                font-weight: 700;
+            }
+            .report-info p {
+                margin: 8px 0 0 0;
+                color: var(--text-muted);
+                font-size: 0.95em;
+                line-height: 1.5;
+            }
+            .report-badge {
+                align-self: flex-start;
+                padding: 6px 14px;
+                border-radius: 100px;
+                background: #f3f4f6;
+                font-size: 0.75em;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: var(--text-muted);
+                transition: all 0.3s ease;
+            }
+            .report-card:hover .report-badge {
+                background: var(--report-bg);
+                color: var(--report-primary);
+            }
+        </style>
+
+        <div class="reports-header">
+            <h1 class="reports-title">Central de Relatórios</h1>
+            <p class="reports-subtitle">Analise dados de vendas, custos e desempenho operacional.</p>
+        </div>
+
+        <div class="reports-grid">
+            <!-- Vendas Realizadas -->
+            <a href="{% url 'RelatorioVendas' %}" class="report-card">
+                <div class="report-badge">Financeiro</div>
+                <div class="report-icon-box">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </div>
+                <div class="report-info">
+                    <h3>Vendas Realizadas</h3>
+                    <p>Detalhamento completo de todas as vendas diretas e por ticket em um determinado período.</p>
+                </div>
+            </a>
+
+            <!-- Custo Aluno Período -->
+            <a href="{% url 'RelatorioCustoAlunoPeriodo' %}" class="report-card">
+                <div class="report-badge">Gerencial</div>
+                <div class="report-icon-box">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <div class="report-info">
+                    <h3>Custo Aluno / Período</h3>
+                    <p>Relatório sintético dos gastos agregados por aluno ou curso dentro de um intervalo de datas.</p>
+                </div>
+            </a>
+        </div>
+    {% endif %}
 {%endblock%}

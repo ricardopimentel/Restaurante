@@ -7,6 +7,7 @@ from restaurante.core.libs.calendario import calendario
 from restaurante.core.libs.conexaoAD3 import conexaoAD
 from restaurante.core.models import pessoa, aluno, prato, usuariorestaurante, venda, alunoscem, alunoscolaboradores
 import datetime
+from restaurante.ticket_estudante.models import TicketAluno
 
 from restaurante.venda.forms import ConfirmacaoVendaForm
 
@@ -196,10 +197,14 @@ def SalvarVenda(request, id_aluno, id_prato, id_pessoa):
 
         cem = VerificarUsuarioCem(id_pessoa) #verifica se a bolsa é 100%
         #criar objeto da venda
+        
+        # Para alunos normais, registra o subsídio padrão. Se for CEM, soma o subsídio + a parte isentada do aluno
+        valor_final = (pratoobj.preco + pratoobj.preco_aluno) if cem else pratoobj.preco
+
         if cem: #verifica se a bolsa é 100%
-            vendaobj = venda(data=data, valor=(pratoobj.preco), id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj, cem=True)
+            vendaobj = venda(data=data, valor=valor_final, id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj, cem=True)
         else:
-            vendaobj = venda(data=data, valor=(pratoobj.preco), id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj)
+            vendaobj = venda(data=data, valor=valor_final, id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj)
         vendaobj.save()#salva venda
 
         return True
@@ -223,9 +228,9 @@ def Restricoes(id_aluno, id_prato):#tem que trazer a instacia nova da venda e co
         hoje = datetime.datetime.today()
         if hoje.time() < horafechamento:#verifica a hora do fechamento das vendas
             try:
-                vendaobj = venda.objects.get(data__contains=hoje.date(), id_aluno=id_aluno)#tenta encontrar uma venda para o aluno especifico na data de hoje
+                vendaobj = venda.objects.get(data__year=hoje.year, data__month=hoje.month, data__day=hoje.day, id_aluno=id_aluno)#tenta encontrar uma venda para o aluno especifico na data de hoje
             except venda.DoesNotExist:
-                vendaobj = venda.objects.filter(data__contains=hoje.date(), id_aluno=id_aluno)#quando é a primeira venda do dia para esse aluno
+                vendaobj = venda.objects.filter(data__year=hoje.year, data__month=hoje.month, data__day=hoje.day, id_aluno=id_aluno)#quando é a primeira venda do dia para esse aluno
             except:
                 return {'status': True, 'erro': "Já existem duas vendas para esse aluno hoje"}
             if vendaobj:#verifica se a venda existe
@@ -255,3 +260,50 @@ def Restricoes(id_aluno, id_prato):#tem que trazer a instacia nova da venda e co
             return {'status': True, 'erro': "O horário das vendas está encerrado"}
     except Exception as e:
         return {'status': True, 'erro': "Falha ao verificar o horário de fechamento"}
+
+@csrf_exempt
+def ValidarTicket(request):
+    if request.method == 'POST':
+        uuid_str = request.POST.get('uuid')
+        ticket = TicketAluno.objects.filter(uuid=uuid_str).first()
+        if not ticket:
+            messages.error(request, "Ticket inválido ou não encontrado.")
+            return redirect('Venda')
+        
+        if ticket.usado:
+            messages.error(request, "Ticket já foi utilizado!")
+            return redirect('Venda')
+            
+        prato_ativo = ExistePratoCadastrado(ticket.id_aluno.id_pessoa.usuario)
+        if not prato_ativo:
+            messages.error(request, "Não há prato ativo ou o horário não permite validar a venda.")
+            return redirect('Venda')
+            
+        # Validação de Tipo de Refeição e Valor
+        # Se o tipo do ticket for diferente do prato atual E os valores forem diferentes, bloqueia
+        if ticket.tipo_refeicao and ticket.tipo_refeicao != prato_ativo.descricao:
+            if ticket.valor != prato_ativo.preco_aluno:
+                messages.error(request, f"O ticket de {ticket.tipo_refeicao} (R$ {ticket.valor|stringformat:'.2f'}) não pode ser usado nessa refeição de {prato_ativo.descricao} (R$ {prato_ativo.preco_aluno|stringformat:'.2f'}).")
+                return redirect('Venda')
+            
+        restricoes = Restricoes(ticket.id_aluno.id, prato_ativo.id)
+        if restricoes['status']:
+            messages.error(request, restricoes['erro'])
+            return redirect('Venda')
+            
+        try:
+            sucesso = SalvarVenda(request, ticket.id_aluno.id, prato_ativo.id, ticket.id_aluno.id_pessoa.usuario)
+            if sucesso:
+                ticket.usado = True
+                ticket.data_utilizacao = datetime.datetime.now()
+                ticket.tipo_refeicao = prato_ativo.descricao
+                ticket.save()
+                messages.success(request, f"Ticket de {ticket.id_aluno.id_pessoa.nome} validado com sucesso!")
+            else:
+                pass # SalvarVenda should have already added messages.error
+        except Exception as e:
+            messages.error(request, f"Falha ao validar: {str(e)}")
+            
+        return redirect('Venda')
+        
+    return redirect('Venda')

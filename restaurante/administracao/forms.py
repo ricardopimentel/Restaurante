@@ -81,7 +81,7 @@ class CadastroPratoForm(forms.ModelForm):
 
     class Meta:  # Define os campos vindos do Modelo
         model = prato
-        fields = ('descricao', 'preco', 'status')
+        fields = ('descricao', 'preco', 'preco_aluno', 'status')
 
     def __init__(self, *args, **kwargs):  # INIT define caracteristicas para os campos de formulário vindos do Model (banco de dados)
         super(CadastroPratoForm, self).__init__(*args, **kwargs)
@@ -93,21 +93,26 @@ class CadastroPratoForm(forms.ModelForm):
             'placeholder': 'Preço',
             'title': 'Preço do Prato'})
         self.fields['preco'].label = ''
+        self.fields['preco_aluno'].widget = forms.TextInput(attrs={
+            'placeholder': 'Preço Aluno',
+            'title': 'Preço pago pelo estudante (PIX)'})
+        self.fields['preco_aluno'].label = ''
 
     def clean(self):
         cleaned_data = self.cleaned_data
         Descricao = cleaned_data.get("descricao")
         Preco = cleaned_data.get("preco")
+        PrecoAluno = cleaned_data.get("preco_aluno")
         Status = cleaned_data.get("status")
         Id = cleaned_data.get("id")
 
         try:
             if Id:
                 pratoobj = prato.objects.get(id=Id)
-                pratoobj.descricao = Descricao; pratoobj.preco = Preco; pratoobj.status = Status
+                pratoobj.descricao = Descricao; pratoobj.preco = Preco; pratoobj.preco_aluno = PrecoAluno; pratoobj.status = Status
                 pratoobj.save()
             else:
-                pratoobj = prato(descricao=Descricao, preco=Preco, status=Status)
+                pratoobj = prato(descricao=Descricao, preco=Preco, preco_aluno=PrecoAluno, status=Status)
                 pratoobj.save()
         except:
             raise forms.ValidationError("Não foi possível salvar o prato", code='invalid')
@@ -149,3 +154,18 @@ class CadastroAlunosColaboradoresForm(forms.Form):
 
         # Sempre retorne a coleção completa de dados válidos.
         return cleaned_data
+
+
+class ConfigPixForm(forms.ModelForm):
+    class Meta:
+        model = config
+        fields = ('mp_access_token', 'webhook_url')
+        widgets = {
+            'mp_access_token': forms.PasswordInput(render_value=True, attrs={'placeholder': 'APP_USR-...'}),
+            'webhook_url': forms.TextInput(attrs={'placeholder': 'https://...'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ConfigPixForm, self).__init__(*args, **kwargs)
+        self.fields['mp_access_token'].label = "Mercado Pago Access Token"
+        self.fields['webhook_url'].label = "Webhook URL"

@@ -15,4 +15,5 @@ urlpatterns = [
     re_path(r'^excluirbolsistas/$', views.ExcluirBolsistas, name='ExcluirBolsistas'),
     re_path(r'^cadastrocolaboradores/$', views.CadastroColaboradores, name='CadastroColaboradores'),
     re_path(r'^excluircolaboradores/$', views.ExcluirColaboradores, name='ExcluirColaboradores'),
+    re_path(r'^configuracao/pix/$', views.ConfigPix, name='ConfigPix'),
 ]
