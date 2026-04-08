@@ -59,3 +59,43 @@ class alunoscem (models.Model):
 
 class alunoscolaboradores (models.Model):
     id_pessoa = models.ForeignKey(pessoa, on_delete=models.PROTECT, unique=True)
+
+
+class CardapioDia(models.Model):
+    TIPO_REFEICAO = (
+        ('ALMOCO', 'Almoço'),
+        ('JANTA', 'Janta'),
+    )
+    data = models.DateField(auto_now_add=True)
+    tipo = models.CharField(max_length=10, choices=TIPO_REFEICAO)
+    itens = models.TextField() # Armazenará os itens selecionados
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('data', 'tipo')
+        verbose_name = 'Cardápio do Dia'
+        verbose_name_plural = 'Cardápios do Dia'
+
+    def __str__(self):
+        return f"{self.data} - {self.get_tipo_display()}"
+
+
+class OpcaoAlimento(models.Model):
+    CATEGORIAS = (
+        ('Proteínas', 'Proteínas'),
+        ('Acompanhamentos', 'Acompanhamentos'),
+        ('Saladas', 'Saladas'),
+        ('Sobremesas', 'Sobremesas'),
+        ('Bebidas/Sucos', 'Bebidas/Sucos'),
+    )
+    nome = models.CharField(max_length=100, unique=True)
+    categoria = models.CharField(max_length=30, choices=CATEGORIAS)
+
+    class Meta:
+        verbose_name = 'Opção de Alimento'
+        verbose_name_plural = 'Opções de Alimentos'
+        ordering = ['categoria', 'nome']
+
+    def __str__(self):
+        return f"{self.nome} ({self.categoria})"

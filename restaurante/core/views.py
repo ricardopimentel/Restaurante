@@ -17,85 +17,87 @@ def Home(request):
                     from restaurante.venda.views import ExistePratoCadastrado
 
                     pessoa_obj = pessoa.objects.get(usuario=request.session['userl'])
-                    aluno_obj = aluno.objects.get(id_pessoa=pessoa_obj)
+                    # Tenta buscar aluno, se não existir, cria ou ignora gracefuly
+                    aluno_obj = aluno.objects.filter(id_pessoa=pessoa_obj).first()
                     
-                    # Prato Ativo Atualmente
-                    prato_obj_ativo = ExistePratoCadastrado(request.session['userl'])
-                    if prato_obj_ativo:
-                        context['prato_info'] = {
-                            'status': True,
-                            'descricao': prato_obj_ativo.descricao,
-                            'preco': prato_obj_ativo.preco_aluno
-                        }
-                    else:
-                        context['prato_info'] = {
-                            'status': False,
-                            'erro': 'Atendimento encerrado ou sem pratos cadastrados para este horário.'
-                        }
-                    
-                    # Contagem de Tickets Não Utilizados (Apenas os Pagos)
-                    tickets_ativos_qs = TicketAluno.objects.filter(id_aluno=aluno_obj, usado=False, pago=True).order_by('-data_compra')
-                    context['tickets_ativos'] = tickets_ativos_qs.count()
-                    if context['tickets_ativos'] > 0:
-                        context['primeiro_ticket_uuid'] = tickets_ativos_qs.first().uuid
-                    
-                    # Histórico Recente de Tickets Usados (usa data_utilizacao se houver, senao data_compra)
-                    historico = TicketAluno.objects.filter(id_aluno=aluno_obj, usado=True).order_by('-data_utilizacao', '-data_compra')[:3]
-                    context['historico'] = historico
-                    
-                    # Categoria / Bolsista
-                    from restaurante.core.models import alunoscolaboradores
-                    is_cem = alunoscem.objects.filter(id_pessoa=pessoa_obj).exists()
-                    is_colab = alunoscolaboradores.objects.filter(id_pessoa=pessoa_obj).exists()
-                    
-                    if is_cem: context['categoria'] = 'Bolsista CEM (Gratuidade)'
-                    elif is_colab: context['categoria'] = 'Aluno Colaborador'
-                    else: context['categoria'] = 'Estudante Regular'
-                    
-                    # --- RESUMO FINANCEIRO ---
-                    from django.db.models import Sum
-                    from django.utils import timezone
-                    from datetime import timedelta
+                    if aluno_obj:
+                        # --- 1. PRATO ATIVO ---
+                        try:
+                            from restaurante.venda.views import ExistePratoCadastrado
+                            prato_obj_ativo = ExistePratoCadastrado(request.session['userl'])
+                            if prato_obj_ativo:
+                                context['prato_info'] = {'status': True, 'descricao': prato_obj_ativo.descricao, 'preco': prato_obj_ativo.preco_aluno}
+                            else:
+                                context['prato_info'] = {'status': False, 'erro': 'Atendimento encerrado ou sem pratos cadastrados para este horário.'}
+                        except Exception as e:
+                            context['prato_info'] = {'status': False, 'erro': 'Não foi possível consultar as refeições agora.'}
 
-                    periodo = request.GET.get('periodo', '30')
-                    hoje = timezone.now()
+                        # --- 2. CARTEIRA (TICKETS) ---
+                        try:
+                            tickets_ativos_qs = TicketAluno.objects.filter(id_aluno=aluno_obj, usado=False, pago=True).order_by('-data_compra')
+                            context['tickets_ativos'] = tickets_ativos_qs.count()
+                            if context['tickets_ativos'] > 0:
+                                context['primeiro_ticket_uuid'] = tickets_ativos_qs.first().uuid
+                        except:
+                            context['tickets_ativos'] = 0
+
+                        # --- 3. HISTÓRICO RECENTE ---
+                        try:
+                            from restaurante.ticket_estudante.models import TicketAluno
+                            historico = TicketAluno.objects.filter(id_aluno=aluno_obj, usado=True).order_by('-data_utilizacao', '-data_compra')[:3]
+                            context['historico'] = historico
+                        except:
+                            context['historico'] = []
+
+                        # --- 4. CATEGORIA ---
+                        try:
+                            from restaurante.core.models import alunoscem, alunoscolaboradores
+                            is_cem = alunoscem.objects.filter(id_pessoa=pessoa_obj).exists()
+                            is_colab = alunoscolaboradores.objects.filter(id_pessoa=pessoa_obj).exists()
+                            if is_cem: context['categoria'] = 'Bolsista CEM (Gratuidade)'
+                            elif is_colab: context['categoria'] = 'Aluno Colaborador'
+                            else: context['categoria'] = 'Estudante Regular'
+                            context['is_cem'] = is_cem
+                        except:
+                            context['categoria'] = 'Estudante Regular'
+
+                        # --- 5. RESUMO FINANCEIRO ---
+                        try:
+                            from django.db.models import Sum
+                            from django.utils import timezone
+                            from datetime import timedelta
+
+                            periodo = request.GET.get('periodo', '30')
+                            hoje = timezone.now()
+                            
+                            if periodo == '60': dias = 60; context['periodo_texto'] = '60 dias'
+                            elif periodo == '365': dias = 365; context['periodo_texto'] = '1 ano'
+                            elif periodo == 'tudo': dias = 9999; context['periodo_texto'] = 'todo o período'
+                            else: dias = 30; context['periodo_texto'] = '30 dias'; periodo = '30'
+
+                            data_limite = hoje - timedelta(days=dias)
+                            context['periodo_selecionado'] = periodo
+
+                            resumo_qs = TicketAluno.objects.filter(id_aluno=aluno_obj, usado=True)
+                            if periodo != 'tudo':
+                                resumo_qs = resumo_qs.filter(data_utilizacao__gte=data_limite)
+
+                            sum_almoco = resumo_qs.filter(tipo_refeicao__icontains='Almoço').aggregate(total=Sum('valor'))['total'] or 0.0
+                            sum_janta = resumo_qs.filter(tipo_refeicao__icontains='Janta').aggregate(total=Sum('valor'))['total'] or 0.0
+                            
+                            if sum_almoco == 0:
+                                sum_almoco = resumo_qs.filter(tipo_refeicao__icontains='Almoco').aggregate(total=Sum('valor'))['total'] or 0.0
+
+                            context['total_almoco'] = sum_almoco
+                            context['total_janta'] = sum_janta
+                        except:
+                            context['total_almoco'] = 0.0
+                            context['total_janta'] = 0.0
+                            context['periodo_texto'] = 'indisponível'
                     
-                    if periodo == '60':
-                        dias = 60
-                        context['periodo_texto'] = '60 dias'
-                    elif periodo == '365':
-                        dias = 365
-                        context['periodo_texto'] = '1 ano'
-                    elif periodo == 'tudo':
-                        dias = 9999
-                        context['periodo_texto'] = 'todo o período'
-                    else:
-                        dias = 30
-                        context['periodo_texto'] = '30 dias'
-                        periodo = '30'
-
-                    data_limite = hoje - timedelta(days=dias)
-                    context['periodo_selecionado'] = periodo
-
-                    # Query de soma
-                    resumo_qs = TicketAluno.objects.filter(id_aluno=aluno_obj, usado=True)
-                    if periodo != 'tudo':
-                        resumo_qs = resumo_qs.filter(data_utilizacao__gte=data_limite)
-
-                    sum_almoco = resumo_qs.filter(tipo_refeicao__icontains='Almoço').aggregate(total=Sum('valor'))['total'] or 0.0
-                    sum_janta = resumo_qs.filter(tipo_refeicao__icontains='Janta').aggregate(total=Sum('valor'))['total'] or 0.0
-                    
-                    # Caso a correção de nomes (acentos) não tenha pegado em registros manuais antigos:
-                    if sum_almoco == 0:
-                        sum_almoco = resumo_qs.filter(tipo_refeicao__icontains='Almoco').aggregate(total=Sum('valor'))['total'] or 0.0
-
-                    context['total_almoco'] = sum_almoco
-                    context['total_janta'] = sum_janta
-                    # ------------------------
-
                 except Exception as e:
                     import sys
-                    print("Erro ao carregar dashboard de aluno:", e, sys.exc_info())
+                    print("Erro crítico no dashboard de aluno:", e, sys.exc_info())
                     
             elif request.session.get('usertip') in ['admin', 'lanchonete', 'glanchonete']:
                 try:
@@ -113,7 +115,33 @@ def Home(request):
                     
                 except Exception as e:
                     print("Erro ao carregar stats de funcionário:", e)
-                    
+            
+            # --- CARDÁPIO DO DIA (PARA TODOS) ---
+            try:
+                from restaurante.core.models import CardapioDia
+                import datetime
+                agora = datetime.datetime.now()
+                hoje = agora.date()
+                hora = agora.hour
+                
+                # Se for antes das 14h, foca no Almoço, senão na Janta
+                tipo_atual = 'ALMOCO' if hora < 14 else 'JANTA'
+                
+                cardapio_obj = CardapioDia.objects.filter(data=hoje, tipo=tipo_atual).first()
+                if not cardapio_obj:
+                    # Se não achou o do momento, tenta o outro (ex: as 15h se não tiver janta, mostra o almoço que teve)
+                    cardapio_obj = CardapioDia.objects.filter(data=hoje).order_by('-tipo').first()
+                
+                if cardapio_obj:
+                    context['cardapio_dia'] = {
+                        'tipo': cardapio_obj.get_tipo_display(),
+                        'itens': cardapio_obj.itens.split(", "),
+                        'hora_ref': tipo_atual
+                    }
+            except:
+                pass
+            # -------------------------------------
+
             return render(request, 'index.html', context)
 
     except KeyError:

@@ -2,6 +2,7 @@ import sys
 from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect, resolve_url as r
+import json
 
 
 # Create your views here.
@@ -9,8 +10,10 @@ from restaurante.administracao.forms import AdForm, CadastroPratoForm, ConfigHor
     CadastroAlunosBolsistasForm, CadastroAlunosColaboradoresForm, ConfigPixForm
 from restaurante.administracao.models import config
 from restaurante.core.libs.conexaoAD3 import conexaoAD
-from restaurante.core.models import prato, alunoscem, pessoa, alunoscolaboradores
+from restaurante.core.models import prato, alunoscem, pessoa, alunoscolaboradores, CardapioDia, OpcaoAlimento
+from restaurante.core.constants import FOOD_OPTIONS
 from restaurante.venda.views import ExisteAlunoCadastrado, SalvaAluno
+import datetime
 
 # Eu sei que tenho que trocar isso
 usuario = 'winbackup'
@@ -315,7 +318,7 @@ def CadastroColaboradores(request):
             ListaErros = []
             ListaAcertos = []
             form = CadastroAlunosColaboradoresForm()
-            if request.method == 'POST':#se vier pelo post
+            if request.method == 'POST':#se veio pelo post
                 ListaAlunosAD = GetListaEstudantesAD()
                 form = CadastroAlunosColaboradoresForm(data=request.POST)
                 if form.is_valid():#se o formulário foi válido, ou seja todos os campos obrigatórios preecnhidos
@@ -445,4 +448,145 @@ def ConfigPix(request):
             messages.error(request, "Você não tem permissão para acessar esta página.")
             return redirect(r('Home'))
     else:
-        return redirect(r('Login'))
+        return redirect(r('Login'))
+
+
+def GerenciarCardapio(request):
+    if not request.session.get('nome'):
+        return redirect(r('Login'))
+    
+    # Permitir admin e lanchonete (operadores)
+    if request.session.get('usertip') not in ['admin', 'lanchonete']:
+        messages.error(request, "Acesso Negado.")
+        return redirect(r('Home'))
+
+    hoje = datetime.date.today()
+    
+    if request.method == 'POST':
+        tipo = request.POST.get('tipo')
+        itens_selecionados = request.POST.getlist('itens')
+        
+        if not itens_selecionados:
+            messages.warning(request, "Selecione ao menos um item para o cardápio.")
+        else:
+            itens_str = ", ".join(itens_selecionados)
+            cardapio, created = CardapioDia.objects.update_or_create(
+                data=hoje,
+                tipo=tipo,
+                defaults={'itens': itens_str}
+            )
+            messages.success(request, f"Cardápio de {cardapio.get_tipo_display()} salvo com sucesso!")
+            return redirect(r('GerenciarCardapio'))
+
+    # Buscar cardápios de hoje para exibir o que já está salvo
+    cardapios_hoje = CardapioDia.objects.filter(data=hoje)
+    cardapio_dict = {c.tipo: c.itens.split(", ") for c in cardapios_hoje}
+
+    # Pegar as opções do banco de dados agrupadas por categoria
+    food_options = {}
+    for cat_key, cat_name in OpcaoAlimento.CATEGORIAS:
+        food_options[cat_name] = OpcaoAlimento.objects.filter(categoria=cat_key).values_list('nome', flat=True)
+
+    return render(request, 'administracao/gerenciar_cardapio.html', {
+        'title': 'Gerenciar Cardápio',
+        'itemselec': 'HOME',
+        'food_options': food_options,
+        'cardapio_hoje': cardapio_dict,
+        'hoje': hoje,
+    })
+
+
+def GerenciarOpcoesAlimento(request):
+    if not request.session.get('nome') or request.session.get('usertip') not in ['admin', 'lanchonete']:
+        messages.error(request, "Acesso Negado.")
+        return redirect(r('Home'))
+
+    # Carga Inicial de Proteção (se o banco estiver vazio, carrega do constants.py)
+    if not OpcaoAlimento.objects.exists():
+        from restaurante.core.constants import FOOD_OPTIONS
+        for cat, itens in FOOD_OPTIONS.items():
+            for item in itens:
+                OpcaoAlimento.objects.get_or_create(nome=item, categoria=cat)
+
+    if request.method == 'POST':
+        nome = request.POST.get('nome')
+        categoria = request.POST.get('categoria')
+        if nome and categoria:
+            try:
+                OpcaoAlimento.objects.create(nome=nome, categoria=categoria)
+                messages.success(request, f"Item '{nome}' adicionado com sucesso!")
+            except:
+                messages.error(request, "Erro ao adicionar item. Verifique se o nome já existe.")
+        return redirect(r('GerenciarOpcoesAlimento'))
+
+    opcoes = OpcaoAlimento.objects.all()
+    categorias = OpcaoAlimento.CATEGORIAS
+
+    return render(request, 'administracao/opcoes_alimento.html', {
+        'title': 'Opções de Alimentos',
+        'itemselec': 'HOME',
+        'opcoes': opcoes,
+        'categorias': categorias,
+    })
+
+
+def RemoverOpcaoAlimento(request, id_opcao):
+    if not request.session.get('nome') or request.session.get('usertip') not in ['admin', 'lanchonete']:
+        return redirect(r('Home'))
+    
+    try:
+        opcao = OpcaoAlimento.objects.get(pk=id_opcao)
+        nome = opcao.nome
+        opcao.delete()
+        messages.success(request, f"Item '{nome}' removido.")
+    except:
+        messages.error(request, "Erro ao remover item.")
+    
+    return redirect(r('GerenciarOpcoesAlimento'))
+
+
+def ImportarOpcoesJSON(request):
+    if request.method == 'POST' and request.FILES.get('arquivo_json'):
+        try:
+            arquivo = request.FILES['arquivo_json']
+            dados = json.load(arquivo)
+            
+            # Formato esperado: {"Categoria": ["Item1", "Item2"]}
+            count = 0
+            for cat, itens in dados.items():
+                # Validar categoria
+                valid_cats = [c[0] for c in OpcaoAlimento.CATEGORIAS]
+                if cat not in valid_cats:
+                    continue
+                
+                for item in itens:
+                    obj, created = OpcaoAlimento.objects.get_or_create(nome=item, categoria=cat)
+                    if created:
+                        count += 1
+            
+            messages.success(request, f"Importação concluída! {count} novos itens adicionados.")
+        except Exception as e:
+            messages.error(request, f"Erro ao processar JSON: {str(e)}")
+    
+    return redirect(r('GerenciarOpcoesAlimento'))
+
+
+def ExportarOpcoesJSON(request):
+    if not request.session.get('nome') or request.session.get('usertip') not in ['admin', 'lanchonete']:
+        return redirect(r('Home'))
+    
+    opcoes = OpcaoAlimento.objects.all()
+    dados = {}
+    
+    for cat_key, cat_name in OpcaoAlimento.CATEGORIAS:
+        itens = list(opcoes.filter(categoria=cat_key).values_list('nome', flat=True))
+        if itens:
+            dados[cat_key] = itens
+            
+    response_data = json.dumps(dados, indent=2, ensure_ascii=False)
+    
+    from django.http import HttpResponse
+    response = HttpResponse(response_data, content_type='application/json')
+    response['Content-Disposition'] = f'attachment; filename="cardapio_modelo_{datetime.date.today()}.json"'
+    
+    return response

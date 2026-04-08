@@ -7,6 +7,7 @@ from restaurante.core.libs.calendario import calendario
 from restaurante.core.libs.conexaoAD3 import conexaoAD
 from restaurante.core.models import pessoa, aluno, prato, usuariorestaurante, venda, alunoscem, alunoscolaboradores
 import datetime
+from django.utils import timezone
 from restaurante.ticket_estudante.models import TicketAluno
 
 from restaurante.venda.forms import ConfirmacaoVendaForm
@@ -303,7 +304,7 @@ def ValidarTicket(request):
             sucesso = SalvarVenda(request, ticket.id_aluno.id, prato_ativo.id, ticket.id_aluno.id_pessoa.usuario)
             if sucesso:
                 ticket.usado = True
-                ticket.data_utilizacao = datetime.datetime.now()
+                ticket.data_utilizacao = timezone.now()
                 ticket.tipo_refeicao = prato_ativo.descricao
                 ticket.save()
                 messages.success(request, f"Ticket de {ticket.id_aluno.id_pessoa.nome} validado com sucesso!")
@@ -312,6 +313,6 @@ def ValidarTicket(request):
         except Exception as e:
             messages.error(request, f"Falha ao validar: {str(e)}")
             
-        return redirect('Venda')
+        return redirect('ValidacaoQRCode')
         
-    return redirect('Venda')
+    return redirect('ValidacaoQRCode')

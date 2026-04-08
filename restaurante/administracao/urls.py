@@ -16,4 +16,9 @@ urlpatterns = [
     re_path(r'^cadastrocolaboradores/$', views.CadastroColaboradores, name='CadastroColaboradores'),
     re_path(r'^excluircolaboradores/$', views.ExcluirColaboradores, name='ExcluirColaboradores'),
     re_path(r'^configuracao/pix/$', views.ConfigPix, name='ConfigPix'),
+    re_path(r'^cardapio/$', views.GerenciarCardapio, name='GerenciarCardapio'),
+    re_path(r'^cardapio/opcoes/$', views.GerenciarOpcoesAlimento, name='GerenciarOpcoesAlimento'),
+    re_path(r'^cardapio/opcoes/remover/(?P<id_opcao>.+)$', views.RemoverOpcaoAlimento, name='RemoverOpcaoAlimento'),
+    re_path(r'^cardapio/opcoes/importar/$', views.ImportarOpcoesJSON, name='ImportarOpcoesJSON'),
+    re_path(r'^cardapio/opcoes/exportar/$', views.ExportarOpcoesJSON, name='ExportarOpcoesJSON'),
 ]

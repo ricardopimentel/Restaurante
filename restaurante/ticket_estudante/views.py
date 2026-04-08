@@ -3,6 +3,7 @@ import json
 from django.shortcuts import render, redirect, resolve_url as r
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
 from decouple import config
 from restaurante.administracao.models import config as config_model
 from restaurante.core.models import prato, alunoscem, aluno
@@ -127,7 +128,8 @@ def SimularPagamento(request):
                 id_aluno=aluno_obj, 
                 valor=valor, 
                 tipo_refeicao=tipo,
-                pago=True
+                pago=True,
+                data_pagamento=timezone.now()
             )
             return JsonResponse({'status': 'approved', 'redirect': r('TicketsEstudante')})
 
@@ -169,6 +171,7 @@ def SimularPagamento(request):
                     valor=valor, 
                     tipo_refeicao=tipo,
                     pago=(payment.get('status') == 'approved'),
+                    data_pagamento=timezone.now() if payment.get('status') == 'approved' else None,
                     id_pagamento_externo=str(payment.get('id')),
                     pix_copia_e_cola=payment['point_of_interaction']['transaction_data']['qr_code'],
                     pix_qr_code_base64=payment['point_of_interaction']['transaction_data']['qr_code_base64']
@@ -214,6 +217,7 @@ def StatusTicket(request, uuid):
                 mp_status = payment_info["response"].get("status")
                 if mp_status == 'approved':
                     ticket.pago = True
+                    ticket.data_pagamento = timezone.now()
                     ticket.save()
         except Exception as e:
             # Se a consulta ativa falhar (ex: rede), apenas ignoramos e retornamos o status local
@@ -242,6 +246,7 @@ def WebhookPix(request):
                     ticket = TicketAluno.objects.filter(id_pagamento_externo=id_pagamento).first()
                     if ticket:
                         ticket.pago = True
+                        ticket.data_pagamento = timezone.now()
                         ticket.save()
         except:
             pass

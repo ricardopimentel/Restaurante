@@ -14,20 +14,17 @@
 		<meta http-equiv="refresh" content="0; url=/login/">
 	{%else%}
 		<!-- SALES DASHBOARD HEADER -->
-		<div style="width: 100%; max-width: 800px; margin: 0 auto 30px auto; display: flex; align-items: center; justify-content: space-between;">
-			<div>
-				<h1 style="margin: 0; font-size: 1.8em; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px;">Painel de Vendas</h1>
-				<p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 0.95em;">Selecione o tipo de operação desejada</p>
-			</div>
-			<div style="display: flex; gap: 10px;">
-				<a href="{% url 'Home' %}" style="padding: 10px 20px; border-radius: 12px; background: rgba(255,255,255,0.5); color: var(--text-main); text-decoration: none; font-weight: 600; font-size: 0.9em; border: 1px solid rgba(0,0,0,0.05); transition: all 0.2s;" onmouseover="this.style.background='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.5)'">
-					<i class="fas fa-home"></i> Home
-				</a>
-			</div>
+		<div style="width: 100%; max-width: 800px; margin: 0 auto 40px auto; text-align: center;">
+			<h1 style="margin: 0; font-size: 2.2em; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; display: flex; align-items: center; justify-content: center; gap: 15px;">
+				<i class="fas fa-store" style="color: var(--primary);"></i>
+				Painel de Vendas
+			</h1>
+			<p style="margin: 8px 0 0 0; color: var(--text-muted); font-size: 1.1em;">Selecione o tipo de operação desejada para prosseguir.</p>
 		</div>
 
 		<!-- SALES ACTION CARDS -->
-		<div style="width: 100%; max-width: 1200px; margin: 0 auto; display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+		<div style="width: 100%; max-width: 1200px; margin: 0 auto; display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(280px, 350px)); justify-content: center;">
+			
 			<!-- MANUAL SALE -->
 			<a href="{% url 'Venda' %}" style="text-decoration: none !important; border-bottom: none !important;">
 				<div class="card" style="margin: 0; padding: 35px 25px; text-align: center; border: 1px solid rgba(16, 185, 129, 0.1); background: white; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'">
@@ -52,17 +49,17 @@
 				</div>
 			</a>
 
-			<!-- BATCH SALE -->
-			<a href="{% url 'VendaEmLotes' %}" style="text-decoration: none !important; border-bottom: none !important;">
-				<div class="card" style="margin: 0; padding: 35px 25px; text-align: center; border: 1px solid rgba(139, 92, 246, 0.1); background: white; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'">
-					<div style="width: 70px; height: 70px; margin: 0 auto 20px auto; border-radius: 20px; background: rgba(139, 92, 246, 0.1); display: flex; align-items: center; justify-content: center; color: var(--accent);">
+			<!-- BATCH SALE (DISABLED) -->
+			<div style="text-decoration: none !important; border-bottom: none !important; opacity: 0.5; filter: grayscale(0.8); cursor: not-allowed;">
+				<div class="card" style="margin: 0; padding: 35px 25px; text-align: center; border: 1px solid rgba(139, 92, 246, 0.1); background: #f8fafc; transition: none;">
+					<div style="width: 70px; height: 70px; margin: 0 auto 20px auto; border-radius: 20px; background: rgba(139, 92, 246, 0.1); display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
 						<i class="fas fa-users" style="font-size: 32px;"></i>
 					</div>
-					<h3 style="margin: 0; font-size: 1.3em; color: var(--text-main); font-weight: 700;">Venda em Lote</h3>
+					<h3 style="margin: 0; font-size: 1.3em; color: var(--text-muted); font-weight: 700;">Venda em Lote</h3>
 					<p style="margin: 10px 0 0 0; color: var(--text-muted); font-size: 0.85em;">Registre múltiplas vendas de<br>uma vez selecionando a turma.</p>
-					<div style="margin-top: 25px; padding: 10px; border-radius: 10px; background: var(--accent); color: white; font-weight: 700; font-size: 0.85em;">Ver Lotes</div>
+					<div style="margin-top: 25px; padding: 10px; border-radius: 10px; background: #94a3b8; color: white; font-weight: 700; font-size: 0.85em;">Indisponível</div>
 				</div>
-			</a>
+			</div>
 		</div>
 	{%endif%}
 {%endblock%}

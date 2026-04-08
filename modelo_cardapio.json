@@ -1,0 +1,35 @@
+{
+  "Proteínas": [
+    "Carne de Sol Acebolada",
+    "Frango ao Molho",
+    "Estrogonofe de Carne",
+    "Lombo Suíno Assado",
+    "Peixe Empanado"
+  ],
+  "Acompanhamentos": [
+    "Arroz Integral",
+    "Arroz com Cenoura",
+    "Feijão Carioca",
+    "Feijão Preto",
+    "Farofa de Bacon",
+    "Macarronada Aromática"
+  ],
+  "Saladas": [
+    "Salada Mix de Folhas",
+    "Salada de Tomate e Pepino",
+    "Beterraba Cozida",
+    "Salada de Couve-Flor"
+  ],
+  "Sobremesas": [
+    "Gelatina de Morango",
+    "Pudim de Leite",
+    "Melancia Fatiada",
+    "Doce de Doce de Leite"
+  ],
+  "Bebidas/Sucos": [
+    "Suco de Laranja Natural",
+    "Suco de Acerola",
+    "Suco de Caju",
+    "Refresco de Guaraná"
+  ]
+}

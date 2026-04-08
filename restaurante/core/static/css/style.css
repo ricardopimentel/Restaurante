@@ -24,8 +24,9 @@
 }
 
 body {
-	width: 99%;
-	margin-left: 0px;
+	width: 100%;
+	margin: 0;
+    overflow-x: hidden;
     background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 50%, #e0e7ff 100%);
     background-attachment: fixed;
     color: var(--text-main);
@@ -52,18 +53,19 @@ div.bar-top{
     width: 100%;
     position: sticky;
     top: 0;
-    z-index: 1000;
-    background: var(--surface-glass);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255,255,255,0.4);
+    z-index: 1200; /* Stays above the side menu (1100) */
+    background: rgba(255, 255, 255, 0.4); /* Much more transparent */
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border-bottom: 1px solid rgba(255,255,255,0.2);
     box-shadow: var(--shadow-sm);
     transition: all 0.3s ease;
 }
 
 .navbar-scrolled {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.6);
     box-shadow: var(--shadow-md);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
 .navbar-container {
@@ -281,29 +283,34 @@ div.bar-top{
 @media screen and (max-width: 991px) {
     .navbar-toggle {
         display: block;
+        z-index: 1200; /* Ensure it stays above the side menu (1100) */
     }
 
     .navbar-collapse {
         position: fixed;
         top: 0;
         right: -100%;
-        width: 80%;
-        max-width: 300px;
+        width: 85%;
+        max-width: 320px;
         height: 100vh;
-        background: var(--surface-glass);
-        backdrop-filter: blur(25px);
-        -webkit-backdrop-filter: blur(25px);
+        background: rgba(255, 255, 255, 0.45); /* Crystal-white transparency for maximum blur visibility */
+        backdrop-filter: blur(40px);
+        -webkit-backdrop-filter: blur(40px);
+        transform: translateZ(0); /* Hardware acceleration for blur performance */
         flex-direction: column;
-        padding: 80px 20px 40px 20px;
-        box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+        padding: 90px 25px 40px 25px;
+        box-shadow: -15px 0 45px rgba(0,0,0,0.15);
         transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        z-index: 1000;
+        z-index: 1100; /* Stays below the navbar (1200) so toggle is clickable */
         justify-content: flex-start;
         align-items: stretch;
+        visibility: hidden;
+        border-left: 1px solid rgba(255, 255, 255, 0.3);
     }
 
     .navbar-collapse.active {
         right: 0;
+        visibility: visible;
     }
 
     .navbar-menu {
@@ -1584,15 +1591,89 @@ a.icon:hover:before {
 }
 
 
-/* Float Action Button*/
-.action-container {
-  position: fixed;
-  bottom: 0em;
-  right: .5em;
-  display: flex;
-  flex-direction: column-reverse;
-  align-items: center;
-  padding: 2em;
+/* Message Popups (Global Toasts) */
+.msg-popup-container {
+    position: fixed;
+    top: 90px;
+    right: 20px;
+    z-index: 10001;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-width: 400px;
+    pointer-events: none;
+}
+
+.msg-popup {
+    padding: 20px 50px 20px 20px;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-left: 6px solid #ccc;
+    position: relative;
+    pointer-events: all;
+    animation: slideInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.msg-popup.success {
+    background: rgba(236, 253, 245, 0.7); /* Emerald 50 with transparency */
+    border-left-color: #10b981; /* Emerald 500 */
+    color: #064e3b; /* Emerald 900 */
+}
+
+.msg-popup.error {
+    background: rgba(254, 242, 242, 0.7); /* Red 50 with transparency */
+    border-left-color: #ef4444; /* Red 500 */
+    color: #7f1d1d; /* Red 900 */
+}
+
+.msg-popup p {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1em;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.msg-popup .action-btn {
+    position: absolute;
+    color: inherit;
+    opacity: 0.5;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: none;
+    border: none;
+    padding: 5px;
+}
+
+.msg-popup .action-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.msg-popup .copy-btn {
+    position: static; /* Remove absolute positioning */
+    font-size: 0.9em;
+    padding: 0;
+    display: inline-flex;
+    transform: none !important;
+}
+
+.msg-popup .close-btn {
+    right: 8px;
+    top: 8px;
+    font-size: 1em;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
 }
 
 .action-container > .fab-container:nth-child(n+2) > .fab,

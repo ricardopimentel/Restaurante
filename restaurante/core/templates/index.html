@@ -11,6 +11,27 @@
 	
 {%block conteudo%}
     {% if request.session.usertip == 'aluno' %}
+        <!-- CARDÁPIO DO DIA -->
+        {% if cardapio_dia %}
+            <div class="card" style="width: 100%; max-width: 1000px; margin: 0 auto 20px auto; padding: 0; overflow: hidden; border: 2px solid var(--food-primary);">
+                <div style="background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%); padding: 15px 25px; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 12px; color: white;">
+                        <i class="fas fa-utensils" style="font-size: 1.5em;"></i>
+                        <h2 style="margin: 0; font-size: 1.2em; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Cardápio de {{ cardapio_dia.tipo }}</h2>
+                    </div>
+                    <span style="background: rgba(255,255,255,0.2); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 700;">Hoje: {{ hoje|date:"d/m" }}</span>
+                </div>
+                <div style="padding: 25px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start; background: #fffbeb;">
+                    {% for item in cardapio_dia.itens %}
+                        <div style="background: white; border: 1px solid #fde68a; color: #92400e; padding: 8px 15px; border-radius: 12px; font-size: 0.95em; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                            <i class="fas fa-check-circle" style="font-size: 0.8em; color: #f59e0b; margin-right: 5px;"></i>
+                            {{ item }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
         <!-- DIVERSOS WIDGETS DO ESTUDANTE -->
         <div style="width: 100%; max-width: 1000px; margin: 0 auto; display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
             
@@ -159,6 +180,13 @@
                 
                 <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
                     {%if request.session.usertip == 'lanchonete' or request.session.usertip == 'admin' %}
+                        <a href="{% url 'GerenciarCardapio' %}" style="text-decoration: none !important; border-bottom: none !important; flex: 1; min-width: 100px; display: block;">
+                            <div style="padding: 20px 10px; border-radius: 16px; background: rgba(245, 158, 11, 0.05); text-align: center; border: 1px solid rgba(245, 158, 11, 0.1); transition: all 0.2s;" onmouseover="this.style.background='rgba(245, 158, 11, 0.1)'; this.style.transform='translateY(-3px)'" onmouseout="this.style.background='rgba(245, 158, 11, 0.05)'; this.style.transform='translateY(0)'">
+                                <i class="fas fa-utensils" style="font-size: 32px; color: #f59e0b; margin-bottom: 10px;"></i>
+                                <p style="margin: 0; font-size: 0.85em; font-weight: 700; color: var(--text-main);">Cardápio</p>
+                            </div>
+                        </a>
+
                         <a href="{% url 'ValidacaoQRCode' %}" style="text-decoration: none !important; border-bottom: none !important; flex: 1; min-width: 100px; display: block;">
                             <div style="padding: 20px 10px; border-radius: 16px; background: rgba(99, 102, 241, 0.05); text-align: center; border: 1px solid rgba(99, 102, 241, 0.1); transition: all 0.2s;" onmouseover="this.style.background='rgba(99, 102, 241, 0.1)'; this.style.transform='translateY(-3px)'" onmouseout="this.style.background='rgba(99, 102, 241, 0.05)'; this.style.transform='translateY(0)'">
                                 <i class="fas fa-qrcode" style="font-size: 32px; color: #6366f1; margin-bottom: 10px;"></i>
@@ -213,33 +241,5 @@
         </div>
     {% endif %}
 
-    <script>
-        function mostrarocultar(mostrar, ocultar){
-            $("#"+mostrar).show(500);
-            document.getElementById(ocultar).style.display = "none";
-        }
-        function ocultarmostrar(mostrar, ocultar){
-            $("#"+ocultar).hide(500);
-            $("#"+mostrar).show(500);
-        }
-        function  mostrar(ID){
-            document.getElementById(ID).style.display = "block";
-        }
-        function  ocultar(ID){
-            document.getElementById(ID).style.display = "none";
-            $("#"+ID).hide("slow");
-        }
-    </script>
-
-    {% if messages %}
-        <div class="msg-popup-container">
-            {% for message in messages %}
-                <div id="{{ forloop.counter0 }}" class="msg-popup {{ message.tags }}" style="padding: 15px; border-radius: 8px; box-shadow: var(--shadow-md); margin-bottom: 10px; background: white; border-left: 5px solid {% if message.tags == 'error' %}#ef4444{% else %}#10b981{% endif %};">
-                    <p style="margin: 0; font-weight: 500;">{{ message }}</p>
-                    <a onclick="ocultar('{{ forloop.counter0 }}')" title="Fechar">✖</a>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
 {%endblock%}
 

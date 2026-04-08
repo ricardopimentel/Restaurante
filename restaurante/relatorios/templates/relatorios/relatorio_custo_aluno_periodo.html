@@ -110,17 +110,19 @@
             font-weight: 700;
         }
         
-        .filter-form form {
+        /* Compact Form Layout */
+        .filter-form {
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: wrap; /* Allows wrapping on small screens */
             gap: 20px;
             align-items: flex-end;
             padding-top: 15px;
             margin-top: 15px;
             border-top: 1px solid rgba(0,0,0,0.05);
+            width: 100%;
         }
         
-        .filter-form form div {
+        .filter-form > div {
             flex: 1;
             min-width: 160px;
         }

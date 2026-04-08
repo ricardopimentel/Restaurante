@@ -10,6 +10,8 @@ class TicketAluno(models.Model):
     pago = models.BooleanField('Pago?', default=False)
     usado = models.BooleanField('Usado?', default=False)
     tipo_refeicao = models.CharField('Tipo de Refeição', max_length=15, default='Almoço')
+    data_utilizacao = models.DateTimeField('Data de Uso', null=True, blank=True)
+    data_pagamento = models.DateTimeField('Data do Pagamento', null=True, blank=True)
     id_pagamento_externo = models.CharField('ID Pagamento Externo', max_length=100, null=True, blank=True)
     pix_copia_e_cola = models.TextField('PIX Copia e Cola', null=True, blank=True)
     pix_qr_code_base64 = models.TextField('PIX QR Code Base64', null=True, blank=True)

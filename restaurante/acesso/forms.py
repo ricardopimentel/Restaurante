@@ -64,7 +64,7 @@ def MontarMenu(request, ret, usuario):
         request.session['menu'] = ['logo', 'HOME', 'VENDAS', 'RELATÓRIOS', 'ADMINISTRAÇÃO', 'sair']
         request.session['url'] = [r('Home').replace('/restaurante/', 'restaurante/'),
                                   r('Home').replace('/restaurante/', 'restaurante/'),
-                                  r('Venda').replace('/restaurante/', 'restaurante/'),
+                                  r('Vendas').replace('/restaurante/', 'restaurante/'),
                                   r('Relatorios').replace('/restaurante/', 'restaurante/'),
                                   r('Administracao').replace('/restaurante/', 'restaurante/'), '']
         request.session['img'] = ['if.png', 'home24.png', 'dinheiro24b.png', 'relatorio24.png', 'admin24.png', '']
@@ -86,7 +86,7 @@ def MontarMenu(request, ret, usuario):
         request.session['menu'] = ['logo', 'HOME', 'VENDAS', 'RELATÓRIOS', 'sair']
         request.session['url'] = [r('Home').replace('/restaurante/', 'restaurante/'),
                                   r('Home').replace('/restaurante/', 'restaurante/'),
-                                  r('Venda').replace('/restaurante/', 'restaurante/'),
+                                  r('Vendas').replace('/restaurante/', 'restaurante/'),
                                   r('Relatorios').replace('/restaurante/', 'restaurante/'), '']
         request.session['img'] = ['if.png', 'home24.png', 'dinheiro24b.png', 'relatorio24.png', '']
         # logou então, adicionar os dados do usuário na sessão

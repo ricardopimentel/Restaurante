@@ -117,19 +117,21 @@
             font-weight: 700;
         }
         
-        /* Compact Form Grid */
-        .filter-form form {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        /* Compact Form Layout */
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap; /* Allows wrapping on small screens */
             gap: 15px;
             align-items: flex-end;
             padding-top: 15px;
             margin-top: 15px;
             border-top: 1px solid rgba(0,0,0,0.05);
+            width: 100%;
         }
         
-        .filter-form form div {
-            min-width: 140px;
+        .filter-form > div {
+            flex: 1;
+            min-width: 150px;
         }
         
         .filter-form label {

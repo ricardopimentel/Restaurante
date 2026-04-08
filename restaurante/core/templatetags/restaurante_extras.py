@@ -67,3 +67,7 @@ def real(valor):
 @register.filter()
 def dobro(value):
     return value*2
+
+@register.filter
+def get_dict_item(dictionary, key):
+    return dictionary.get(key)

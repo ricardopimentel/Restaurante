@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titulo %}{{ title }}{% endblock %}
+
+{% block conteudo %}
+<style>
+    .options-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding-bottom: 50px;
+    }
+
+    .header-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .management-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 30px;
+    }
+
+    @media (max-width: 900px) {
+        .management-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .admin-card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid #f3f4f6;
+    }
+
+    .card-title {
+        font-size: 1.1em;
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 0.85em;
+        font-weight: 700;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+        text-transform: uppercase;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        font-size: 0.95em;
+        transition: all 0.2s;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        outline: none;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-submit:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+    }
+
+    .category-group {
+        margin-bottom: 25px;
+    }
+
+    .category-header {
+        font-size: 0.9em;
+        font-weight: 800;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        border-bottom: 2px solid #f3f4f6;
+        padding-bottom: 8px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .item-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .item-tag {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        padding: 6px 12px;
+        border-radius: 80px;
+        font-size: 0.85em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+
+    .item-tag:hover {
+        background: #fee2e2;
+        border-color: #fca5a5;
+        color: #dc2626;
+    }
+
+    .item-tag a {
+        color: #9ca3af;
+        text-decoration: none;
+        font-size: 1.1em;
+        line-height: 1;
+    }
+
+    .item-tag:hover a {
+        color: #ef4444;
+    }
+
+    .import-info {
+        font-size: 0.8em;
+        color: var(--text-muted);
+        background: #f8fafc;
+        padding: 10px;
+        border-radius: 8px;
+        margin-top: 15px;
+    }
+
+    code {
+        background: #e2e8f0;
+        padding: 2px 4px;
+        border-radius: 4px;
+        font-family: monospace;
+    }
+</style>
+
+<div class="options-container">
+    <div class="header-actions">
+        <div>
+            <h1 style="margin: 0; font-size: 2em; font-weight: 800; color: var(--text-main);">
+                <i class="fas fa-list-check" style="color: var(--primary);"></i> Opções do Cardápio
+            </h1>
+            <p style="color: var(--text-muted);">Gerencie os alimentos disponíveis para seleção no menu do dia.</p>
+        </div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="{% url 'ExportarOpcoesJSON' %}" class="btn-submit" style="width: auto; padding: 10px 20px; background: white; color: var(--primary); border: 2px solid var(--primary);">
+                <i class="fas fa-file-export"></i> Exportar biblioteca (JSON)
+            </a>
+            <a href="{% url 'GerenciarCardapio' %}" class="btn-submit" style="width: auto; padding: 10px 20px; background: #6366f1;">
+                <i class="fas fa-arrow-left"></i> Voltar ao Cardápio
+            </a>
+        </div>
+    </div>
+
+    <div class="management-grid">
+        <!-- SIDEBAR: FORMS -->
+        <div style="display: flex; flex-direction: column; gap: 30px;">
+            <!-- ADD ITEM -->
+            <div class="admin-card">
+                <h3 class="card-title"><i class="fas fa-plus-circle"></i> Novo Alimento</h3>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Nome do Item</label>
+                        <input type="text" name="nome" class="form-control" placeholder="Ex: Peixe Grelhado" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoria</label>
+                        <select name="categoria" class="form-control" required>
+                            <option value="">Selecione...</option>
+                            {% for cat_key, cat_name in categorias %}
+                                <option value="{{ cat_key }}">{{ cat_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-submit">
+                        Salvar Item
+                    </button>
+                </form>
+            </div>
+
+            <!-- IMPORT JSON -->
+            <div class="admin-card" style="border-left: 5px solid #6366f1;">
+                <h3 class="card-title" style="color: #6366f1;"><i class="fas fa-file-import"></i> Importar JSON</h3>
+                <form method="POST" action="{% url 'ImportarOpcoesJSON' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Arquivo .json</label>
+                        <input type="file" name="arquivo_json" class="form-control" accept=".json" required>
+                    </div>
+                    <button type="submit" class="btn-submit" style="background: #6366f1;">
+                        Carregar Arquivo
+                    </button>
+                </form>
+                <div class="import-info">
+                    <strong>Formato esperado:</strong><br>
+                    <code>{"Proteínas": ["Item A", "Item B"], ...}</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN: LIST -->
+        <div class="admin-card">
+            <h3 class="card-title"><i class="fas fa-database"></i> Biblioteca Atual</h3>
+            
+            {% regroup opcoes by categoria as categoria_list %}
+
+            {% for cat in categoria_list %}
+                <div class="category-group">
+                    <div class="category-header">
+                        <span>{{ cat.grouper }}</span>
+                        <span style="opacity: 0.5;">{{ cat.list|length }} itens</span>
+                    </div>
+                    <div class="item-list">
+                        {% for item in cat.list %}
+                            <div class="item-tag">
+                                {{ item.nome }}
+                                <a href="{% url 'RemoverOpcaoAlimento' id_opcao=item.id %}" 
+                                   onclick="return confirm('Deseja remover este item permanentemente?')"
+                                   title="Remover">
+                                    <i class="fas fa-times-circle"></i>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% empty %}
+                <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    <i class="fas fa-box-open" style="font-size: 3em; display: block; margin-bottom: 15px; opacity: 0.3;"></i>
+                    Nenhum item cadastrado ainda.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
