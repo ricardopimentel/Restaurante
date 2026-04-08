@@ -9,14 +9,52 @@
         </div>
 
         {% if ticket.usado %}
-            <div style="padding: 40px 20px;">
-                <div style="width: 80px; height: 80px; background: #d1fae5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto;">
-                    <span style="font-size: 40px; color: #10b981;">✓</span>
-                </div>
-                <h2 style="color: #10b981; margin: 0 0 10px 0; font-weight: 700;">Utilizado!</h2>
-                <p style="color: #6b7280; font-size: 1.1em; margin-bottom: 30px;">Bom apetite! Seu ticket foi validado com sucesso.</p>
-                <a href="{% url 'TicketsEstudante' %}" id="botao" style="display:inline-block; text-decoration: none; padding: 12px 0;">Meus Tickets</a>
+            <!-- VALIDATED PROOF VIEW (PURPLE THEME) -->
+            <div style="background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%); padding: 35px 20px; color: white;">
+                <div style="font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; opacity: 0.9;">Comprovante de Validação</div>
+                <div style="font-size: 40px; margin-bottom: 10px;">✅</div>
+                <h1 style="font-size: 24px; font-weight: 800; margin: 0;">VALIDADO COM SUCESSO</h1>
             </div>
+
+            <div style="padding: 30px 20px;">
+                <div style="background: rgba(139, 92, 246, 0.05); border-radius: 16px; padding: 25px; border: 1px dashed var(--accent-light); margin-bottom: 25px;">
+                    <p style="color: var(--text-muted); font-size: 0.9em; margin-bottom: 10px; font-weight: 600; text-transform: uppercase;">Tempo restante para retirada</p>
+                    <div class="countdown-timer" data-expire="{{ ticket.expira_em }}" style="font-size: 4em; font-weight: 800; color: var(--accent-dark); line-height: 1;">--:--</div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left; margin-bottom: 30px; padding: 0 10px;">
+                    <div>
+                        <div style="font-size: 11px; color: #9ca3af; text-transform: uppercase; font-weight: 700;">Data/Hora Validação</div>
+                        <div style="font-size: 15px; font-weight: 700; color: var(--text-main);">{{ ticket.data_utilizacao|date:"d/m/Y - H:i" }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; color: #9ca3af; text-transform: uppercase; font-weight: 700;">Valor Pago</div>
+                        <div style="font-size: 15px; font-weight: 700; color: var(--text-main);">R$ {{ ticket.valor|floatformat:2 }}</div>
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <div style="font-size: 11px; color: #9ca3af; text-transform: uppercase; font-weight: 700;">Estudante</div>
+                        <div style="font-size: 15px; font-weight: 700; color: var(--text-main);">{{ request.session.nome }}</div>
+                    </div>
+                </div>
+
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 15px; border-radius: 12px; font-weight: 700; font-size: 0.95em; margin-bottom: 25px;">
+                    <i class="fas fa-utensils"></i> APRESENTE PARA RECEBER REFEIÇÃO
+                </div>
+
+                <a href="{% url 'TicketsEstudante' %}" style="display:inline-block; font-weight: 600; color: #9ca3af; text-decoration: none; font-size: 0.9em;" onmouseover="this.style.color='var(--accent-dark)'" onmouseout="this.style.color='#9ca3af'">
+                    ← Voltar para listagem
+                </a>
+            </div>
+
+            <script>
+                // Auto-redirect when expires
+                setInterval(function() {
+                    const expireTime = new Date("{{ ticket.expira_em }}").getTime();
+                    if (new Date().getTime() >= expireTime) {
+                        window.location.href = "{% url 'TicketsEstudante' %}";
+                    }
+                }, 5000);
+            </script>
         {% else %}
             <!-- Middle Detach Info -->
             <div style="padding: 20px 30px; display: flex; justify-content: space-between; border-bottom: 2px dashed #e5e7eb; position: relative;">

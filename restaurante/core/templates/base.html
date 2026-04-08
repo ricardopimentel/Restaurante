@@ -153,6 +153,31 @@
                     $('#navbar-toggle i').addClass('fa-bars').removeClass('fa-times');
                 }
             });
+
+            // Lógica Global de Countdown
+            function updateCountdowns() {
+                $('.countdown-timer').each(function() {
+                    const expireTime = new Date($(this).data('expire')).getTime();
+                    const now = new Date().getTime();
+                    const diff = expireTime - now;
+
+                    if (diff <= 0) {
+                        $(this).text('EXPIRADO');
+                        $(this).css('color', '#ef4444');
+                        // Se estiver na tela de listagem, pode ser interessante recarregar
+                        // Mas para evitar loops, apenas deixamos como expirado
+                    } else {
+                        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                        $(this).text(
+                            (minutes < 10 ? "0" + minutes : minutes) + ":" + 
+                            (seconds < 10 ? "0" + seconds : seconds)
+                        );
+                    }
+                });
+            }
+            setInterval(updateCountdowns, 1000);
+            updateCountdowns();
 		});
 
         function ocultar(ID){

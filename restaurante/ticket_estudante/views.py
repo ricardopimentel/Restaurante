@@ -68,12 +68,25 @@ def TicketsEstudante(request):
         pago=False, 
         data_compra__gte=limite_pendentes
     ).order_by('-data_compra')
+
+    # Tickets Validados recentemente (últimos 40 minutos)
+    limite_recentes = timezone.now() - timedelta(minutes=40)
+    tickets_recentes = TicketAluno.objects.filter(
+        id_aluno=aluno_obj, 
+        usado=True, 
+        data_utilizacao__gte=limite_recentes
+    ).order_by('-data_utilizacao')
+
+    # Adiciona tempo de expiração para o frontend
+    for t in tickets_recentes:
+        t.expira_em = (t.data_utilizacao + timedelta(minutes=40)).isoformat()
     
     return render(request, 'ticket_estudante/tickets.html', {
         'title': 'Meus Tickets', 
         'itemselec': 'TICKETS', 
         'tickets': tickets_pagos,
-        'pendentes': tickets_pendentes
+        'pendentes': tickets_pendentes,
+        'recentes': tickets_recentes
     })
 
 def ComprarTicket(request):
@@ -257,10 +270,27 @@ def WebhookPix(request):
 def VisualizarTicket(request, uuid):
     aluno_obj, error = get_aluno(request)
     ticket = TicketAluno.objects.filter(uuid=uuid, id_aluno=aluno_obj).first()
+    
     if not ticket or not ticket.pago:
         return redirect('TicketsEstudante')
+    
+    # Se já foi usado, verificar se ainda está no prazo dos 40 minutos
+    if ticket.usado:
+        from django.utils import timezone
+        from datetime import timedelta
+        limite = timezone.now() - timedelta(minutes=40)
+        if ticket.data_utilizacao < limite:
+            # Se passou de 40 minutos, não pode mais ver o ticket usado
+            return redirect('TicketsEstudante')
         
-    return render(request, 'ticket_estudante/ver_ticket.html', {'title': 'Meu Ticket', 'itemselec': 'TICKETS', 'ticket': ticket})
+        # Adiciona flag e tempo de expiração para o comprovante
+        ticket.expira_em = (ticket.data_utilizacao + timedelta(minutes=40)).isoformat()
+        
+    return render(request, 'ticket_estudante/ver_ticket.html', {
+        'title': 'Meu Ticket', 
+        'itemselec': 'TICKETS', 
+        'ticket': ticket
+    })
 
 def RevisarPagamento(request, uuid):
     """ Tela para retomar o pagamento de um ticket pendente """

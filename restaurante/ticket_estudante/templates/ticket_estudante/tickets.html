@@ -14,6 +14,30 @@
             <p style="color: var(--text-muted);">Acesse ou compre seus vouchers digitais</p>
         </div>
         
+        {% if recentes %}
+            <div style="margin-bottom: 25px;">
+                <h2 style="font-size: 1.1em; color: var(--accent-dark); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-history"></i> Validados recentemente
+                </h2>
+                {% for ticket in recentes %}
+                    <a href="{% url 'VisualizarTicket' ticket.uuid %}" style="text-decoration: none;">
+                        <div style="margin: 15px auto; width: 100%; display: flex; align-items: center; justify-content: space-between; background: rgba(139, 92, 246, 0.1); backdrop-filter: blur(10px); padding: 20px 25px; border-radius: 16px; box-shadow: var(--shadow-sm); border-left: 6px solid var(--accent); transition: all 0.3s ease; border: 1px solid rgba(139, 92, 246, 0.2);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='var(--shadow-md)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)';">
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-size: 0.8em; font-weight: 700; color: var(--accent-dark); text-transform: uppercase; letter-spacing: 1px;">✓ VALIDADO - PEGAR REFEIÇÃO</span>
+                                <span style="font-size: 1.1em; font-weight: 700; color: var(--text-main); margin-top: 5px;">{{ ticket.tipo_refeicao }}</span>
+                                <span style="font-size: 0.85em; color: var(--text-muted); margin-top: 3px;">Validado às {{ ticket.data_utilizacao|date:"H:i" }}</span>
+                            </div>
+                            <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
+                                <span style="font-size: 0.75em; color: var(--accent-dark); font-weight: 700;">EXPIRA EM</span>
+                                <span class="countdown-timer" data-expire="{{ ticket.expira_em }}" style="font-weight: 800; color: var(--accent-dark); font-size: 1.3em; font-family: 'Outfit', sans-serif;">--:--</span>
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+        {% endif %}
+
         {% if pendentes %}
             <div style="margin-bottom: 25px;">
                 <h2 style="font-size: 1.1em; color: #b45309; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
