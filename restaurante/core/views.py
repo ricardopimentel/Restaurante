@@ -78,9 +78,15 @@ def Home(request):
                             data_limite = hoje - timedelta(days=dias)
                             context['periodo_selecionado'] = periodo
 
+                            # Filtra por tickets USADOS (consumo) no período
                             resumo_qs = TicketAluno.objects.filter(id_aluno=aluno_obj, usado=True)
                             if periodo != 'tudo':
-                                resumo_qs = resumo_qs.filter(data_utilizacao__gte=data_limite)
+                                # Fallback para data_compra caso data_utilizacao seja nula (registros antigos)
+                                from django.db.models import Q
+                                resumo_qs = resumo_qs.filter(
+                                    Q(data_utilizacao__gte=data_limite) | 
+                                    Q(data_utilizacao__isnull=True, data_compra__gte=data_limite)
+                                )
 
                             sum_almoco = resumo_qs.filter(tipo_refeicao__icontains='Almoço').aggregate(total=Sum('valor'))['total'] or 0.0
                             sum_janta = resumo_qs.filter(tipo_refeicao__icontains='Janta').aggregate(total=Sum('valor'))['total'] or 0.0

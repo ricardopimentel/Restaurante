@@ -23,10 +23,11 @@
     box-sizing: border-box;
 }
 
-body {
-	width: 100%;
-	margin: 0;
+html, body {
+    width: 100%;
+    margin: 0;
     overflow-x: hidden;
+    position: relative;
     background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 50%, #e0e7ff 100%);
     background-attachment: fixed;
     color: var(--text-main);
@@ -51,8 +52,9 @@ div.bar-top{
 
 .navbar {
     width: 100%;
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
     z-index: 1200; /* Stays above the side menu (1100) */
     background: rgba(255, 255, 255, 0.4); /* Much more transparent */
     backdrop-filter: blur(25px);
@@ -289,18 +291,18 @@ div.bar-top{
     .navbar-collapse {
         position: fixed;
         top: 0;
-        right: -100%;
+        right: 0;
         width: 85%;
         max-width: 320px;
         height: 100vh;
         background: rgba(255, 255, 255, 0.45); /* Crystal-white transparency for maximum blur visibility */
         backdrop-filter: blur(40px);
         -webkit-backdrop-filter: blur(40px);
-        transform: translateZ(0); /* Hardware acceleration for blur performance */
+        transform: translateX(100%); /* Use transform for better performance and to avoid overflow */
         flex-direction: column;
         padding: 90px 25px 40px 25px;
         box-shadow: -15px 0 45px rgba(0,0,0,0.15);
-        transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 1100; /* Stays below the navbar (1200) so toggle is clickable */
         justify-content: flex-start;
         align-items: stretch;
@@ -309,7 +311,7 @@ div.bar-top{
     }
 
     .navbar-collapse.active {
-        right: 0;
+        transform: translateX(0);
         visibility: visible;
     }
 
@@ -397,7 +399,7 @@ div.bar-top{
 	flex-direction: row;
 	flex-wrap: wrap;
 	justify-content: center;
-	padding: 50px 15px; /* Espaçamento interno novo sem border noise */
+	padding: 100px 15px 50px 15px; /* Increased top padding for fixed navbar */
     background: transparent;
     z-index: 4;
     min-height: calc(100vh - 100px);
