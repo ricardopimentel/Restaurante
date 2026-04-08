@@ -185,48 +185,10 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
                         <div>
                             <h2 style="margin: 0; font-size: 1.4em; color: var(--text-main);">Identificar Aluno</h2>
-                            <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 0.9em;">Busque na lista ou use o leitor de QR Code</p>
-                        </div>
-                        <button type="button" onclick="iniciarLeitor()" style="padding: 12px 20px; background: var(--primary); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.transform='translateY(0)'">
-                            <i class="fas fa-qrcode" style="font-size: 1.2em;"></i> Abrir Scanner
-                        </button>
-                    </div>
-
-                    <!-- MODERN SCANNER AREA -->
-                    <div id="reader-container" style="display:none; text-align:center; padding:20px; background: #000; border-radius: 20px; margin-bottom: 30px; position: relative; overflow: hidden;">
-                        <div id="reader" style="width:100%; max-width:400px; margin:0 auto; border-radius: 15px; overflow: hidden;"></div>
-                        <div style="position: absolute; bottom: 20px; left: 0; right: 0; display: flex; justify-content: center; gap: 10px;">
-                            <button type="button" onclick="fecharLeitor()" style="padding: 10px 20px; background: #ef4444; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.85em;">
-                                <i class="fas fa-times-circle"></i> Fechar Câmera
-                            </button>
+                            <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 0.9em;">Busque na lista para registro manual</p>
                         </div>
                     </div>
 
-                    <form id="form-scan" action="{% url 'ValidarTicket' %}" method="post" style="display:none;">
-                        {% csrf_token %}
-                        <input type="hidden" name="uuid" id="scan-uuid" />
-                    </form>
-                    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-                    <script>
-                        let html5QrcodeScanner;
-                        function iniciarLeitor() {
-                            document.getElementById('reader-container').style.display = 'block';
-                            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, /* verbose= */ false);
-                            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-                        }
-                        function fecharLeitor() {
-                            if (html5QrcodeScanner) {
-                                html5QrcodeScanner.clear();
-                            }
-                            document.getElementById('reader-container').style.display = 'none';
-                        }
-                        function onScanSuccess(decodedText, decodedResult) {
-                            fecharLeitor();
-                            document.getElementById('scan-uuid').value = decodedText;
-                            document.getElementById('form-scan').submit();
-                        }
-                        function onScanFailure(error) { }
-                    </script>
                     
                     <!-- DATA TABLE MODERNIZED -->
                     <div style="overflow-x: auto;">

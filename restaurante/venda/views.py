@@ -24,6 +24,14 @@ def Vendas(request):
         })
     return redirect(r('Login'))
 
+def ValidacaoQRCode(request):
+    if dict(request.session).get('nome'):
+        return render(request, 'venda/validar_qrcode.html', {
+            'title': 'Validar QR Code',
+            'itemselec': 'VENDAS',
+        })
+    return redirect(r('Login'))
+
 def Venda(request):
     # tenta conectar ao banco de dados para pegar parametros do ldap
     ou = ''
@@ -268,28 +276,28 @@ def ValidarTicket(request):
         ticket = TicketAluno.objects.filter(uuid=uuid_str).first()
         if not ticket:
             messages.error(request, "Ticket inválido ou não encontrado.")
-            return redirect('Venda')
+            return redirect('ValidacaoQRCode')
         
         if ticket.usado:
             messages.error(request, "Ticket já foi utilizado!")
-            return redirect('Venda')
+            return redirect('ValidacaoQRCode')
             
         prato_ativo = ExistePratoCadastrado(ticket.id_aluno.id_pessoa.usuario)
         if not prato_ativo:
             messages.error(request, "Não há prato ativo ou o horário não permite validar a venda.")
-            return redirect('Venda')
+            return redirect('ValidacaoQRCode')
             
         # Validação de Tipo de Refeição e Valor
         # Se o tipo do ticket for diferente do prato atual E os valores forem diferentes, bloqueia
         if ticket.tipo_refeicao and ticket.tipo_refeicao != prato_ativo.descricao:
             if ticket.valor != prato_ativo.preco_aluno:
                 messages.error(request, f"O ticket de {ticket.tipo_refeicao} (R$ {ticket.valor|stringformat:'.2f'}) não pode ser usado nessa refeição de {prato_ativo.descricao} (R$ {prato_ativo.preco_aluno|stringformat:'.2f'}).")
-                return redirect('Venda')
+                return redirect('ValidacaoQRCode')
             
         restricoes = Restricoes(ticket.id_aluno.id, prato_ativo.id)
         if restricoes['status']:
             messages.error(request, restricoes['erro'])
-            return redirect('Venda')
+            return redirect('ValidacaoQRCode')
             
         try:
             sucesso = SalvarVenda(request, ticket.id_aluno.id, prato_ativo.id, ticket.id_aluno.id_pessoa.usuario)

@@ -157,9 +157,16 @@
             <div class="card" style="width: 100%; margin: 0; padding: 25px; text-align: left; grid-column: span 1;">
                 <h2 style="margin: 0 0 20px 0; font-size: 1.1em; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid #eee; padding-bottom: 10px;">🚀 Acesso Rápido</h2>
                 
-                <div style="display: flex; justify-content: center; gap: 20px;">
+                <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
                     {%if request.session.usertip == 'lanchonete' or request.session.usertip == 'admin' %}
-                        <a href="{% url 'Venda' %}" style="text-decoration: none !important; border-bottom: none !important; flex: 1; display: block;">
+                        <a href="{% url 'ValidacaoQRCode' %}" style="text-decoration: none !important; border-bottom: none !important; flex: 1; min-width: 100px; display: block;">
+                            <div style="padding: 20px 10px; border-radius: 16px; background: rgba(99, 102, 241, 0.05); text-align: center; border: 1px solid rgba(99, 102, 241, 0.1); transition: all 0.2s;" onmouseover="this.style.background='rgba(99, 102, 241, 0.1)'; this.style.transform='translateY(-3px)'" onmouseout="this.style.background='rgba(99, 102, 241, 0.05)'; this.style.transform='translateY(0)'">
+                                <i class="fas fa-qrcode" style="font-size: 32px; color: #6366f1; margin-bottom: 10px;"></i>
+                                <p style="margin: 0; font-size: 0.85em; font-weight: 700; color: var(--text-main);">QR Code</p>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'Venda' %}" style="text-decoration: none !important; border-bottom: none !important; flex: 1; min-width: 100px; display: block;">
                             <div style="padding: 20px 10px; border-radius: 16px; background: rgba(16, 185, 129, 0.05); text-align: center; border: 1px solid rgba(16, 185, 129, 0.1); transition: all 0.2s;" onmouseover="this.style.background='rgba(16, 185, 129, 0.1)'; this.style.transform='translateY(-3px)'" onmouseout="this.style.background='rgba(16, 185, 129, 0.05)'; this.style.transform='translateY(0)'">
                                 <i class="fas fa-store" style="font-size: 32px; color: var(--primary-dark); margin-bottom: 10px;"></i>
                                 <p style="margin: 0; font-size: 0.85em; font-weight: 700; color: var(--text-main);">Vendas</p>
@@ -167,7 +174,7 @@
                         </a>
                     {%endif%}
 
-                    <a href="{% url 'Relatorios' %}" style="text-decoration: none !important; border-bottom: none !important; flex: 1; display: block;">
+                    <a href="{% url 'Relatorios' %}" style="text-decoration: none !important; border-bottom: none !important; flex: 1; min-width: 100px; display: block;">
                         <div style="padding: 20px 10px; border-radius: 16px; background: rgba(139, 92, 246, 0.05); text-align: center; border: 1px solid rgba(139, 92, 246, 0.1); transition: all 0.2s;" onmouseover="this.style.background='rgba(139, 92, 246, 0.1)'; this.style.transform='translateY(-3px)'" onmouseout="this.style.background='rgba(139, 92, 246, 0.05)'; this.style.transform='translateY(0)'">
                             <i class="fas fa-chart-pie" style="font-size: 32px; color: var(--accent-dark); margin-bottom: 10px;"></i>
                             <p style="margin: 0; font-size: 0.85em; font-weight: 700; color: var(--text-main);">Relatórios</p>
