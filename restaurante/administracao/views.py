@@ -146,6 +146,14 @@ def EditarPrato(request, id_prato):
             pratos = prato.objects.all()
             pratoobj = pratos.get(pk=id_prato)
             form = CadastroPratoForm(initial={'descricao': pratoobj.descricao, 'preco': pratoobj.preco, 'preco_aluno': pratoobj.preco_aluno, 'status': pratoobj.status, 'id': id_prato})
+            
+            if request.method == 'POST':
+                form = CadastroPratoForm(data=request.POST)
+                if form.is_valid():
+                    messages.success(request, 'Prato editado com sucesso!!')
+                    return redirect(r('CadastroPrato'))
+                else:
+                    messages.error(request, 'Erro ao editar prato. Verifique os campos.')
 
             return render(request, 'administracao/admin_cadastro_prato.html', {
                 'title': 'Cadastro de Prato',
