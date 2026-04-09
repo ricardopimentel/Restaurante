@@ -10,6 +10,25 @@
 
 
 {%block conteudo%}
+    <!-- LOADING OVERLAY -->
+    <div id="venda-loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; color: white;">
+        <div style="width: 70px; height: 70px; border: 5px solid rgba(255,255,255,0.1); border-top: 5px solid #10b981; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
+        <h3 style="margin: 0; font-size: 1.5em; font-weight: 700;">Processando Venda...</h3>
+        <p style="opacity: 0.8; margin-top: 10px;">Por favor, aguarde a confirmação do sistema.</p>
+        <style>
+            @keyframes spin { 
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            .btn-venda-disabled {
+                opacity: 0.7 !important;
+                cursor: not-allowed !important;
+                background: #9ca3af !important;
+                transform: none !important;
+                box-shadow: none !important;
+            }
+        </style>
+    </div>
 	{%if request.session.usertip == 'lanchonete' or request.session.usertip == 'admin' %}
         <!-- BREADCRUMB -->
         <div class="venda-breadcrumb" style="display: flex; justify-content: center; gap: 10px; font-size: 0.85em; font-weight: 600; margin-bottom: 20px; width: 100%;">
@@ -141,8 +160,8 @@
                                 </style>
                                 {{ formulario.as_p }}
                             </div>
-                            <button type="submit" style="width: 100%; padding: 18px; border-radius: 16px; background: var(--primary); color: white; border: none; font-size: 1.1em; font-weight: 700; cursor: pointer; transition: all 0.3s; box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 20px 25px -5px rgba(16, 185, 129, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 15px -3px rgba(16, 185, 129, 0.3)'">
-                                <i class="fas fa-check-circle" style="margin-right: 10px;"></i> Finalizar e Registrar Venda
+                            <button type="submit" id="btn-finalizar" style="width: 100%; padding: 18px; border-radius: 16px; background: var(--primary); color: white; border: none; font-size: 1.1em; font-weight: 700; cursor: pointer; transition: all 0.3s; box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 20px 25px -5px rgba(16, 185, 129, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 15px -3px rgba(16, 185, 129, 0.3)'">
+                                <i class="fas fa-check-circle" style="margin-right: 10px;"></i> <span>Finalizar e Registrar Venda</span>
                             </button>
                         </form>
                     </div>
@@ -257,6 +276,39 @@
                         }
                     },
                 });
+
+                // PREVENT DOUBLE SUBMISSION
+                const saleForm = document.getElementById('frm');
+                const finalizeBtn = document.getElementById('btn-finalizar');
+                const overlay = document.getElementById('venda-loading-overlay');
+
+                if (saleForm && finalizeBtn) {
+                    saleForm.addEventListener('submit', function (e) {
+                        // Show overlay
+                        overlay.style.display = 'flex';
+                        
+                        // Disable button
+                        finalizeBtn.disabled = true;
+                        finalizeBtn.classList.add('btn-venda-disabled');
+                        
+                        // Change button text
+                        const btnSpan = finalizeBtn.querySelector('span');
+                        const btnIcon = finalizeBtn.querySelector('i');
+                        if (btnSpan) btnSpan.innerText = 'Processando...';
+                        if (btnIcon) {
+                            btnIcon.className = 'fas fa-spinner fa-spin';
+                        }
+                        
+                        // Prevent second submission if user clicks fast again
+                        // Although button is disabled, some browsers might trigger multiple times 
+                        // if clicked very fast before disabled sets in
+                        if (finalizeBtn.getAttribute('data-submitted') === 'true') {
+                            e.preventDefault();
+                            return false;
+                        }
+                        finalizeBtn.setAttribute('data-submitted', 'true');
+                    });
+                }
             });
         </script>
 	{%endif%}
