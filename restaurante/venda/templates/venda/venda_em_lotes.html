@@ -10,7 +10,21 @@
 
 
 {%block conteudo%}
-	{%if request.session.usertip == 'lanchonete' or request.session.usertip == 'admin' %}
+    <div style="display: flex; flex-direction: column; align-items: center; width: 100%; padding: 20px;">
+        <div style="width: 100%; max-width: 1000px; text-align: center;">
+            <div class="venda-breadcrumb" style="display: flex; justify-content: center; gap: 10px; font-size: 0.85em; font-weight: 600; margin-bottom: 10px;">
+                <a href="{% url 'Vendas' %}" style="color: #10b981; text-decoration: none;">Vendas</a>
+                <span style="color: #ddd;">/</span>
+                <span style="color: var(--text-muted);">Venda em Lotes</span>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 40px;">
+                <h1 style="font-size: 2.2em; font-weight: 800; color: var(--text-main); margin: 0;">Venda em Lotes</h1>
+                <p style="color: var(--text-muted); margin-top: 5px; font-size: 1.1em;">Registre vendas para múltiplos dias simultaneamente</p>
+            </div>
+        </div>
+
+        <div style="width: 100%; max-width: 1000px; margin: 0 auto;">
 
         {% if step == 'notprato' %}
 			<div class="card">

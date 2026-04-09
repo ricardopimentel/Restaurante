@@ -27,8 +27,8 @@
             font-weight: 600; 
             margin-bottom: 10px;
         }
-        .admin-breadcrumb a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
-        .admin-breadcrumb a:hover { color: var(--admin-primary); }
+        .admin-breadcrumb a { color: var(--admin-primary); text-decoration: none; transition: color 0.2s; }
+        .admin-breadcrumb a:hover { opacity: 0.8; }
         .admin-breadcrumb span { color: #ddd; }
 
         /* Form Card */
@@ -67,7 +67,7 @@
             <div class="admin-breadcrumb" style="justify-content: center;">
                 <a href="{% url 'Administracao' %}">Administração</a>
                 <span>/</span>
-                <a href="{% url 'HorarioLimiteVendas' %}">Configurar Horário</a>
+                <span>Configurar Horário</span>
             </div>
             <h1 style="margin: 0; font-size: 1.8em; color: var(--text-main); font-weight: 800;">Horário Limite das Vendas</h1>
         </div>

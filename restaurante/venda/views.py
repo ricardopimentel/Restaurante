@@ -16,23 +16,24 @@ from restaurante.venda.forms import ConfirmacaoVendaForm
 usuario = 'winbackup'
 senha = 'v4c4pr3t4'
 
+from restaurante.acesso.utils import permissao_requerida
+
 # Views
+@permissao_requerida(item_id='menu_vendas')
 def Vendas(request):
-    if dict(request.session).get('nome'):
-        return render(request, 'venda/vendas.html', {
-            'title': 'Vendas',
-            'itemselec': 'VENDAS',
-        })
-    return redirect(r('Login'))
+    return render(request, 'venda/vendas.html', {
+        'title': 'Vendas',
+        'itemselec': 'VENDAS',
+    })
 
+@permissao_requerida(item_id='leitura_qr')
 def ValidacaoQRCode(request):
-    if dict(request.session).get('nome'):
-        return render(request, 'venda/validar_qrcode.html', {
-            'title': 'Validar QR Code',
-            'itemselec': 'VENDAS',
-        })
-    return redirect(r('Login'))
+    return render(request, 'venda/validar_qrcode.html', {
+        'title': 'Validar QR Code',
+        'itemselec': 'VENDAS',
+    })
 
+@permissao_requerida(item_id='vendas_manual')
 def Venda(request):
     # tenta conectar ao banco de dados para pegar parametros do ldap
     ou = ''
@@ -67,6 +68,7 @@ def Venda(request):
         'alunos': ListaAlunos,
     })
 
+@permissao_requerida(item_id='vendas_manual')
 def VendaLotes(request):
     ListaAlunos = []
     con = conexaoAD(usuario, senha)
@@ -91,6 +93,7 @@ def VendaLotes(request):
     })
 
 
+@permissao_requerida(item_id='vendas_manual')
 def VenderLotes(request, id_pessoa):
     if request.method == 'POST':
         messages.success(request, "Você quer vender")
@@ -105,6 +108,7 @@ def VenderLotes(request, id_pessoa):
 
 
 @csrf_exempt
+@permissao_requerida(item_id='vendas_manual')
 def Vender(request, id_pessoa):
     form = ConfirmacaoVendaForm(request, id_pessoa)
     if request.method == 'POST':
@@ -271,6 +275,7 @@ def Restricoes(id_aluno, id_prato):#tem que trazer a instacia nova da venda e co
         return {'status': True, 'erro': "Falha ao verificar o horário de fechamento"}
 
 @csrf_exempt
+@permissao_requerida(item_id='leitura_qr')
 def ValidarTicket(request):
     if request.method == 'POST':
         uuid_str = request.POST.get('uuid')
@@ -292,7 +297,7 @@ def ValidarTicket(request):
         # Se o tipo do ticket for diferente do prato atual E os valores forem diferentes, bloqueia
         if ticket.tipo_refeicao and ticket.tipo_refeicao != prato_ativo.descricao:
             if ticket.valor != prato_ativo.preco_aluno:
-                messages.error(request, f"O ticket de {ticket.tipo_refeicao} (R$ {ticket.valor|stringformat:'.2f'}) não pode ser usado nessa refeição de {prato_ativo.descricao} (R$ {prato_ativo.preco_aluno|stringformat:'.2f'}).")
+                messages.error(request, f"O ticket de {ticket.tipo_refeicao} (R$ {ticket.valor:.2f}) não pode ser usado nessa refeição de {prato_ativo.descricao} (R$ {prato_ativo.preco_aluno:.2f}).")
                 return redirect('ValidacaoQRCode')
             
         restricoes = Restricoes(ticket.id_aluno.id, prato_ativo.id)

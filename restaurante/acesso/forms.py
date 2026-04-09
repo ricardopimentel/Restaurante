@@ -1,5 +1,4 @@
 from django import forms
-
 from restaurante.administracao.models import config
 from restaurante.core.libs.conexaoAD3 import conexaoAD
 from django.shortcuts import resolve_url as r
@@ -12,9 +11,7 @@ class LoginForm(forms.Form):
         self.request = request
         super(LoginForm, self).__init__(*args, **kwargs)
 
-
     def clean(self):
-        # tenta conectar ao banco de dados para pegar parametros do ldap
         ou = ''
         filter = ''
         try:
@@ -23,122 +20,162 @@ class LoginForm(forms.Form):
             filter = conf.filter
         except:
             pass
-        # Inicia variáveis
+        
         cleaned_data = self.cleaned_data
         usuario = cleaned_data.get("usuario")
         senha = cleaned_data.get("senha")
         
         if usuario and senha:
             c = conexaoAD(usuario, senha, ou, filter)
-            result = c.Login() #tenta login no ldap
+            result = c.Login()
 
-            if(result == ('i')): # Credenciais invalidas
-                # Adiciona erro na validação do formulário
+            if(result == ('i')):
                 raise forms.ValidationError("Usuário ou senha incorretos", code='invalid')
-            elif(result == ('n')): # Server Down
-                # Adiciona erro na validação do formulário
+            elif(result == ('n')):
                 raise forms.ValidationError("Servidor AD não encontrado", code='invalid')
-            elif(result == ('o')): # Usuario fora do escopo permitido
-                # Adiciona erro na validação do formulário
+            elif(result == ('o')):
                 raise forms.ValidationError("Usuário não tem permissão para acessar essa página", code='invalid')
-            else:# se logou
-                # Retirar virgulas do member of
+            else:
                 result['memberOf'] = str(result['memberOf']).replace(',', '')
-                # Remover cabeçalhos desnecessarios 
                 ret = repr(result)
-                
-                # Transformar em dicionario
-                ret = ret.replace('[', '')
-                ret = ret.replace(']', '')
-
+                ret = ret.replace('[', '').replace(']', '')
                 MontarMenu(self.request, ret, usuario)
-        # Sempre retorne a coleção completa de dados válidos.
         return cleaned_data
 
 
 def MontarMenu(request, ret, usuario):
     result = eval(ret)
-    if (ret.find(str('G_PSO_CGTI_SERVIDORES')) > -1):
-        request.session['usertip'] = 'admin'
-        # Preparar menu admin
-        request.session['menu'] = ['logo', 'HOME', 'VENDAS', 'RELATÓRIOS', 'ADMINISTRAÇÃO', 'sair']
-        request.session['url'] = [r('Home').replace('/restaurante/', 'restaurante/'),
-                                  r('Home').replace('/restaurante/', 'restaurante/'),
-                                  r('Vendas').replace('/restaurante/', 'restaurante/'),
-                                  r('Relatorios').replace('/restaurante/', 'restaurante/'),
-                                  r('Administracao').replace('/restaurante/', 'restaurante/'), '']
-        request.session['img'] = ['if.png', 'home24.png', 'dinheiro24b.png', 'relatorio24.png', 'admin24.png', '']
-        # logou então, adicionar os dados do usuário na sessão
-        request.session['userl'] = usuario
-        request.session['nome'] = result['displayName'].title()
-        try:
-            request.session['mail'] = result['mail']
-        except KeyError:
-            request.session['mail'] = 'Não informado'
-        try:
-            request.session['phone'] = result['telephoneNumber']
-        except KeyError:
-            request.session['phone'] = 'Não informado'
+    from restaurante.administracao.models import MenuPermission
+    
+    # 1. Identificar se é Administrador do Sistema (Acesso Total)
+    is_admin = (ret.find(str('G_PSO_CGTI_SERVIDORES')) > -1)
+    
+    # 2. Buscar Perfis de Acesso configurados no BD para os grupos do usuário
+    matching_profiles = []
+    all_profiles = MenuPermission.objects.all()
+    for profile in all_profiles:
+        if ret.find(str(profile.ad_group)) > -1:
+            matching_profiles.append(profile)
+    
+    # Validação de Acesso Estrito: Se não for Admin e não tiver perfil no BD, bloqueia
+    if not is_admin and not matching_profiles:
+        from django import forms
+        raise forms.ValidationError("Seu grupo do AD não possui um perfil de acesso configurado. Contate o administrador.", code='unauthorized')
 
-    elif (ret.find(str('G_PSO_LANCHONETE')) > -1):
-        request.session['usertip'] = 'lanchonete'
-        # Preparar menu user
-        request.session['menu'] = ['logo', 'HOME', 'VENDAS', 'RELATÓRIOS', 'sair']
-        request.session['url'] = [r('Home').replace('/restaurante/', 'restaurante/'),
-                                  r('Home').replace('/restaurante/', 'restaurante/'),
-                                  r('Vendas').replace('/restaurante/', 'restaurante/'),
-                                  r('Relatorios').replace('/restaurante/', 'restaurante/'), '']
-        request.session['img'] = ['if.png', 'home24.png', 'dinheiro24b.png', 'relatorio24.png', '']
-        # logou então, adicionar os dados do usuário na sessão
-        request.session['userl'] = usuario
-        request.session['nome'] = result['displayName'].title()
-        try:
-            request.session['mail'] = result['mail']
-        except KeyError:
-            request.session['mail'] = 'Não informado'
-        try:
-            request.session['phone'] = result['telephoneNumber']
-        except KeyError:
-            request.session['phone'] = 'Não informado'
+    allowed_items = []
+    quick_access = []
+    can_switch = False
+    can_sell = False
+    default_dashboard = 'usuario'
+    group_label = ''
+    
+    # Se houver múltiplos perfis, pegamos as permissões mais amplas
+    # Priorizamos o rótulo de perfis Admin
+    matching_profiles.sort(key=lambda p: p.access_type == 'admin', reverse=True)
+    
+    for p in matching_profiles:
+        allowed_items.extend(p.get_allowed_list())
+        if p.quick_access:
+            quick_access.extend([x.strip() for x in p.quick_access.split(',')])
+        if p.can_switch_dashboard: can_switch = True
+        if p.can_sell: can_sell = True
+        if p.default_dashboard == 'funcionario': default_dashboard = 'funcionario'
+        
+        # O rótulo é pego do primeiro perfil (que será Admin se existir devido ao sort acima)
+        if not group_label and p.group_label:
+            group_label = p.group_label
+    
+    # Fallback/Segurança para Admins (mesmo que o DB seja limpo ou falhe)
+    if is_admin:
+        can_switch = True
+        can_sell = True
+        default_dashboard = 'funcionario'
+        if not group_label: group_label = 'Administrador'
+        # Adiciona atalhos de admin se não estiverem no DB (redundância)
+        admin_defaults = [
+            'menu_vendas', 'menu_relatorios', 'horario_vendas', 'bolsistas', 
+            'colaboradores', 'cardapio_hub', 'config_ad', 'config_pix', 
+            'permissoes', 'cardapio_dia', 'pratos_precos', 'opcoes_alimento'
+        ]
+        allowed_items.extend(admin_defaults)
+        quick_defaults = ['shortcut_vendas', 'shortcut_qr', 'shortcut_cardapio', 'shortcut_relatorios']
+        quick_access.extend(quick_defaults)
 
-    elif (ret.find(str('G_CA-PARAISO_ALUNOS')) > -1):
-        request.session['usertip'] = 'aluno'
-        # Preparar menu aluno
+    allowed_items = list(set(allowed_items))
+    quick_access = list(set(quick_access))
+
+    # 4. Salvar dados básicos na Sessão
+    request.session['is_admin'] = is_admin
+    request.session['userl'] = usuario
+    request.session['nome'] = result['displayName'].title()
+    request.session['dashboard_mode'] = default_dashboard
+    request.session['can_switch'] = can_switch
+    request.session['can_sell'] = can_sell
+    request.session['quick_access_items'] = quick_access
+    request.session['allowed_items'] = allowed_items
+    request.session['group_label'] = group_label
+    
+    # Compatibilidade com código legado (usertip)
+    if is_admin: request.session['usertip'] = 'admin'
+    elif default_dashboard == 'funcionario': request.session['usertip'] = 'lanchonete'
+    else: request.session['usertip'] = 'aluno'
+
+    try:
+        request.session['mail'] = result['mail']
+    except KeyError:
+        request.session['mail'] = 'Não informado'
+    try:
+        request.session['phone'] = result['telephoneNumber']
+    except KeyError:
+        request.session['phone'] = 'Não informado'
+
+    RebuildMenu(request)
+
+
+def RebuildMenu(request):
+    dashboard_mode = request.session.get('dashboard_mode', 'usuario')
+    allowed = request.session.get('allowed_items', [])
+    is_admin = request.session.get('is_admin', False)
+
+    if dashboard_mode == 'funcionario':
+        menu = ['logo', 'HOME']
+        urls = [r('Home'), r('Home')]
+        imgs = ['if.png', 'home24.png']
+        
+        # VENDAS: can_sell flag ou IDs manuais
+        vendas_items = ['menu_vendas', 'vendas_manual', 'leitura_qr']
+        if request.session.get('can_sell') or any(item in allowed for item in vendas_items):
+            menu.append('VENDAS')
+            urls.append(r('Vendas'))
+            imgs.append('dinheiro24b.png')
+            
+        # RELATÓRIOS
+        rel_items = ['menu_relatorios', 'relatorio_vendas', 'custo_aluno_periodo']
+        if any(item in allowed for item in rel_items):
+            menu.append('RELATÓRIOS')
+            urls.append(r('Relatorios'))
+            imgs.append('relatorio24.png')
+            
+        # ADMINISTRAÇÃO: Qualquer item da categoria admin
+        admin_items = ['horario_vendas', 'bolsistas', 'colaboradores', 'cardapio_hub', 'config_ad', 'config_pix', 'permissoes', 'cardapio_dia', 'pratos_precos', 'opcoes_alimento']
+        if any(item in allowed for item in admin_items):
+            menu.append('ADMINISTRAÇÃO')
+            urls.append(r('Administracao'))
+            imgs.append('admin24.png')
+            
+        menu.append('sair')
+        urls.append('')
+        imgs.append('')
+        
+        # Ajuste de prefixo de URL para o projeto
+        urls = [u.replace('/restaurante/', 'restaurante/') if u else '' for u in urls]
+        
+        request.session['menu'] = menu
+        request.session['url'] = urls
+        request.session['img'] = imgs
+    else:
+        # Dashboard de Estudante
         request.session['menu'] = ['logo', 'HOME', 'TICKETS', 'COMPRAR', 'sair']
-        request.session['url'] = [r('Home').replace('/restaurante/', 'restaurante/'),
-                                  r('Home').replace('/restaurante/', 'restaurante/'),
-                                  r('TicketsEstudante').replace('/restaurante/', 'restaurante/'),
-                                  r('ComprarTicket').replace('/restaurante/', 'restaurante/'), '']
+        urls = [r('Home'), r('Home'), r('TicketsEstudante'), r('ComprarTicket'), '']
+        request.session['url'] = [u.replace('/restaurante/', 'restaurante/') if u else '' for u in urls]
         request.session['img'] = ['if.png', 'home24.png', 'ticket.png', 'dinheiro24b.png', '']
-        # logou então, adicionar os dados do usuário na sessão
-        request.session['userl'] = usuario
-        request.session['nome'] = result['displayName'].title()
-        try:
-            request.session['mail'] = result['mail']
-        except KeyError:
-            request.session['mail'] = 'Não informado'
-        try:
-            request.session['phone'] = result['telephoneNumber']
-        except KeyError:
-            request.session['phone'] = 'Não informado'
-
-    elif (ret.find(str('G_PSO_GERENCIA_LANCHONETE')) > -1):
-        request.session['usertip'] = 'glanchonete'
-        # Preparar menu admin
-        request.session['menu'] = ['logo', 'HOME', 'RELATÓRIOS', 'CONFIGURAÇÃO', 'sair']
-        request.session['url'] = [r('Home').replace('/restaurante/', 'restaurante/'),
-                                  r('Home').replace('/restaurante/', 'restaurante/'),
-                                  r('Relatorios').replace('/restaurante/', 'restaurante/'),
-                                  r('Configuracao').replace('/restaurante/', 'restaurante/'), '']
-        request.session['img'] = ['if.png', 'home24.png', 'relatorio24.png', 'admin24.png', '']
-        # logou então, adicionar os dados do usuário na sessão
-        request.session['userl'] = usuario
-        request.session['nome'] = result['displayName'].title()
-        try:
-            request.session['mail'] = result['mail']
-        except KeyError:
-            request.session['mail'] = 'Não informado'
-        try:
-            request.session['phone'] = result['telephoneNumber']
-        except KeyError:
-            request.session['phone'] = 'Não informado'

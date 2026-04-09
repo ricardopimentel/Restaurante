@@ -3,29 +3,35 @@
 {% block titulo %}{{title}}{% endblock %}
 
 {% block conteudo %}
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 20px;">
-        <div style="width: 100%; max-width: 600px; text-align: center;">
-            <div style="text-align: center; margin-bottom: 30px;">
-                <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: #f5f3ff; color: #6366f1; border-radius: 20px; margin-bottom: 15px;">
-                    <i class="fas fa-qrcode" style="font-size: 1.8em;"></i>
-                </div>
-                <h1 style="font-size: 1.8em; font-weight: 800; color: var(--text-main); margin: 0;">Validação de QR Code</h1>
-                <p style="color: var(--text-muted); margin-top: 5px;">Escaneie o ticket do aluno para confirmar a venda</p>
+    <div style="display: flex; flex-direction: column; align-items: center; width: 100%; padding: 20px;">
+        <div style="width: 100%; max-width: 800px; text-align: center;">
+            <div class="venda-breadcrumb" style="display: flex; justify-content: center; gap: 10px; font-size: 0.85em; font-weight: 600; margin-bottom: 10px;">
+                <a href="{% url 'Vendas' %}" style="color: #10b981; text-decoration: none;">Vendas</a>
+                <span style="color: #ddd;">/</span>
+                <span style="color: var(--text-muted);">Validação QR Code</span>
             </div>
 
-            <div class="card" style="padding: 30px; text-align: center; background: white; border: 1px solid #eef2ff; margin-bottom: 30px; width: 100%;">
+            <div style="text-align: center; margin-bottom: 40px;">
+                <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 20px; margin-bottom: 15px;">
+                    <i class="fas fa-qrcode" style="font-size: 1.8em;"></i>
+                </div>
+                <h1 style="font-size: 2.2em; font-weight: 800; color: var(--text-main); margin: 0;">Validação de QR Code</h1>
+                <p style="color: var(--text-muted); margin-top: 5px; font-size: 1.1em;">Escaneie o ticket do aluno para confirmar a venda</p>
+            </div>
+
+            <div class="card" style="padding: 30px; text-align: center; background: white; border: 1px solid #eef2ff; margin-bottom: 35px; width: 100%; border-radius: 24px; box-shadow: var(--shadow-sm);">
                 <div id="scanner-off">
                     <div style="padding: 40px 20px;">
                         <i class="fas fa-camera" style="font-size: 3em; color: #e2e8f0; margin-bottom: 20px;"></i>
                         <p style="color: var(--text-muted); margin-bottom: 30px;">A câmera está desativada.</p>
-                        <button type="button" onclick="iniciarLeitor()" style="width: 100%; padding: 18px; background: #6366f1; color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.1em; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <button type="button" onclick="iniciarLeitor()" style="width: 100%; max-width: 400px; padding: 18px; background: #10b981; color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.1em; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
                             <i class="fas fa-play" style="margin-right: 10px;"></i> Iniciar Câmera
                         </button>
                     </div>
                 </div>
 
                 <div id="reader-container" style="display:none; position: relative;">
-                    <div id="reader" style="width:100%; max-width:400px; margin:0 auto; border-radius: 20px; overflow: hidden; border: 4px solid #6366f1;"></div>
+                    <div id="reader" style="width:100%; max-width:400px; margin:0 auto; border-radius: 20px; overflow: hidden; border: 4px solid #10b981;"></div>
                     <div style="margin-top: 25px; display: flex; gap: 10px; justify-content: center;">
                         <button type="button" onclick="fecharLeitor()" style="width: 100%; max-width: 320px; padding: 15px; background: #f1f5f9; color: var(--text-muted); border: none; border-radius: 14px; cursor: pointer; font-weight: 600;">
                             Cancelar

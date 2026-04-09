@@ -11,6 +11,13 @@
 
 {%block conteudo%}
 	{%if request.session.usertip == 'lanchonete' or request.session.usertip == 'admin' %}
+        <!-- BREADCRUMB -->
+        <div class="venda-breadcrumb" style="display: flex; justify-content: center; gap: 10px; font-size: 0.85em; font-weight: 600; margin-bottom: 20px; width: 100%;">
+            <a href="{% url 'Vendas' %}" style="color: #10b981; text-decoration: none;">Vendas</a>
+            <span style="color: #ddd;">/</span>
+            <span style="color: var(--text-muted);">Venda Manual</span>
+        </div>
+
         <!-- MODERN SALES STEPPER -->
         <div style="width: 100%; max-width: 1000px; margin: 0 auto 30px auto; padding: 20px; background: var(--surface-glass); backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.4); box-shadow: var(--shadow-md); display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 40px; flex: 1; justify-content: center;">

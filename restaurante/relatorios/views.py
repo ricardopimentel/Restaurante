@@ -13,161 +13,163 @@ from restaurante.core.models import venda, aluno, prato
 from restaurante.relatorios.forms import RelatorioVendasForm
 
 
+from restaurante.acesso.utils import permissao_requerida
+
+@permissao_requerida(category='RELATÓRIOS')
 def Relatorios(request):
-    if dict(request.session).get('nome'):
-        return render(request, 'relatorios/relatorios.html', {
-            'title': 'Relatórios',
-            'itemselec': 'RELATÓRIOS',
-        })
-    return redirect(r('Login'))
+    return render(request, 'relatorios/relatorios.html', {
+        'title': 'Relatórios',
+        'itemselec': 'RELATÓRIOS',
+    })
 
 
 @csrf_exempt
+@permissao_requerida(item_id='relatorio_vendas')
 def RelatorioVendas(request):
-    if dict(request.session).get('nome'):# Verificar se usuário está logado
-        soma = 0
-        somaalmoco = 0
-        somajanta = 0
-        somacem = 0
-        contcem = 0
-        contalmoco = 0
-        contjanta = 0
-        datainicial = ''
-        datafinal = ''
-        vd = []
+    soma = 0
+    somaalmoco = 0
+    somajanta = 0
+    somacem = 0
+    contcem = 0
+    contalmoco = 0
+    contjanta = 0
+    datainicial = ''
+    datafinal = ''
+    vd = []
 
-        CHOICES = [(-1, 'Todos')]
-        alunoobj = aluno.objects.all()
-        for al in alunoobj:
-            CHOICES.append((al.id, str(al.id_pessoa.usuario).title()))
+    CHOICES = [(-1, 'Todos')]
+    alunoobj = aluno.objects.all()
+    for al in alunoobj:
+        CHOICES.append((al.id, str(al.id_pessoa.usuario).title()))
 
-        # Pega valores da sessao para jogar no formulario
-        form = RelatorioVendasForm(request, CHOICES, initial={
-            'campo_data_inicial': request.session.get('data-inicial'),
-            'campo_data_final': request.session.get('data-final'),
-            'campo_aluno': request.session.get('aluno-selecionado'),
-            'campotipo': request.session.get('campo_tipo')
-        })
+    # Pega valores da sessao para jogar no formulario
+    form = RelatorioVendasForm(request, CHOICES, initial={
+        'campo_data_inicial': request.session.get('data-inicial'),
+        'campo_data_final': request.session.get('data-final'),
+        'campo_aluno': request.session.get('aluno-selecionado'),
+        'campotipo': request.session.get('campo_tipo')
+    })
 
-        if request.method == 'POST':
-            form = RelatorioVendasForm(request, CHOICES, request.POST)
-            if form.is_valid():
-                # Pega valores do POST
-                datainicial = request.POST['campo_data_inicial']
-                datafinal = request.POST['campo_data_final']
-                alunoselecionado = form.cleaned_data['campo_aluno']
-                campotipo = form.cleaned_data['campo_tipo']
+    if request.method == 'POST':
+        form = RelatorioVendasForm(request, CHOICES, request.POST)
+        if form.is_valid():
+            # Pega valores do POST
+            datainicial = request.POST['campo_data_inicial']
+            datafinal = request.POST['campo_data_final']
+            alunoselecionado = form.cleaned_data['campo_aluno']
+            campotipo = form.cleaned_data['campo_tipo']
 
-                if campotipo == '-1':
-                    campotipo = ''
+            if campotipo == '-1':
+                campotipo = ''
 
 
-                # Pega no bd os dados da vas vendas, filtrando por aluno
-                if alunoselecionado == '-1':
-                    vd = venda.objects.select_related().filter(
-                        data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59'], cem__contains=campotipo
-                    ).order_by('data')
-                else:
-                    vd = venda.objects.select_related().filter(
-                        data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59'], cem__contains=campotipo,
-                        id_aluno=alunoselecionado
-                    ).order_by('data')
-                # Salva valores na sessão p preencher automaticamente posteriormente
-                request.session['data-inicial'] = datainicial
-                request.session['data-final'] = datafinal
-                request.session['aluno-selecionado'] = alunoselecionado
-                request.session['campo_tipo'] = campotipo
-
-        #Fazer as somas do relatório
-        for vend in vd:
-            if vend.cem: #se for bolsista 100%
-                contcem = contcem + 1
-                somacem = somacem + vend.valor
-
-            # Contabilizar por tipo de prato (Almoço ou Janta) usando o registro oficial do prato
-            if vend.id_prato.descricao == "Almoço":
-                contalmoco = contalmoco + 1
-                somaalmoco = somaalmoco + vend.valor
-            elif vend.id_prato.descricao == "Janta":
-                contjanta = contjanta + 1
-                somajanta = somajanta + vend.valor
+            # Pega no bd os dados da vas vendas, filtrando por aluno
+            if alunoselecionado == '-1':
+                vd = venda.objects.select_related().filter(
+                    data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59'], cem__contains=campotipo
+                ).order_by('data')
             else:
-                # Caso haja outros tipos de pratos futuramente
-                pass
+                vd = venda.objects.select_related().filter(
+                    data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59'], cem__contains=campotipo,
+                    id_aluno=alunoselecionado
+                ).order_by('data')
+            # Salva valores na sessão p preencher automaticamente posteriormente
+            request.session['data-inicial'] = datainicial
+            request.session['data-final'] = datafinal
+            request.session['aluno-selecionado'] = alunoselecionado
+            request.session['campo_tipo'] = campotipo
 
-            soma = soma + vend.valor
+    #Fazer as somas do relatório
+    for vend in vd:
+        if vend.cem: #se for bolsista 100%
+            contcem = contcem + 1
+            somacem = somacem + vend.valor
 
-        return render(request, 'relatorios/relatoriovendas.html', {
-            'soma': soma,
-            'datainicial': datainicial,
-            'datafinal': datafinal,
-            'itemselec': 'RELATÓRIOS',
-            'venda': vd,
-            'contcem': contcem,
-            'valorcem': somacem,
-            'contjanta': contjanta,
-            'contalmoco': contalmoco,
-            'valorjanta': somajanta,
-            'valoralmoco': somaalmoco,
-            'form': form,
-            'title': 'Relatórios',
-        })
+        # Contabilizar por tipo de prato (Almoço ou Janta) usando o registro oficial do prato
+        if vend.id_prato.descricao == "Almoço":
+            contalmoco = contalmoco + 1
+            somaalmoco = somaalmoco + vend.valor
+        elif vend.id_prato.descricao == "Janta":
+            contjanta = contjanta + 1
+            somajanta = somajanta + vend.valor
+        else:
+            # Caso haja outros tipos de pratos futuramente
+            pass
+
+        soma = soma + vend.valor
+
+    return render(request, 'relatorios/relatoriovendas.html', {
+        'soma': soma,
+        'datainicial': datainicial,
+        'datafinal': datafinal,
+        'itemselec': 'RELATÓRIOS',
+        'venda': vd,
+        'contcem': contcem,
+        'valorcem': somacem,
+        'contjanta': contjanta,
+        'contalmoco': contalmoco,
+        'valorjanta': somajanta,
+        'valoralmoco': somaalmoco,
+        'form': form,
+        'title': 'Relatórios',
+    })
 
 
 @csrf_exempt
+@permissao_requerida(item_id='custo_aluno_periodo')
 def RelatorioCustoAlunoPeriodo(request):
-    if dict(request.session).get('nome'):# Verificar se usuário está logado
-        soma = 0
-        datainicial = ''
-        datafinal = ''
-        vd = []
+    soma = 0
+    datainicial = ''
+    datafinal = ''
+    vd = []
 
-        CHOICES = [(-1, 'Todos')]
-        alunoobj = aluno.objects.all()
-        for al in alunoobj:
-            CHOICES.append((al.id, str(al.id_pessoa.usuario).title()))
+    CHOICES = [(-1, 'Todos')]
+    alunoobj = aluno.objects.all()
+    for al in alunoobj:
+        CHOICES.append((al.id, str(al.id_pessoa.usuario).title()))
 
-        # Pega valores da sessao para jogar no formulario
-        form = RelatorioVendasForm(request, CHOICES, initial={
-            'campo_data_inicial': request.session.get('data-inicial'),
-            'campo_data_final': request.session.get('data-final'),
-            'campo_aluno': request.session.get('aluno-selecionado'),
-        })
+    # Pega valores da sessao para jogar no formulario
+    form = RelatorioVendasForm(request, CHOICES, initial={
+        'campo_data_inicial': request.session.get('data-inicial'),
+        'campo_data_final': request.session.get('data-final'),
+        'campo_aluno': request.session.get('aluno-selecionado'),
+    })
 
-        if request.method == 'POST':
-            form = RelatorioVendasForm(request, CHOICES, request.POST)
-            if form.is_valid():
-                # Pega valores do POST
-                datainicial = request.POST['campo_data_inicial']
-                datafinal = request.POST['campo_data_final']
-                alunoselecionado = form.cleaned_data['campo_aluno']
-                # Pega no bd os dados da vas vendas, filtrando por aluno
-                #objects.values('host').annotate(soma=Sum('pages')).order_by('-soma')
-                if alunoselecionado == '-1':
-                    vd = venda.objects.select_related().values('id_aluno__id_pessoa__nome', 'id_aluno__id_pessoa__usuario').annotate(soma=Sum('valor')).filter(
-                        data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59']
-                    )
-                else:
-                    vd = venda.objects.select_related().values('id_aluno__id_pessoa__nome', 'id_aluno__id_pessoa__usuario').annotate(soma=Sum('valor')).filter(
-                        data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59'],
-                        id_aluno=alunoselecionado
-                    )
-                # Salva valores na sessão p preencher automaticamente posteriormente
-                request.session['data-inicial'] = datainicial
-                request.session['data-final'] = datafinal
-                request.session['aluno-selecionado'] = alunoselecionado
+    if request.method == 'POST':
+        form = RelatorioVendasForm(request, CHOICES, request.POST)
+        if form.is_valid():
+            # Pega valores do POST
+            datainicial = request.POST['campo_data_inicial']
+            datafinal = request.POST['campo_data_final']
+            alunoselecionado = form.cleaned_data['campo_aluno']
+            # Pega no bd os dados da vas vendas, filtrando por aluno
+            #objects.values('host').annotate(soma=Sum('pages')).order_by('-soma')
+            if alunoselecionado == '-1':
+                vd = venda.objects.select_related().values('id_aluno__id_pessoa__nome', 'id_aluno__id_pessoa__usuario').annotate(soma=Sum('valor')).filter(
+                    data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59']
+                )
+            else:
+                vd = venda.objects.select_related().values('id_aluno__id_pessoa__nome', 'id_aluno__id_pessoa__usuario').annotate(soma=Sum('valor')).filter(
+                    data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59'],
+                    id_aluno=alunoselecionado
+                )
+            # Salva valores na sessão p preencher automaticamente posteriormente
+            request.session['data-inicial'] = datainicial
+            request.session['data-final'] = datafinal
+            request.session['aluno-selecionado'] = alunoselecionado
 
-        # Somar valor das vendas no periodo
-        for vend in vd:
-            soma = soma + vend['soma']
+    # Somar valor das vendas no periodo
+    for vend in vd:
+        soma = soma + vend['soma']
 
-        return render(request, 'relatorios/relatorio_custo_aluno_periodo.html', {
-            'soma': soma, 'datainicial': datainicial, 'datafinal': datafinal,
-            'itemselec': 'RELATÓRIOS', 'venda': vd, 'form': form, 'title': 'Relatórios',
-        })
-
+    return render(request, 'relatorios/relatorio_custo_aluno_periodo.html', {
+        'soma': soma, 'datainicial': datainicial, 'datafinal': datafinal,
+        'itemselec': 'RELATÓRIOS', 'venda': vd, 'form': form, 'title': 'Relatórios',
+    })
 
 
+
+@permissao_requerida(item_id='custo_aluno_periodo')
 def PdfCustoAlunoPeriodo(request):
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     campo_aluno = request.session.get('aluno-selecionado')
@@ -230,6 +232,7 @@ def PdfCustoAlunoPeriodo(request):
     return response
 
 
+@permissao_requerida(item_id='relatorio_vendas')
 def PdfVendas(request):
     soma = 0
     somaalmoco = 0
@@ -305,7 +308,7 @@ def PdfVendas(request):
     else:
         path_wkthmltopdf = '/app/storage/wkhtmltopdf/wkhtmltopdf'
 
-    config = pdfkit.configuration(wkhtmltopdf=path_wkthmltopdf)
+    config_pdf = pdfkit.configuration(wkhtmltopdf=path_wkthmltopdf)
 
     options = {
         'encoding': 'utf-8',
@@ -315,12 +318,13 @@ def PdfVendas(request):
     }
 
     # Use False instead of output path to save pdf to a variable
-    pdf = pdfkit.from_string(html, False, configuration=config, options=options)
+    pdf = pdfkit.from_string(html, False, configuration=config_pdf, options=options)
     response = HttpResponse(pdf, content_type='application/pdf')
 
     return response
 
 
+@permissao_requerida(item_id='relatorio_vendas')
 def CsvVendas(request):
     campo_aluno = request.session.get('aluno-selecionado')
     datainicial = request.session['data-inicial']
@@ -330,7 +334,7 @@ def CsvVendas(request):
     # Cria o objeto HttpResponse com o cabeçalho CSV apropriado.
     response = HttpResponse(
         content_type="text/csv",
-        headers={"Content-Disposition": 'attachment; filename="somefilename.csv"'},
+        headers={"Content-Disposition": 'attachment; filename="vendas_relatorio.csv"'},
     )
     writer = csv.writer(response)
     # Cria cabeçalho do arquivo, 1ª linha
@@ -352,5 +356,8 @@ def CsvVendas(request):
     for vend in vd:
         #Adiciona linha ao arquivo
         writer.writerow([vend.data, vend.id_aluno.id_pessoa, vend.id_aluno.id_pessoa.usuario, str(vend.valor).replace('.', ',')])
+
+    return response
+
 
     return response

@@ -35,7 +35,7 @@
         <nav class="navbar" id="navbar">
             <div class="navbar-container">
                 <!-- Branding / Logo -->
-                <a href="/restaurante/" class="navbar-brand">
+                <a href="{% url 'Home' %}" class="navbar-brand">
                     <img alt="IFTO Logo" src="{% static 'images/if.png' %}" class="nav-logo">
                     <span class="nav-brand-text">Cantina IFTO</span>
                 </a>
@@ -72,6 +72,13 @@
                                         <span class="user-role">Conectado</span>
                                     </div>
                                     <div class="dropdown-divider"></div>
+                                    {% if request.session.is_admin or request.session.can_switch %}
+                                        <a href="{% url 'TrocarDashboard' %}" class="dropdown-item">
+                                            <i class="fas fa-exchange-alt"></i> 
+                                            Visão {% if request.session.dashboard_mode == 'usuario' %}Funcionário{% else %}Usuário{% endif %}
+                                        </a>
+                                        <div class="dropdown-divider"></div>
+                                    {% endif %}
                                     <a href="{% url 'Logout' %}" class="dropdown-item logout">
                                         <i class="fas fa-sign-out-alt"></i> Sair
                                     </a>

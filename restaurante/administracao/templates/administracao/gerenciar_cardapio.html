@@ -7,8 +7,8 @@
 {% block conteudo %}
 <style>
     :root {
-        --food-primary: #f59e0b;
-        --food-secondary: #ffedd5;
+        --food-primary: #6366f1;
+        --food-secondary: rgba(99, 102, 241, 0.05);
     }
 
     .cardapio-container {
@@ -128,12 +128,12 @@
         display: flex;
         align-items: center;
         gap: 12px;
-        box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2);
+        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
     }
 
     .save-btn:hover {
         transform: scale(1.05);
-        background: #d97706;
+        background: #4f46e5;
     }
 
     .status-badge {
@@ -144,9 +144,34 @@
         background: #10b981;
         color: white;
     }
+    .breadcrumb {
+        width: 100%;
+        max-width: 1000px;
+        margin: 0 auto 20px auto;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        font-size: 0.9em;
+        color: var(--text-muted);
+    }
+    .breadcrumb a {
+        color: var(--food-primary);
+        text-decoration: none;
+        font-weight: 600;
+    }
+    .breadcrumb span {
+        color: #ddd;
+    }
 </style>
 
 <div class="cardapio-container">
+    <div class="breadcrumb">
+        <a href="{% url 'Administracao' %}">Administração</a>
+        <span>/</span>
+        <a href="{% url 'MenuCardapioHub' %}">Central de Cardápio</a>
+        <span>/</span>
+        <span>Cardápio do Dia</span>
+    </div>
     <div style="text-align: center; margin-bottom: 40px;">
         <h1 style="margin: 0; font-size: 2.2em; font-weight: 800; color: var(--text-main);">
             <i class="fas fa-utensils" style="color: var(--food-primary);"></i>

@@ -21,10 +21,15 @@
         }
 
         .admin-breadcrumb {
-            display: flex; gap: 10px; font-size: 0.85em; font-weight: 600; margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 10px;
         }
-        .admin-breadcrumb a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
-        .admin-breadcrumb a:hover { color: var(--admin-primary); }
+        .admin-breadcrumb a { color: var(--admin-primary); text-decoration: none; transition: color 0.2s; }
+        .admin-breadcrumb a:hover { opacity: 0.8; }
         .admin-breadcrumb span { color: #ddd; }
 
         /* Form Card */
@@ -67,9 +72,13 @@
     <div class="admin-page-header">
         <div style="width: 100%; text-align: center;">
             <div class="admin-breadcrumb" style="justify-content: center;">
-                <a href="{% url 'Administracao' %}">Administração</a>
+                <a href="{% if request.session.usertip == 'admin' %}{% url 'Administracao' %}{% else %}{% url 'Administracao' %}{% endif %}">
+                    {% if request.session.usertip == 'admin' %}Administração{% else %}Administração{% endif %}
+                </a>
                 <span>/</span>
                 <a href="{% url 'ExcluirColaboradores' %}">Colaboradores</a>
+                <span>/</span>
+                <span>Novo Cadastro</span>
             </div>
             <h1 style="margin: 0; font-size: 1.8em; color: var(--text-main); font-weight: 800;">Cadastro de Alunos Colaboradores</h1>
         </div>

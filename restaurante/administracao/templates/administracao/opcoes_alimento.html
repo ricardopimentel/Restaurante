@@ -5,6 +5,11 @@
 
 {% block conteudo %}
 <style>
+    :root {
+        --food-primary: #6366f1;
+        --food-secondary: rgba(99, 102, 241, 0.05);
+    }
+
     .options-container {
         max-width: 1100px;
         margin: 0 auto;
@@ -13,11 +18,19 @@
 
     .header-actions {
         display: flex;
-        justify-content: space-between;
+        flex-direction: column;
         align-items: center;
-        margin-bottom: 30px;
-        flex-wrap: wrap;
+        text-align: center;
+        margin-bottom: 45px;
         gap: 20px;
+        width: 100%;
+    }
+
+    .header-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
     }
 
     .management-grid {
@@ -73,8 +86,8 @@
     }
 
     .form-control:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        border-color: var(--food-primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         outline: none;
     }
 
@@ -82,7 +95,7 @@
         width: 100%;
         padding: 12px;
         border-radius: 10px;
-        background: var(--primary);
+        background: var(--food-primary);
         color: white;
         border: none;
         font-weight: 700;
@@ -95,7 +108,7 @@
     }
 
     .btn-submit:hover {
-        background: var(--primary-dark);
+        background: #4f46e5;
         transform: translateY(-2px);
     }
 
@@ -166,22 +179,47 @@
         border-radius: 4px;
         font-family: monospace;
     }
+    .breadcrumb {
+        width: 100%;
+        max-width: 1100px;
+        margin: 0 auto 20px auto;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        font-size: 0.9em;
+        color: var(--text-muted);
+    }
+    .breadcrumb a {
+        color: var(--food-primary);
+        text-decoration: none;
+        font-weight: 600;
+    }
+    .breadcrumb span {
+        color: #ddd;
+    }
 </style>
 
 <div class="options-container">
+    <div class="breadcrumb">
+        <a href="{% url 'Administracao' %}">Administração</a>
+        <span>/</span>
+        <a href="{% url 'MenuCardapioHub' %}">Central de Cardápio</a>
+        <span>/</span>
+        <span>Opções de Alimentos</span>
+    </div>
     <div class="header-actions">
-        <div>
-            <h1 style="margin: 0; font-size: 2em; font-weight: 800; color: var(--text-main);">
-                <i class="fas fa-list-check" style="color: var(--primary);"></i> Opções do Cardápio
+        <div class="header-info">
+            <h1 style="margin: 0; font-size: 2.2em; font-weight: 800; color: var(--text-main);">
+                <i class="fas fa-list-check" style="color: var(--food-primary);"></i> Opções do Cardápio
             </h1>
-            <p style="color: var(--text-muted);">Gerencie os alimentos disponíveis para seleção no menu do dia.</p>
+            <p style="color: var(--text-muted); font-size: 1.1em;">Gerencie os alimentos disponíveis para seleção no menu do dia.</p>
         </div>
-        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-            <a href="{% url 'ExportarOpcoesJSON' %}" class="btn-submit" style="width: auto; padding: 10px 20px; background: white; color: var(--primary); border: 2px solid var(--primary);">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+            <a href="{% url 'ExportarOpcoesJSON' %}" class="btn-submit" style="width: auto; padding: 10px 20px; background: white; color: var(--food-primary); border: 2px solid var(--food-primary);">
                 <i class="fas fa-file-export"></i> Exportar biblioteca (JSON)
             </a>
-            <a href="{% url 'GerenciarCardapio' %}" class="btn-submit" style="width: auto; padding: 10px 20px; background: #6366f1;">
-                <i class="fas fa-arrow-left"></i> Voltar ao Cardápio
+            <a href="{% url 'MenuCardapioHub' %}" class="btn-submit" style="width: auto; padding: 10px 20px;">
+                <i class="fas fa-arrow-left"></i> Voltar à Central
             </a>
         </div>
     </div>
@@ -191,7 +229,7 @@
         <div style="display: flex; flex-direction: column; gap: 30px;">
             <!-- ADD ITEM -->
             <div class="admin-card">
-                <h3 class="card-title"><i class="fas fa-plus-circle"></i> Novo Alimento</h3>
+                <h3 class="card-title"><i class="fas fa-plus-circle" style="color: var(--food-primary);"></i> Novo Alimento</h3>
                 <form method="POST">
                     {% csrf_token %}
                     <div class="form-group">
@@ -214,15 +252,15 @@
             </div>
 
             <!-- IMPORT JSON -->
-            <div class="admin-card" style="border-left: 5px solid #6366f1;">
-                <h3 class="card-title" style="color: #6366f1;"><i class="fas fa-file-import"></i> Importar JSON</h3>
+            <div class="admin-card" style="border-left: 5px solid var(--food-primary);">
+                <h3 class="card-title" style="color: var(--food-primary);"><i class="fas fa-file-import"></i> Importar JSON</h3>
                 <form method="POST" action="{% url 'ImportarOpcoesJSON' %}" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="form-group">
                         <label>Arquivo .json</label>
                         <input type="file" name="arquivo_json" class="form-control" accept=".json" required>
                     </div>
-                    <button type="submit" class="btn-submit" style="background: #6366f1;">
+                    <button type="submit" class="btn-submit">
                         Carregar Arquivo
                     </button>
                 </form>
@@ -235,7 +273,7 @@
 
         <!-- MAIN: LIST -->
         <div class="admin-card">
-            <h3 class="card-title"><i class="fas fa-database"></i> Biblioteca Atual</h3>
+            <h3 class="card-title"><i class="fas fa-database" style="color: var(--food-primary);"></i> Biblioteca Atual</h3>
             
             {% regroup opcoes by categoria as categoria_list %}
 

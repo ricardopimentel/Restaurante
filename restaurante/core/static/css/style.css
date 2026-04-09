@@ -399,6 +399,8 @@ div.bar-top{
 	flex-direction: row;
 	flex-wrap: wrap;
 	justify-content: center;
+    align-items: flex-start;
+    align-content: flex-start;
 	padding: 100px 15px 50px 15px; /* Increased top padding for fixed navbar */
     background: transparent;
     z-index: 4;

@@ -1,0 +1,597 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titulo %}{{title}}{% endblock %}
+
+{% block conteudo %}
+    <style>
+        :root {
+            --admin-primary: #6366f1;
+            --admin-bg: rgba(99, 102, 241, 0.05);
+        }
+
+        .admin-page-header {
+            display: flex; 
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 30px; 
+            width: 100%;
+        }
+        .admin-breadcrumb {
+            display: flex; 
+            justify-content: center;
+            gap: 10px; 
+            font-size: 0.85em; 
+            font-weight: 600; 
+            margin-bottom: 20px;
+        }
+        .admin-breadcrumb a { color: var(--admin-primary); text-decoration: none; transition: color 0.2s; }
+        .admin-breadcrumb a:hover { opacity: 0.8; }
+        .admin-breadcrumb span { color: #ddd; }
+
+        .perm-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .category-box {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid #eef2ff;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .category-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--admin-bg);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-item-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 12px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .menu-item-row:hover {
+            background: var(--admin-bg);
+        }
+
+        .menu-item-row input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--admin-primary);
+            cursor: pointer;
+        }
+
+        .menu-item-row label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 24px;
+            padding: 35px;
+            border: 1px solid #eef2ff;
+            box-shadow: var(--shadow-md);
+            max-width: 700px; 
+            margin: 0 auto 40px auto;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-weight: 700;
+            font-size: 0.9em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group input, .input-group select {
+            padding: 14px;
+            border-radius: 14px;
+            border: 2px solid #f1f5f9;
+            font-size: 1em;
+            transition: all 0.2s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: var(--admin-primary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-save-perm {
+            width: 100%;
+            padding: 16px;
+            background: var(--admin-primary);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-save-perm:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        .perm-table-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid #eef2ff;
+            box-shadow: var(--shadow-sm);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8fafc;
+            padding: 18px 25px;
+            text-align: left;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 18px 25px;
+            border-top: 1px solid #f1f5f9;
+            color: var(--text-main);
+            font-size: 0.95em;
+        }
+
+        .badge-type {
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 0.8em;
+            font-weight: 700;
+            background: var(--admin-bg);
+            color: var(--admin-primary);
+        }
+
+        .btn-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            border: none;
+            background: #f1f5f9;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-icon:hover {
+            background: #ffe4e6;
+            color: #ef4444;
+        }
+        
+        .breadcrumb {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .breadcrumb a { color: var(--admin-primary); text-decoration: none; }
+        .breadcrumb span { color: #ddd; }
+        
+        /* Hide redundant icons if multiple children exist */
+        .toggle-icon + .toggle-icon { display: none; }
+    </style>
+
+    <div class="admin-page-header">
+        <div class="admin-breadcrumb">
+            <a href="{% url 'Administracao' %}">Administração</a>
+            <span>/</span>
+            <span style="color: var(--text-muted);">Gerenciar Permissões</span>
+        </div>
+
+        <h1 class="admin-title" style="font-size: 2.5em; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; justify-content: center; gap: 15px;">
+            <i class="fas fa-shield-alt" style="color: var(--admin-primary);"></i>
+            Gerenciar Permissões
+        </h1>
+        <p class="admin-subtitle" style="color: var(--text-muted); margin-top: 8px;">Configure quais grupos do AD podem acessar menus específicos.</p>
+        
+        <div style="display: flex; gap: 24px; margin-top: 25px; margin-bottom: 40px; justify-content: center; width: 100%;">
+            <a href="{% url 'ExportarPermissoesJSON' %}" class="btn-icon" title="Exportar Configurações (.json)" style="background: white; border: 1px solid #e2e8f0; width: auto; padding: 0 20px; border-radius: 12px; display: flex; align-items: center; gap: 10px; height: 45px; font-weight: 700; color: var(--text-main); font-size: 0.9em; text-decoration: none;">
+                <i class="fas fa-file-export" style="color: #0ea5e9;"></i> Exportar JSON
+            </a>
+            <button type="button" onclick="document.getElementById('importFile').click()" class="btn-icon" title="Importar Configurações (.json)" style="background: white; border: 1px solid #e2e8f0; width: auto; padding: 0 20px; border-radius: 12px; display: flex; align-items: center; gap: 10px; height: 45px; font-weight: 700; color: var(--text-main); font-size: 0.9em; cursor: pointer;">
+                <i class="fas fa-file-import" style="color: var(--admin-primary);"></i> Importar JSON
+            </button>
+        </div>
+
+        <form id="importForm" action="{% url 'ImportarPermissoesJSON' %}" method="POST" enctype="multipart/form-data" style="display: none;">
+            {% csrf_token %}
+            <input type="file" id="importFile" name="arquivo_json" onchange="if(confirm('Isso irá sobrescrever os perfis existentes no JSON. Deseja continuar?')) this.form.submit()" accept=".json">
+        </form>
+    </div>
+
+    <div class="formulario">
+        <div class="form-card">
+        {% if messages %}
+            <div style="margin-bottom: 25px;">
+                {% for message in messages %}
+                    <div style="padding: 15px 20px; border-radius: 12px; margin-bottom: 10px; font-weight: 600; font-size: 0.9em; display: flex; align-items: center; gap: 12px; 
+                        {% if message.tags == 'success' %} background: #ecfdf5; color: #059669; border: 1px solid #10b98130;
+                        {% elif message.tags == 'error' %} background: #fef2f2; color: #dc2626; border: 1px solid #ef444430;
+                        {% else %} background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; {% endif %}">
+                        <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form id="permForm" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="id" id="perm_id">
+            {{ form.allowed_menus }}
+            {{ form.quick_access }}
+
+            <div class="form-row" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="input-group">
+                    <label>Tipo de Acesso</label>
+                    {{ form.access_type }}
+                </div>
+                <div class="input-group">
+                    <label>Grupo do AD</label>
+                    {{ form.ad_group }}
+                </div>
+                <div class="input-group">
+                    <label>Rótulo do Grupo (Badge)</label>
+                    {{ form.group_label }}
+                </div>
+                <div style="grid-column: span 3; font-size: 0.8em; color: var(--text-muted); margin-top: -15px;">
+                    Ex: Administrador, Vendedor, Coordenador (Aparecerá abaixo do nome no Dashboard)
+                </div>
+            </div>
+
+            <!-- DASHBOARD CONFIGURATION -->
+            <div style="background: var(--admin-bg); padding: 25px; border-radius: 20px; margin-bottom: 30px; border: 1px dashed var(--admin-primary);">
+                <h3 style="margin: 0 0 20px 0; font-size: 1.1em; color: var(--admin-primary); font-weight: 800; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-desktop"></i> Configuração da Interface
+                </h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 25px; align-items: end;">
+                    <div class="input-group">
+                        <label>Dashboard Padrão</label>
+                        {{ form.default_dashboard }}
+                    </div>
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                        <label class="switch-container" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <style>
+                                .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+                                .switch input { opacity: 0; width: 0; height: 0; }
+                                .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 24px; }
+                                .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+                                input:checked + .slider { background-color: var(--admin-primary); }
+                                input:checked + .slider:before { transform: translateX(20px); }
+                            </style>
+                            <div class="switch">
+                                {{ form.can_switch_dashboard }}
+                                <span class="slider"></span>
+                            </div>
+                            <span style="font-weight: 600; font-size: 0.9em; color: var(--text-main);">Permitir Trocar Dashboard</span>
+                        </label>
+
+                        <label class="switch-container" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <div class="switch">
+                                {{ form.can_sell }}
+                                <span class="slider"></span>
+                            </div>
+                            <span style="font-weight: 600; font-size: 0.9em; color: var(--text-main);">Pode realizar Venda</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 30px;">
+                <!-- MENUS PERMITIDOS -->
+                <div>
+                    <h3 style="margin-bottom: 20px; font-size: 1.2em; color: var(--text-main); font-weight: 800;">Estrutura de Menus e Permissões</h3>
+                    <div id="hierarchy-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px;">
+                        {% for item in all_menu_items %}
+                            {% if not item.parent %}
+                                <!-- Top Level Item -->
+                                <div class="category-box" style="margin-bottom: 0;">
+                                    <div class="menu-item-row" onclick="toggleParent('{{ item.id }}')">
+                                        <input type="checkbox" id="check_{{ item.id }}" class="menu-checkbox" value="{{ item.id }}" 
+                                            {% if item.required %}checked disabled{% endif %}
+                                            onclick="event.stopPropagation(); updateHierarchyVisibility('{{ item.id }}')">
+                                        <label style="font-weight: 700; font-size: 1.05em;">
+                                            <i class="fas {% if item.id == 'menu_home' %}fa-home{% elif item.id == 'menu_admin' %}fa-tools{% elif item.id == 'menu_vendas' %}fa-shopping-cart{% else %}fa-chart-bar{% endif %}" style="margin-right: 8px; color: var(--admin-primary);"></i>
+                                            {{ item.label }}
+                                        </label>
+                                        <i class="fas fa-chevron-right toggle-icon" id="icon_{{ item.id }}" style="color: #cbd5e1; transition: transform 0.3s;"></i>
+                                    </div>
+                                    
+                                    <!-- Children Container -->
+                                    <div id="children_{{ item.id }}" style="display: {% if item.id == 'menu_home' %}block{% else %}none{% endif %}; padding-left: 30px; margin-top: 10px; border-left: 2px solid var(--admin-bg);">
+                                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                                            {% for sub in all_menu_items %}
+                                                {% if sub.parent == item.id %}
+                                                    <div class="submenu-group">
+                                                        <div class="menu-item-row" onclick="toggleParent('{{ sub.id }}')">
+                                                            <input type="checkbox" id="check_{{ sub.id }}" class="menu-checkbox" value="{{ sub.id }}" 
+                                                                data-shortcut="{% if sub.is_shortcut %}true{% else %}false{% endif %}"
+                                                                {% if sub.required %}checked disabled{% endif %}
+                                                                onclick="event.stopPropagation(); updateHierarchyVisibility('{{ sub.id }}')">
+                                                            <label>{{ sub.label }}</label>
+                                                            
+                                                            {% for check in all_menu_items %}{% if check.parent == sub.id %}<i class="fas fa-chevron-right toggle-icon" id="icon_{{ sub.id }}" style="font-size: 0.8em; color: #ddd;"></i>{% endif %}{% endfor %}
+                                                        </div>
+                                                        
+                                                        <!-- Grandchildren (Sub-sub-menus) -->
+                                                        <div id="children_{{ sub.id }}" style="display: none; padding-left: 25px; margin-top: 5px; border-left: 1px dashed #e2e8f0;">
+                                                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                                                {% for grandson in all_menu_items %}
+                                                                    {% if grandson.parent == sub.id %}
+                                                                        <div class="menu-item-row" onclick="toggleCheckbox('check_{{ grandson.id }}')">
+                                                                            <input type="checkbox" id="check_{{ grandson.id }}" class="menu-checkbox" value="{{ grandson.id }}" 
+                                                                                data-shortcut="{% if grandson.is_shortcut %}true{% else %}false{% endif %}"
+                                                                                {% if grandson.required %}checked disabled{% endif %}
+                                                                                onclick="event.stopPropagation()">
+                                                                            <label style="font-size: 0.9em; font-weight: 400;">{{ grandson.label }}</label>
+                                                                        </div>
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-save-perm">
+                <i class="fas fa-save"></i> Salvar Perfil de Acesso
+            </button>
+        </form>
+    </div>
+
+    <div class="perm-table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Grupo AD</th>
+                    <th>Dashboard</th>
+                    <th>Troca?</th>
+                    <th>Venda?</th>
+                    <th>Itens Permitidos</th>
+                    <th style="width: 100px;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for perm in permissoes %}
+                <tr>
+                    <td><span class="badge-type">{{ perm.get_access_type_display }}</span></td>
+                    <td style="font-family: monospace; font-weight: 600;">{{ perm.ad_group }}</td>
+                    <td>{{ perm.get_default_dashboard_display }}</td>
+                    <td>{% if perm.can_switch_dashboard %}<i class="fas fa-check-circle" style="color: var(--primary);"></i>{% else %}<i class="fas fa-times-circle" style="color: #ef4444;"></i>{% endif %}</td>
+                    <td>{% if perm.can_sell %}<i class="fas fa-check-circle" style="color: var(--primary);"></i>{% else %}<i class="fas fa-times-circle" style="color: #ef4444;"></i>{% endif %}</td>
+                    <td>
+                        <div style="display: flex; flex-wrap: wrap; gap: 5px; max-width: 300px;">
+                            {% for item_id in perm.get_allowed_list %}
+                                <span style="font-size: 0.75em; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; color: var(--text-muted); border: 1px solid #e2e8f0;">{{ item_id }}</span>
+                            {% endfor %}
+                            {% for item_id in perm.get_quick_list %}
+                                <span style="font-size: 0.75em; background: #e0f2fe; padding: 2px 8px; border-radius: 4px; color: #0369a1; border: 1px solid #bae6fd;">
+                                    <i class="fas fa-desktop" style="font-size: 0.8em; margin-right: 3px;"></i>{{ item_id }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 8px;">
+                            {% if perm.ad_group == admin_group_name %}
+                                <div style="display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.85em; font-weight: 700; background: #f8fafc; padding: 5px 12px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                                    <i class="fas fa-lock"></i> SISTEMA
+                                </div>
+                            {% else %}
+                                <button class="btn-icon" onclick="editPerm('{{ perm.id|escapejs }}', '{{ perm.access_type|escapejs }}', '{{ perm.ad_group|escapejs }}', '{{ perm.allowed_menus|escapejs }}', '{{ perm.default_dashboard|escapejs }}', '{% if perm.can_switch_dashboard %}true{% else %}false{% endif %}', '{% if perm.can_sell %}true{% else %}false{% endif %}', '{{ perm.quick_access|escapejs }}', '{{ perm.group_label|escapejs }}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <form method="POST" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja remover esta permissão?')">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="id" value="{{ perm.id }}">
+                                    <button type="submit" name="excluir" class="btn-icon">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">Nenhuma permissão cadastrada.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function toggleCheckbox(elementId) {
+            const cb = document.getElementById(elementId);
+            if (cb) {
+                cb.checked = !cb.checked;
+                // If it's a hierarchy checkbox, trigger visibility
+                const id = elementId.replace('check_', '');
+                updateHierarchyVisibility(id);
+            }
+        }
+
+        function toggleParent(parentId) {
+            // This function is called when clicking the row
+            const cb = document.getElementById('check_' + parentId);
+            if (cb) {
+                // We don't toggle the checkbox here to avoid double-toggle with the actual input click
+                // But we ensure visibility is synced
+                updateHierarchyVisibility(parentId);
+            }
+        }
+
+        function updateHierarchyVisibility(parentId) {
+            const cb = document.getElementById('check_' + parentId);
+            const children = document.getElementById('children_' + parentId);
+            const icon = document.getElementById('icon_' + parentId);
+            
+            if (cb && children) {
+                if (cb.checked) {
+                    children.style.display = 'block';
+                    if (icon) icon.style.transform = 'rotate(90deg)';
+                } else {
+                    children.style.display = 'none';
+                    if (icon) icon.style.transform = 'rotate(0deg)';
+                    
+                    // Recursive hide: if parent is unchecked, children should remain hidden 
+                    // and their sub-children too (UI purely)
+                }
+            }
+        }
+
+        document.getElementById('permForm').onsubmit = function() {
+            // Collect all checked boxes (including disabled ones)
+            const allCheckboxes = document.querySelectorAll('.menu-checkbox:checked');
+            
+            const allowedMenus = [];
+            const quickAccess = [];
+            
+            allCheckboxes.forEach(cb => {
+                if (cb.dataset.shortcut === 'true') {
+                    quickAccess.push(cb.value);
+                } else {
+                    allowedMenus.push(cb.value);
+                }
+            });
+            
+            document.getElementById('id_allowed_menus').value = allowedMenus.join(',');
+            document.getElementById('id_quick_access').value = quickAccess.join(',');
+        };
+
+        function editPerm(id, type, group, allowed, dashboard, can_switch, can_sell, quick, group_label) {
+            document.getElementById('perm_id').value = id;
+            document.getElementById('id_access_type').value = type;
+            document.getElementById('id_ad_group').value = group;
+            document.getElementById('id_default_dashboard').value = dashboard;
+            document.getElementById('id_group_label').value = group_label;
+            
+            document.getElementById('id_can_switch_dashboard').checked = (can_switch === 'true');
+            document.getElementById('id_can_sell').checked = (can_sell === 'true');
+            
+            // Reset and Set Menu Checkboxes
+            document.querySelectorAll('.menu-checkbox').forEach(cb => {
+                if (!cb.disabled) {
+                    cb.checked = false;
+                }
+                const parentId = cb.id.replace('check_', '');
+                const children = document.getElementById('children_' + parentId);
+                const icon = document.getElementById('icon_' + parentId);
+                // By default keep everything closed EXCEPT home which is required
+                if (children && parentId !== 'menu_home') children.style.display = 'none';
+                if (icon && parentId !== 'menu_home') icon.style.transform = 'rotate(0deg)';
+                if (parentId === 'menu_home') {
+                    if (cb) cb.checked = true;
+                    if (children) children.style.display = 'block';
+                    if (icon) icon.style.transform = 'rotate(90deg)';
+                }
+            });
+
+            // Set Permissions
+            if (allowed) {
+                allowed.split(',').forEach(item => {
+                    const cb = document.getElementById('check_' + item.trim());
+                    if (cb) {
+                        cb.checked = true;
+                        expandParentsOf(cb);
+                        updateHierarchyVisibility(item.trim());
+                    }
+                });
+            }
+
+            // Set Quick Access (Shortcuts)
+            if (quick) {
+                quick.split(',').forEach(item => {
+                    const cb = document.getElementById('check_' + item.trim());
+                    if (cb && cb.dataset.shortcut === 'true') {
+                        cb.checked = true;
+                        expandParentsOf(cb);
+                        updateHierarchyVisibility(item.trim());
+                    }
+                });
+            }
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function expandParentsOf(element) {
+            let parent = element.parentElement;
+            while (parent && parent.id !== 'hierarchy-container') {
+                if (parent.id && parent.id.startsWith('children_')) {
+                    parent.style.display = 'block';
+                    const iconId = 'icon_' + parent.id.replace('children_', '');
+                    const icon = document.getElementById(iconId);
+                    if (icon) icon.style.transform = 'rotate(90deg)';
+                }
+                parent = parent.parentElement;
+            }
+        }
+    </script>
+{% endblock %}

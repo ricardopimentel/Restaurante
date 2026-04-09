@@ -4,9 +4,35 @@
 
 {% block conteudo %}
     <style>
+        :root {
+            --admin-primary: #6366f1;
+            --admin-secondary: #4f46e5;
+            --admin-bg: rgba(99, 102, 241, 0.05);
+        }
+
+        .admin-page-header {
+            display: flex; 
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 30px; 
+            width: 100%;
+        }
+        .admin-breadcrumb {
+            display: flex; 
+            justify-content: center;
+            gap: 10px; 
+            font-size: 0.85em; 
+            font-weight: 600; 
+            margin-bottom: 20px;
+        }
+        .admin-breadcrumb a { color: var(--admin-primary); text-decoration: none; transition: color 0.2s; }
+        .admin-breadcrumb a:hover { opacity: 0.8; }
+        .admin-breadcrumb span { color: #ddd; }
+
         .config-card {
-            max-width: 600px;
-            margin: 40px auto;
+            max-width: 700px;
+            margin: 0 auto 40px auto;
             background: white;
             border-radius: 28px;
             box-shadow: var(--shadow-lg);
@@ -16,7 +42,7 @@
         }
 
         .config-header {
-            background: linear-gradient(135deg, #009ee3 0%, #007dba 100%);
+            background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
             padding: 35px;
             text-align: center;
             color: white;
@@ -65,9 +91,9 @@
 
         .form-group input:focus {
             outline: none;
-            border-color: #009ee3;
+            border-color: var(--admin-primary);
             background: white;
-            box-shadow: 0 0 0 4px rgba(0, 158, 227, 0.1);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
         }
 
         .help-text {
@@ -96,7 +122,7 @@
         .btn-save {
             width: 100%;
             padding: 16px;
-            background: #009ee3;
+            background: var(--admin-primary);
             color: white;
             border: none;
             border-radius: 14px;
@@ -111,9 +137,9 @@
         }
 
         .btn-save:hover {
-            background: #007dba;
+            background: var(--admin-secondary);
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px -5px rgba(0, 158, 227, 0.4);
+            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
         }
 
         @keyframes fadeIn {
@@ -122,11 +148,26 @@
         }
     </style>
 
-    <div class="config-card">
-        <div class="config-header">
-            <i class="fas fa-university"></i>
-            <h2>Configurações do Mercado Pago</h2>
+    <div class="admin-page-header">
+        <div class="admin-breadcrumb">
+            <a href="{% url 'Administracao' %}">Administração</a>
+            <span>/</span>
+            <span style="color: var(--text-muted);">Pagamento PIX</span>
         </div>
+
+        <h1 class="admin-title" style="font-size: 2.5em; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; justify-content: center; gap: 15px;">
+            <i class="fas fa-university" style="color: var(--admin-primary);"></i>
+            Configuração de Pagamento (PIX)
+        </h1>
+        <p class="admin-subtitle" style="color: var(--text-muted); margin-top: 8px;">Configure as credenciais do Mercado Pago para recebimentos automáticos.</p>
+    </div>
+
+    <div class="formulario">
+        <div class="config-card">
+            <div class="config-header">
+                <i class="fas fa-key"></i>
+                <h2>Credenciais Mercado Pago</h2>
+            </div>
 
         <div class="config-body">
             <div class="help-text">
@@ -134,7 +175,7 @@
                 <div>
                     <p>
                         <strong>Dica:</strong> Você encontra suas credenciais em: 
-                        <a href="https://www.mercadopago.com.br/developers/panel" target="_blank" style="color: #009ee3; font-weight: 700;">Painel do Desenvolvedor</a>.
+                        <a href="https://www.mercadopago.com.br/developers/panel" target="_blank" style="color: var(--admin-primary); font-weight: 700;">Painel do Desenvolvedor</a>.
                         Certifique-se de configurar a <strong>Webhook URL</strong> no painel do MP para receber notificações automáticas.
                     </p>
                 </div>
@@ -159,9 +200,10 @@
                 </button>
             </form>
 
-            <a href="{% url 'Configuracao' %}" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 25px; color: var(--text-muted); text-decoration: none; font-size: 0.9em; font-weight: 600;">
-                <i class="fas fa-arrow-left"></i> Voltar para Configurações
+            <a href="{% url 'Administracao' %}" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 25px; color: var(--text-muted); text-decoration: none; font-size: 0.9em; font-weight: 600;">
+                <i class="fas fa-arrow-left"></i> Voltar para Administração
             </a>
+            </div>
         </div>
     </div>
 {% endblock %}

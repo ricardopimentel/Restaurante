@@ -3,55 +3,55 @@
 {% load restaurante_extras %}
 {% load static %}
 {% load pagination_tags %}
-{%block titulo%}{{title}}{%endblock%}
+{% block titulo %}{{title}}{% endblock %}
 
-
-
-
-
-{%block conteudo%}
+{% block conteudo %}
     {% if not request.session.userl %}
         <meta http-equiv="refresh" content="0; url=/login/">
     {% else %}
         <style>
             :root {
-                --report-primary: #6366f1;
-                --report-secondary: #818cf8;
-                --report-bg: rgba(99, 102, 241, 0.05);
+                --report-primary: #a855f7;
+                --report-secondary: #9333ea;
+                --report-bg: rgba(168, 85, 247, 0.05);
             }
-            .reports-header {
+            
+            .report-header {
                 width: 100%;
-                margin-bottom: 50px;
+                margin-bottom: 45px;
                 text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
             }
-            .reports-title {
-                font-size: 2.2em;
+            .report-title {
+                font-size: 2.5em;
                 font-weight: 800;
                 color: var(--text-main);
                 margin: 0;
-                letter-spacing: -0.5px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                gap: 15px;
+                gap: 18px;
             }
-            .reports-subtitle {
+            .report-subtitle {
                 color: var(--text-muted);
                 margin-top: 8px;
                 font-size: 1.1em;
             }
-            .reports-grid {
-                width: 100%;
+            
+            .report-grid {
                 display: flex;
                 flex-wrap: wrap;
                 justify-content: center;
+                align-items: flex-start;
                 gap: 30px;
-                margin-top: 40px;
-                align-items: flex-start; /* Ensures height is defined by content */
-            }
-            .report-card {
+                margin-top: 20px;
                 width: 100%;
-                max-width: 380px;
+            }
+            
+            .report-card {
+                flex: 0 1 320px;
                 background: white;
                 border-radius: 24px;
                 padding: 30px;
@@ -59,91 +59,64 @@
                 text-decoration: none !important;
                 display: flex;
                 flex-direction: column;
-                gap: 20px;
+                align-items: center;
+                text-align: center;
+                gap: 15px;
                 transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: var(--shadow-sm);
                 position: relative;
                 overflow: hidden;
-                box-shadow: var(--shadow-sm);
+                min-height: 250px;
             }
             .report-card:hover {
-                transform: translateY(-8px);
+                transform: translateY(-6px);
                 border-color: var(--report-primary);
-                box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.15);
+                box-shadow: 0 15px 30px -5px rgba(168, 85, 247, 0.15);
             }
-            .report-card::after {
-                content: '';
-                position: absolute;
-                top: 0;
-                right: 0;
-                width: 150px;
-                height: 150px;
-                background: radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
-                border-radius: 50%;
-                transform: translate(30%, -30%);
-                transition: transform 0.6s ease;
-            }
-            .report-card:hover::after {
-                transform: translate(10%, -10%) scale(1.5);
-            }
+            
             .report-icon-box {
                 width: 60px;
                 height: 60px;
-                border-radius: 16px;
+                border-radius: 14px;
                 background: var(--report-bg);
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 1.5em;
+                font-size: 1.6em;
                 color: var(--report-primary);
                 transition: all 0.3s ease;
             }
             .report-card:hover .report-icon-box {
                 background: var(--report-primary);
                 color: white;
-                transform: rotate(10deg);
+                transform: scale(1.1) rotate(5deg);
             }
+            
             .report-info h3 {
                 margin: 0;
-                font-size: 1.25em;
+                font-size: 1.2em;
                 color: var(--text-main);
                 font-weight: 700;
             }
             .report-info p {
-                margin: 8px 0 0 0;
+                margin: 5px 0 0 0;
                 color: var(--text-muted);
-                font-size: 0.95em;
+                font-size: 0.85em;
                 line-height: 1.5;
-            }
-            .report-badge {
-                align-self: flex-start;
-                padding: 6px 14px;
-                border-radius: 100px;
-                background: #f3f4f6;
-                font-size: 0.75em;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-                color: var(--text-muted);
-                transition: all 0.3s ease;
-            }
-            .report-card:hover .report-badge {
-                background: var(--report-bg);
-                color: var(--report-primary);
             }
         </style>
 
-        <div class="reports-header">
-            <h1 class="reports-title">
+        <div class="report-header">
+            <h1 class="report-title">
                 <i class="fas fa-chart-pie" style="color: var(--report-primary);"></i>
                 Central de Relatórios
             </h1>
-            <p class="reports-subtitle">Analise dados de vendas, custos e desempenho operacional.</p>
+            <p class="report-subtitle">Analise dados de vendas, custos e desempenho operacional.</p>
         </div>
 
-        <div class="reports-grid">
+        <div class="report-grid">
             <!-- Vendas Realizadas -->
             <a href="{% url 'RelatorioVendas' %}" class="report-card">
-                <div class="report-badge">Financeiro</div>
                 <div class="report-icon-box">
                     <i class="fas fa-file-invoice-dollar"></i>
                 </div>
@@ -155,7 +128,6 @@
 
             <!-- Custo Aluno Período -->
             <a href="{% url 'RelatorioCustoAlunoPeriodo' %}" class="report-card">
-                <div class="report-badge">Gerencial</div>
                 <div class="report-icon-box">
                     <i class="fas fa-chart-pie"></i>
                 </div>
@@ -166,4 +138,4 @@
             </a>
         </div>
     {% endif %}
-{%endblock%}
+{% endblock %}

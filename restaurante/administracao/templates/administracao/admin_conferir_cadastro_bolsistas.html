@@ -16,7 +16,7 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 40px;
             width: 100%;
         }
 
@@ -28,8 +28,8 @@
             font-weight: 600;
             margin-bottom: 10px;
         }
-        .admin-breadcrumb a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
-        .admin-breadcrumb a:hover { color: var(--admin-primary); }
+        .admin-breadcrumb a { color: var(--admin-primary); text-decoration: none; transition: color 0.2s; }
+        .admin-breadcrumb a:hover { opacity: 0.8; }
         .admin-breadcrumb span { color: #ddd; }
 
         /* Table Card */
@@ -50,6 +50,7 @@
             margin-bottom: 25px;
             padding-bottom: 15px;
             border-bottom: 1px solid #f3f4f6;
+            gap: 20px;
         }
 
         .table-header h2 {
@@ -62,37 +63,39 @@
             font-weight: 800;
         }
 
-        .action-toolbar {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 25px;
-            justify-content: flex-start;
-        }
-        .btn-action {
+        .btn-new-admin {
+            background: var(--admin-primary);
+            color: white !important;
+            padding: 10px 25px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 700;
+            font-size: 0.9em;
+            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border-radius: 10px;
-            background: white;
-            color: var(--text-main);
-            text-decoration: none !important;
-            font-weight: 700;
-            font-size: 0.85em;
+            gap: 10px;
             transition: all 0.2s;
-            border: 1px solid #e5e7eb;
-            box-shadow: var(--shadow-sm);
+            text-decoration: none !important;
         }
-        .btn-action:hover {
-            border-color: var(--admin-primary);
-            color: var(--admin-primary);
+        .btn-new-admin:hover {
+            background: var(--admin-secondary);
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
         }
-        .btn-action.danger:hover {
-            border-color: #ef4444;
+
+        .btn-delete-action {
+            background: none;
+            border: none;
             color: #ef4444;
-            background: #fef2f2;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+        .btn-delete-action:hover { transform: scale(1.2); }
 
         #minhaTabela { width: 100% !important; border-collapse: collapse; }
         #minhaTabela thead th {
@@ -127,7 +130,7 @@
         <div class="admin-breadcrumb">
             <a href="{% url 'Administracao' %}">Administração</a>
             <span>/</span>
-            <a href="{% url 'ExcluirBolsistas' %}">Bolsistas</a>
+            <span>Bolsistas</span>
         </div>
         <h1 style="margin: 0; font-size: 1.8em; color: var(--text-main); font-weight: 800;">Estudantes Bolsistas (100%)</h1>
     </div>
@@ -135,18 +138,17 @@
     <form id="frm" method="post" action="{% url 'ExcluirBolsistas' %}">
         {% csrf_token %}
         
-        <div class="action-toolbar">
-            <a href="{% url 'CadastroBolsistas' %}" class="btn-action">
-                <i class="fas fa-plus-circle"></i> Novo Cadastro
-            </a>
-            <button type="submit" class="btn-action danger" title="Remover Estudantes Selecionados">
-                <i class="fas fa-trash-alt"></i> Excluir Selecionados
-            </button>
-        </div>
-
         <div class="admin-table-card">
             <div class="table-header">
                 <h2><i class="fas fa-user-graduate" style="color: var(--admin-primary);"></i> Alunos Cadastrados</h2>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <a href="{% url 'CadastroBolsistas' %}" class="btn-new-admin">
+                        <i class="fas fa-plus"></i> Novo Cadastro
+                    </a>
+                    <button type="submit" class="btn-delete-action" title="Excluir Selecionados">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
             </div>
 
             <table id="minhaTabela">

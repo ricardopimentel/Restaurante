@@ -2,64 +2,168 @@
 {% extends "base.html" %}
 {% load restaurante_extras %}
 {% load static %}
-{% load pagination_tags %}
-{%block titulo%}{{title}}{%endblock%}
+{% block titulo %}{{title}}{% endblock %}
 
-
-
-
-
-{%block conteudo%}
+{% block conteudo %}
 	{% if not request.session.userl %}
 		<meta http-equiv="refresh" content="0; url=/login/">
-	{%else%}
-		<!-- SALES DASHBOARD HEADER -->
-		<div style="width: 100%; max-width: 800px; margin: 0 auto 40px auto; text-align: center;">
-			<h1 style="margin: 0; font-size: 2.2em; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; display: flex; align-items: center; justify-content: center; gap: 15px;">
-				<i class="fas fa-store" style="color: var(--primary);"></i>
-				Painel de Vendas
-			</h1>
-			<p style="margin: 8px 0 0 0; color: var(--text-muted); font-size: 1.1em;">Selecione o tipo de operação desejada para prosseguir.</p>
-		</div>
+	{% else %}
+        <style>
+            :root {
+                --venda-primary: #10b981;
+                --venda-secondary: #059669;
+                --venda-bg: rgba(16, 185, 129, 0.05);
+            }
+            
+            .venda-header {
+                width: 100%;
+                margin-bottom: 45px;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .venda-title {
+                font-size: 2.5em;
+                font-weight: 800;
+                color: var(--text-main);
+                margin: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 18px;
+            }
+            .venda-subtitle {
+                color: var(--text-muted);
+                margin-top: 8px;
+                font-size: 1.1em;
+            }
+            
+            .venda-grid {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: flex-start;
+                gap: 30px;
+                margin-top: 20px;
+                width: 100%;
+            }
+            
+            .venda-card {
+                flex: 0 1 320px;
+                background: white;
+                border-radius: 24px;
+                padding: 30px;
+                border: 1px solid #e5e7eb;
+                text-decoration: none !important;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 15px;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: var(--shadow-sm);
+                position: relative;
+                overflow: hidden;
+                min-height: 250px;
+            }
+            .venda-card:hover {
+                transform: translateY(-6px);
+                border-color: var(--venda-primary);
+                box-shadow: 0 15px 30px -5px rgba(16, 185, 129, 0.15);
+            }
+            
+            .venda-icon-box {
+                width: 60px;
+                height: 60px;
+                border-radius: 18px;
+                background: var(--venda-bg);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.6em;
+                color: var(--venda-primary);
+                transition: all 0.3s ease;
+            }
+            .venda-card:hover .venda-icon-box {
+                background: var(--venda-primary);
+                color: white;
+                transform: scale(1.1) rotate(5deg);
+            }
+            
+            .venda-info h3 {
+                margin: 0;
+                font-size: 1.25em;
+                color: var(--text-main);
+                font-weight: 700;
+            }
+            .venda-info p {
+                margin: 5px 0 0 0;
+                color: var(--text-muted);
+                font-size: 0.85em;
+                line-height: 1.5;
+            }
 
-		<!-- SALES ACTION CARDS -->
-		<div style="width: 100%; max-width: 1200px; margin: 0 auto; display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(280px, 350px)); justify-content: center;">
-			
-			<!-- MANUAL SALE -->
-			<a href="{% url 'Venda' %}" style="text-decoration: none !important; border-bottom: none !important;">
-				<div class="card" style="margin: 0; padding: 35px 25px; text-align: center; border: 1px solid rgba(16, 185, 129, 0.1); background: white; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'">
-					<div style="width: 70px; height: 70px; margin: 0 auto 20px auto; border-radius: 20px; background: rgba(16, 185, 129, 0.1); display: flex; align-items: center; justify-content: center; color: var(--primary);">
-						<i class="fas fa-list-ul" style="font-size: 32px;"></i>
-					</div>
-					<h3 style="margin: 0; font-size: 1.3em; color: var(--text-main); font-weight: 700;">Vendas Manuais</h3>
-					<p style="margin: 10px 0 0 0; color: var(--text-muted); font-size: 0.85em;">Busque alunos na lista do AD<br>para registrar vendas diretas.</p>
-					<div style="margin-top: 25px; padding: 10px; border-radius: 10px; background: var(--primary); color: white; font-weight: 700; font-size: 0.85em;">Abrir Lista</div>
-				</div>
-			</a>
+            .venda-btn {
+                margin-top: 15px;
+                padding: 10px 20px;
+                border-radius: 12px;
+                background: var(--venda-primary);
+                color: white;
+                font-weight: 700;
+                font-size: 0.85em;
+                transition: all 0.2s;
+            }
+            .venda-card:hover .venda-btn {
+                background: var(--venda-secondary);
+                transform: scale(1.05);
+            }
+        </style>
 
-			<!-- QR CODE VALIDATION -->
-			<a href="{% url 'ValidacaoQRCode' %}" style="text-decoration: none !important; border-bottom: none !important;">
-				<div class="card" style="margin: 0; padding: 35px 25px; text-align: center; border: 1px solid rgba(99, 102, 241, 0.1); background: linear-gradient(135deg, #ffffff 0%, #f5f3ff 100%); transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 15px 30px rgba(99, 102, 241, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'">
-					<div style="width: 70px; height: 70px; margin: 0 auto 20px auto; border-radius: 20px; background: rgba(99, 102, 241, 0.1); display: flex; align-items: center; justify-content: center; color: #6366f1;">
-						<i class="fas fa-qrcode" style="font-size: 32px;"></i>
-					</div>
-					<h3 style="margin: 0; font-size: 1.3em; color: var(--text-main); font-weight: 700;">Validar QR Code</h3>
-					<p style="margin: 10px 0 0 0; color: var(--text-muted); font-size: 0.85em;">Leia o ticket do aluno com a<br>câmera. Carregamento instantâneo.</p>
-					<div style="margin-top: 25px; padding: 10px; border-radius: 10px; background: #6366f1; color: white; font-weight: 700; font-size: 0.85em;">Escaneie Aqui</div>
-				</div>
-			</a>
+        <div class="venda-header">
+            <h1 class="venda-title">
+                <i class="fas fa-store" style="color: var(--venda-primary);"></i>
+                Painel de Vendas
+            </h1>
+            <p class="venda-subtitle">Selecione o tipo de operação desejada para prosseguir.</p>
+        </div>
 
-			<!-- BATCH SALE (DISABLED) -->
-			<div style="text-decoration: none !important; border-bottom: none !important; opacity: 0.5; filter: grayscale(0.8); cursor: not-allowed;">
-				<div class="card" style="margin: 0; padding: 35px 25px; text-align: center; border: 1px solid rgba(139, 92, 246, 0.1); background: #f8fafc; transition: none;">
-					<div style="width: 70px; height: 70px; margin: 0 auto 20px auto; border-radius: 20px; background: rgba(139, 92, 246, 0.1); display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
-						<i class="fas fa-users" style="font-size: 32px;"></i>
-					</div>
-					<h3 style="margin: 0; font-size: 1.3em; color: var(--text-muted); font-weight: 700;">Venda em Lote</h3>
-					<p style="margin: 10px 0 0 0; color: var(--text-muted); font-size: 0.85em;">Registre múltiplas vendas de<br>uma vez selecionando a turma.</p>
-					<div style="margin-top: 25px; padding: 10px; border-radius: 10px; background: #94a3b8; color: white; font-weight: 700; font-size: 0.85em;">Indisponível</div>
-				</div>
-			</div>
-		</div>
-	{%endif%}
-{%endblock%}
+        <div class="venda-grid">
+            <!-- Vendas Manuais -->
+            <a href="{% url 'Venda' %}" class="venda-card">
+                <div class="venda-icon-box">
+                    <i class="fas fa-list-ul"></i>
+                </div>
+                <div class="venda-info">
+                    <h3>Vendas Manuais</h3>
+                    <p>Busque alunos na lista do AD para registrar vendas diretas de refeições.</p>
+                </div>
+                <div class="venda-btn">Abrir Lista</div>
+            </a>
+
+            <!-- Validar QR Code -->
+            <a href="{% url 'ValidacaoQRCode' %}" class="venda-card">
+                <div class="venda-icon-box">
+                    <i class="fas fa-qrcode"></i>
+                </div>
+                <div class="venda-info">
+                    <h3>Validar QR Code</h3>
+                    <p>Leia o ticket do aluno com a câmera ou leitor externo para validação instantânea.</p>
+                </div>
+                <div class="venda-btn">Escaneie Aqui</div>
+            </a>
+
+            <!-- Venda em Lote (Disabled) -->
+            <div class="venda-card" style="opacity: 0.6; cursor: not-allowed; filter: grayscale(1);">
+                <div class="venda-icon-box">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="venda-info">
+                    <h3>Venda em Lote</h3>
+                    <p>Registre múltiplas vendas de uma vez selecionando a turma (Em desenvolvimento).</p>
+                </div>
+                <div class="venda-btn" style="background: #94a3b8;">Indisponível</div>
+            </div>
+        </div>
+	{% endif %}
+{% endblock %}

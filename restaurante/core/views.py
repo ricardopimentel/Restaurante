@@ -122,6 +122,18 @@ def Home(request):
                 except Exception as e:
                     print("Erro ao carregar stats de funcionário:", e)
             
+            # --- ATALHOS DE ACESSO RÁPIDO (PARA FUNCIONÁRIOS) ---
+            if request.session.get('dashboard_mode') == 'funcionario':
+                ALL_QUICK_ITEMS = {
+                    'shortcut_vendas': {'label': 'Vendas', 'icon': 'fa-store', 'url_name': 'Venda', 'color': '#065f46', 'category': 'vendas'},
+                    'shortcut_qr': {'label': 'QR Code', 'icon': 'fa-qrcode', 'url_name': 'ValidacaoQRCode', 'color': '#6366f1', 'category': 'vendas'},
+                    'shortcut_cardapio': {'label': 'Cardápio', 'icon': 'fa-utensils', 'url_name': 'GerenciarCardapio', 'color': '#f59e0b', 'category': 'gestao'},
+                    'shortcut_relatorios': {'label': 'Relatórios', 'icon': 'fa-chart-pie', 'url_name': 'Relatorios', 'color': '#6d28d9', 'category': 'gestao'},
+                }
+                
+                allowed_ids = request.session.get('quick_access_items', [])
+                context['quick_shortcuts'] = [ALL_QUICK_ITEMS[idx] for idx in allowed_ids if idx in ALL_QUICK_ITEMS]
+
             # --- CARDÁPIO DO DIA (PARA TODOS) ---
             try:
                 from restaurante.core.models import CardapioDia

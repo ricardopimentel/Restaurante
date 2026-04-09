@@ -7,23 +7,24 @@
 {%block conteudo%}
     <style>
         :root {
-            --report-primary: #6366f1;
-            --report-secondary: #4f46e5;
-            --report-bg: rgba(99, 102, 241, 0.05);
+            --report-primary: #a855f7;
+            --report-secondary: #9333ea;
+            --report-bg: rgba(168, 85, 247, 0.05);
         }
         
         .report-header {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 40px;
             gap: 20px;
             width: 100%;
         }
         
         .report-breadcrumb {
             display: flex;
+            justify-content: center;
             gap: 10px;
             font-size: 0.85em;
             font-weight: 600;
@@ -229,13 +230,13 @@
     </style>
 
     <div class="report-header">
-        <div>
+        <div class="report-info">
             <div class="report-breadcrumb">
-                <a href="{% url 'Relatorios' %}">Relatórios</a>
+                <a href="{% url 'Relatorios' %}" style="color: var(--report-primary); text-decoration: none;">Relatórios</a>
                 <span>/</span>
-                <a href="{% url 'RelatorioCustoAlunoPeriodo' %}">Custo por Aluno</a>
+                <span style="color: var(--text-muted);">Custo por Aluno</span>
             </div>
-            <h1 style="margin: 0; font-size: 1.6em; color: var(--text-main); font-weight: 800;">
+            <h1 style="margin: 0; font-size: 2.2em; color: var(--text-main); font-weight: 800;">
                 <i class="fas fa-chart-column" style="color: var(--report-primary); margin-right: 10px;"></i>
                 {% if datainicial and datafinal %}
                     Custo Aluno: {{datainicial|convert_date}} a {{datafinal|convert_date}}
@@ -245,7 +246,7 @@
             </h1>
         </div>
         
-        <div class="table-toolbar">
+        <div class="table-toolbar" style="justify-content: center; width: 100%;">
             <button onclick="window.print();" class="btn-action">
                 <i class="fas fa-print"></i> Imprimir
             </button>

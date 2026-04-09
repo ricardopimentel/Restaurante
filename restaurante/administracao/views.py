@@ -3,7 +3,8 @@ from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect, resolve_url as r
 import json
-
+import datetime
+from functools import wraps
 
 # Create your views here.
 from restaurante.administracao.forms import AdForm, CadastroPratoForm, ConfigHorarioLimiteVendasForm, \
@@ -13,82 +14,51 @@ from restaurante.core.libs.conexaoAD3 import conexaoAD
 from restaurante.core.models import prato, alunoscem, pessoa, alunoscolaboradores, CardapioDia, OpcaoAlimento
 from restaurante.core.constants import FOOD_OPTIONS
 from restaurante.venda.views import ExisteAlunoCadastrado, SalvaAluno
-import datetime
 
 # Eu sei que tenho que trocar isso
 usuario = 'winbackup'
 senha = 'v4c4pr3t4'
 
+from restaurante.acesso.utils import permissao_requerida
+
+# --- VIEWS ---
+
+@permissao_requerida(category='ADMINISTRAÇÃO')
 def Administracao(request):
-    if dict(request.session).get('nome'):# verifica se o usurário está logado
-        if dict(request.session).get('usertip') == 'admin':# Verifica permissão de administrador
-            return render(request, 'administracao/administracao.html', {
-                'title': 'Administração',
-                'itemselec': 'ADMINISTRAÇÃO',
-            })
-        else:
-            messages.error(request, "Você não tem permissão para acessar esta página, redirecionando para HOME")
-            return redirect(r('Home'))
-    else:
-        return redirect(r('Login'))
+    return render(request, 'administracao/administracao.html', {
+        'title': 'Administração',
+        'itemselec': 'ADMINISTRAÇÃO',
+    })
 
-
-def Configuracao(request):
-    if dict(request.session).get('nome'):# verifica se o usurário está logado
-        if (dict(request.session).get('usertip') == 'glanchonete')or(dict(request.session).get('usertip') == 'admin'):  # Verifica permissão de gerente ou admin
-            return render(request, 'administracao/configuracao.html', {
-                'title': 'Configuração',
-                'itemselec': 'CONFIGURAÇÃO',
-            })
-        else:
-            messages.error(request, "Você não tem permissão para acessar esta página, redirecionando para HOME")
-            return redirect(r('Home'))
-    else:
-        return redirect(r('Login'))
-
-
+@permissao_requerida(item_id='config_ad')
 def Dados_ad(request):
-    if dict(request.session).get('nome'):  # verifica se o usurário está logado
-        if dict(request.session).get('usertip') == 'admin': # Verifica permissão de administrador
-            try:
-                model = (config.objects.get(id=1))
-                # Vefirica se veio aolgo pelo POST
-                if request.method == 'POST':
-                    # cria uma instancia do formulario de preenchimento dos dados do AD com os dados vindos do request POST:
-                    form = AdForm(request, data=request.POST)
-                    # Checa se os dados são válidos:
-                    if form.is_valid():
-                        # Chama a página novamente
-                        messages.success(request, 'Configurações salvas com sucesso!')
-                    return render(request, 'administracao/admin_config_ad.html', {'form': form})
-                else:
-                    form = AdForm(request, initial={
-                        'dominio': model.dominio,
-                        'endservidor': model.endservidor,
-                        'gadmin': model.gadmin,
-                        'ou': model.ou, 'filter': model.filter
-                    })
-                    return render(request, 'administracao/admin_config_ad.html', {
-                        'title': 'Config. LDAP',
-                        'itemselec': 'ADMINISTRAÇÃO',
-                        'form': form,
-                    })
-            except ObjectDoesNotExist:
-                model = ''
-                messages.error(request, sys.exc_info())
-                return redirect(r('Administracao'))
+    try:
+        model = (config.objects.get(id=1))
+        if request.method == 'POST':
+            form = AdForm(request, data=request.POST)
+            if form.is_valid():
+                messages.success(request, 'Configurações salvas com sucesso!')
+            return render(request, 'administracao/admin_config_ad.html', {'form': form})
         else:
-            messages.error(request, "Você não tem permissão para acessar essa página, redirecionando para HOME")
-            return redirect(r('Home'))
-    else:
-        return redirect(r('Login'))
+            form = AdForm(request, initial={
+                'dominio': model.dominio,
+                'endservidor': model.endservidor,
+                'gadmin': model.gadmin,
+                'ou': model.ou, 'filter': model.filter
+            })
+            return render(request, 'administracao/admin_config_ad.html', {
+                'title': 'Config. LDAP',
+                'itemselec': 'ADMINISTRAÇÃO',
+                'form': form,
+            })
+    except ObjectDoesNotExist:
+        messages.error(request, "Configuração inicial não encontrada.")
+        return redirect(r('Administracao'))
 
 def ConfigInicial(request):
     form = AdForm(request)
     if request.method == 'POST':
-        # cria uma instancia do formulario de preenchimento dos dados do AD com os dados vindos do request POST:
         form = AdForm(request, data=request.POST)
-        # Checa se os dados são válidos:
         if form.is_valid():
             return redirect(r('Login'))
     return render(request, 'administracao/admin_config_ad_inicial.html', {
@@ -97,307 +67,213 @@ def ConfigInicial(request):
         'form': form,
     })
 
-
+@permissao_requerida(item_id='pratos_precos')
 def CadastroPrato(request):
-    if dict(request.session).get('nome'):# verifica se o usurário está logado
-        if dict(request.session).get('usertip') == 'admin':# Verifica permissão de administrador
-            form = CadastroPratoForm()
-            pratos = prato.objects.all()
-            if request.method == 'POST':
-                form = CadastroPratoForm(data=request.POST)
-                if form.is_valid():
-                    messages.success(request, 'Prato Cadastrado Com Sucesso!!')
-                    return redirect(r('CadastroPrato'))
-            return render(request, 'administracao/admin_cadastro_prato.html', {
-                'title': 'Cadastro de Prato',
-                'itemselec': 'ADMINISTRAÇÃO',
-                'form': form,
-                'pratos': pratos,
-            })
-        else:
-            messages.error(request, "Você não tem permissão para acessar esta página, redirecionando para HOME")
-            return redirect(r('Home'))
-    else:
-        return redirect(r('Login'))
+    form = CadastroPratoForm()
+    pratos = prato.objects.all()
+    if request.method == 'POST':
+        form = CadastroPratoForm(data=request.POST)
+        if form.is_valid():
+            messages.success(request, 'Prato Cadastrado Com Sucesso!!')
+            return redirect(r('CadastroPrato'))
+    return render(request, 'administracao/admin_cadastro_prato.html', {
+        'title': 'Cadastro de Prato',
+        'itemselec': 'ADMINISTRAÇÃO',
+        'form': form,
+        'pratos': pratos,
+    })
 
+@permissao_requerida(item_id='pratos_precos')
 def ExcluirPratos(request):
-    if dict(request.session).get('nome'):# verifica se o usurário está logado
-        if dict(request.session).get('usertip') == 'admin':# Verifica permissão de administrador
-            check = False
-            pratos = prato.objects.all()
-            for item in pratos:
-                if request.POST.get(str(item.id)):
-                    check = True
-                    try:
-                        item.delete()
-                        messages.success(request, 'Prato '+ item.descricao+ ' excluído')
-                    except:
-                        messages.error(request, 'Erro ao exluir prato '+ item.descricao)
-            if not check:
-                messages.error(request, 'Selecione pelo menos 1 prato para excluir')
+    check = False
+    pratos = prato.objects.all()
+    for item in pratos:
+        if request.POST.get(str(item.id)):
+            check = True
+            try:
+                item.delete()
+                messages.success(request, f'Prato {item.descricao} excluído')
+            except:
+                messages.error(request, f'Erro ao exluir prato {item.descricao}')
+    if not check:
+        messages.error(request, 'Selecione pelo menos 1 prato para excluir')
+    return redirect(r('CadastroPrato'))
+
+@permissao_requerida(item_id='pratos_precos')
+def EditarPrato(request, id_prato):
+    pratos = prato.objects.all()
+    pratoobj = pratos.get(pk=id_prato)
+    form = CadastroPratoForm(initial={'descricao': pratoobj.descricao, 'preco': pratoobj.preco, 'preco_aluno': pratoobj.preco_aluno, 'status': pratoobj.status, 'id': id_prato})
+    
+    if request.method == 'POST':
+        form = CadastroPratoForm(data=request.POST)
+        if form.is_valid():
+            messages.success(request, 'Prato editado com sucesso!!')
             return redirect(r('CadastroPrato'))
         else:
-            messages.error(request, "Você não tem permissão para acessar esta página, redirecionando para HOME")
-            return redirect(r('Home'))
-    else:
-        return redirect(r('Login'))
+            messages.error(request, 'Erro ao editar prato. Verifique os campos.')
 
+    return render(request, 'administracao/admin_cadastro_prato.html', {
+        'title': 'Cadastro de Prato',
+        'itemselec': 'ADMINISTRAÇÃO',
+        'form': form,
+        'pratos': pratos,
+        'id': id_prato,
+    })
 
-def EditarPrato(request, id_prato):
-    if dict(request.session).get('nome'):# verifica se o usurário está logado
-        if dict(request.session).get('usertip') == 'admin':# Verifica permissão de administrador
-            pratos = prato.objects.all()
-            pratoobj = pratos.get(pk=id_prato)
-            form = CadastroPratoForm(initial={'descricao': pratoobj.descricao, 'preco': pratoobj.preco, 'preco_aluno': pratoobj.preco_aluno, 'status': pratoobj.status, 'id': id_prato})
-            
-            if request.method == 'POST':
-                form = CadastroPratoForm(data=request.POST)
-                if form.is_valid():
-                    messages.success(request, 'Prato editado com sucesso!!')
-                    return redirect(r('CadastroPrato'))
-                else:
-                    messages.error(request, 'Erro ao editar prato. Verifique os campos.')
-
-            return render(request, 'administracao/admin_cadastro_prato.html', {
-                'title': 'Cadastro de Prato',
-                'itemselec': 'ADMINISTRAÇÃO',
-                'form': form,
-                'pratos': pratos,
-                'id': id_prato,
-            })
-        else:
-            messages.error(request, "Você não tem permissão para acessar esta página, redirecionando para HOME")
-            return redirect(r('Home'))
-    else:
-        return redirect(r('Login'))
-
+@permissao_requerida(item_id='horario_vendas')
 def HorarioLimiteVendas(request):
-    if dict(request.session).get('nome'):# verifica se o usurário está logado
-        if dict(request.session).get('usertip') == 'admin':# Verifica permissão de administrador
-            configobj = config.objects.get(id=1)
-            form = ConfigHorarioLimiteVendasForm(initial={'hora_fechamento_vendas': configobj.hora_fechamento_vendas})
-            if request.method == 'POST':
-                form = ConfigHorarioLimiteVendasForm(data=request.POST)
-                # Checa se os dados são válidos:
-                if form.is_valid():
-                    try:
-                        configobj.hora_fechamento_vendas = form.cleaned_data['hora_fechamento_vendas']
-                        configobj.save()
-                        messages.success(request, 'Horário salvo com sucesso!')
-                    except:
-                        messages.error(request, 'Erro ao atualizar o horario de fechamento das vendas.')
-                    return redirect(r('HorarioLimiteVendas'))
-            return render(request, 'administracao/admin_config_horario_limite_vendas.html', {
-                'title': 'Cadastro de Prato',
-                'itemselec': 'ADMINISTRAÇÃO',
-                'form': form,
-            })
-        else:
-            messages.error(request, "Você não tem permissão para acessar esta página, redirecionando para HOME")
-            return redirect(r('Home'))
-    else:
-        return redirect(r('Login'))
-
+    configobj = config.objects.get(id=1)
+    form = ConfigHorarioLimiteVendasForm(initial={'hora_fechamento_vendas': configobj.hora_fechamento_vendas})
+    if request.method == 'POST':
+        form = ConfigHorarioLimiteVendasForm(data=request.POST)
+        if form.is_valid():
+            try:
+                configobj.hora_fechamento_vendas = form.cleaned_data['hora_fechamento_vendas']
+                configobj.save()
+                messages.success(request, 'Horário salvo com sucesso!')
+            except:
+                messages.error(request, 'Erro ao atualizar o horario de fechamento das vendas.')
+            return redirect(r('HorarioLimiteVendas'))
+    return render(request, 'administracao/admin_config_horario_limite_vendas.html', {
+        'title': 'Configuração de Vendas',
+        'itemselec': 'ADMINISTRAÇÃO',
+        'form': form,
+    })
 
 def Tutoriais(request, action):
-    if dict(request.session).get('nome'):# verifica se o usurário está logado
-        if dict(request.session).get('usertip') == 'admin':# Verifica permissão de administrador
-            form = CadastroPratoForm()
-            pratos = prato.objects.all()
-            if request.method == 'POST':
-                form = CadastroPratoForm(data=request.POST)
-                if form.is_valid():
-                    messages.success(request, 'Prato Cadastrado Com Sucesso!!')
-                    return redirect(r('CadastroPrato'))
-            return render(request, 'administracao/admin_cadastro_prato.html', {
-                'title': 'Cadastro de Prato',
-                'itemselec': 'ADMINISTRAÇÃO',
-                'form': form,
-                'pratos': pratos,
-            })
-        else:
-            messages.error(request, "Você não tem permissão para acessar esta página, redirecionando para HOME")
-            return redirect(r('Home'))
-    else:
-        return redirect(r('Login'))
+    # Tutorial view seems to redirect back to CadastroPrato or be placeholder
+    return redirect(r('CadastroPrato'))
 
-
+@permissao_requerida(item_id='bolsistas')
 def CadastroBolsistas(request):
-    if dict(request.session).get('nome'):# verifica se o usurário está logado
-        if (dict(request.session).get('usertip') == 'glanchonete')or(dict(request.session).get('usertip') == 'admin'): # Verifica permissão de gerente ou admin
-            menu = 'CONFIGURAÇÃO'
-            if (dict(request.session).get('usertip') == 'admin'):
-                menu = 'ADMINISTRAÇÃO'
-            ListaErros = []
-            ListaAcertos = []
-            form = CadastroAlunosBolsistasForm()
-            if request.method == 'POST':#se vier pelo post
-                ListaAlunosAD = GetListaEstudantesAD()
-                form = CadastroAlunosBolsistasForm(data=request.POST)
-                if form.is_valid():#se o formulário foi válido, ou seja todos os campos obrigatórios preecnhidos
-                    usuarios = form.cleaned_data['usuarios']
-                    ListaCPFsDigitados = list(map(str, usuarios.split('\n'))) #Transforma todos os cpfs digitados no campo usuários em uma lista
-                    # Percorre a lista de cpfs
-                    for cpf in ListaCPFsDigitados:
-                        cpf = str(cpf.replace('\r', ''))
-                        if (cpf in ListaAlunosAD):
-                            try:
-                                alunoobj = ExisteAlunoCadastrado(cpf)
-                                if alunoobj:
-                                    pessoaobj = pessoa.objects.get(usuario=cpf) #pega uma instancia da pessoa com o cpf listado
-                                    aluno = ExisteAlunoCadastrado(pessoaobj.id)
-                                else:
-                                    retorno = SalvaAluno(cpf)
-                                    aluno = retorno['aluno']
-                                    pessoaobj = retorno['pessoa']
-                                cem = alunoscem(id_pessoa=pessoaobj)
-                                cem.save()
-                                ListaAcertos.append("O CPF: "+ cpf+ " Foi adicionado com sucesso!")
-                            except:
-                                ListaErros.append("O CPF: "+ cpf+ " Não foi adicionado")
+    ListaErros = []
+    ListaAcertos = []
+    form = CadastroAlunosBolsistasForm()
+    if request.method == 'POST':
+        ListaAlunosAD = GetListaEstudantesAD()
+        form = CadastroAlunosBolsistasForm(data=request.POST)
+        if form.is_valid():
+            usuarios = form.cleaned_data['usuarios']
+            ListaCPFsDigitados = list(map(str, usuarios.split('\n'))) 
+            for cpf in ListaCPFsDigitados:
+                cpf = str(cpf.replace('\r', '').strip())
+                if not cpf: continue
+                if (cpf in ListaAlunosAD):
+                    try:
+                        alunoobj = ExisteAlunoCadastrado(cpf)
+                        if alunoobj:
+                            pessoaobj = pessoa.objects.get(usuario=cpf)
                         else:
-                            ListaErros.append("O CPF: "+ cpf+ " Não é de um aluno do IFTO")
-                    return render(request, 'administracao/admin_cadastro_bolsistas.html', {
-                        'title': 'Cadastro de Bolsistas',
-                        'ListaErros': ListaErros,
-                        'ListaAcertos': ListaAcertos,
-                        'itemselec': menu,
-                        'form': CadastroAlunosBolsistasForm(),
-                    })
-            return render(request, 'administracao/admin_cadastro_bolsistas.html', {
-                'title': 'Cadastro de Bolsistas',
-                'itemselec': menu,
-                'form': form,
-            })
-        else:
-            messages.error(request, "Você não tem permissão para acessar esta página, redirecionando para HOME")
-            return redirect(r('Home'))
-    else:
-        return redirect(r('Login'))
+                            retorno = SalvaAluno(cpf)
+                            pessoaobj = retorno['pessoa']
+                        
+                        cem, created = alunoscem.objects.get_or_create(id_pessoa=pessoaobj)
+                        if created:
+                            ListaAcertos.append(f"O CPF: {cpf} Foi adicionado com sucesso!")
+                        else:
+                            ListaErros.append(f"O CPF: {cpf} já é bolsista.")
+                    except:
+                        ListaErros.append(f"Erro ao processar o CPF: {cpf}")
+                else:
+                    ListaErros.append(f"O CPF: {cpf} Não é de um aluno do IFTO")
+            
+    return render(request, 'administracao/admin_cadastro_bolsistas.html', {
+        'title': 'Cadastro de Bolsistas',
+        'itemselec': 'ADMINISTRAÇÃO',
+        'form': form,
+        'ListaErros': ListaErros,
+        'ListaAcertos': ListaAcertos,
+    })
 
-
+@permissao_requerida(item_id='bolsistas')
 def ExcluirBolsistas(request):
-    if dict(request.session).get('nome'):# verifica se o usurário está logado
-        if (dict(request.session).get('usertip') == 'glanchonete')or(dict(request.session).get('usertip') == 'admin'):  # Verifica permissão de gerente ou admin
-            menu = 'CONFIGURAÇÃO'
-            if (dict(request.session).get('usertip') == 'admin'):
-                menu = 'ADMINISTRAÇÃO'
-            bolsistas = alunoscem.objects.select_related('id_pessoa')
-            if request.method == 'POST':
-                check = False
-                for aluno in bolsistas:
-                    if request.POST.get(str(aluno.id)):
-                        check = True
-                        try:
-                            aluno.delete()
-                            messages.success(request, 'Bolsista '+ str(aluno.id_pessoa.nome)+ ' excluído')
-                        except:
-                            messages.error(request, 'Erro ao exluir bolsista '+ str(aluno.id))
-                if not check:
-                    messages.error(request, 'Selecione pelo menos 1 aluno para excluir')
-                return redirect(r('ExcluirBolsistas'))
-            else:
-                return render(request, 'administracao/admin_conferir_cadastro_bolsistas.html', {
-                    'title': 'Lista de Bolsistas 100%',
-                    'itemselec': menu,
-                    'bolsistas': bolsistas,
-                })
-        else:
-            messages.error(request, "Você não tem permissão para acessar esta página, redirecionando para HOME")
-            return redirect(r('Home'))
-    else:
-        return redirect(r('Login'))
+    bolsistas = alunoscem.objects.select_related('id_pessoa').all()
+    if request.method == 'POST':
+        check = False
+        for aluno in bolsistas:
+            if request.POST.get(str(aluno.id)):
+                check = True
+                try:
+                    nome = aluno.id_pessoa.nome
+                    aluno.delete()
+                    messages.success(request, f'Bolsista {nome} excluído')
+                except:
+                    messages.error(request, f'Erro ao exluir bolsista {aluno.id_pessoa.nome}')
+        if not check:
+            messages.error(request, 'Selecione pelo menos 1 aluno para excluir')
+        return redirect(r('ExcluirBolsistas'))
+    return render(request, 'administracao/admin_conferir_cadastro_bolsistas.html', {
+        'title': 'Lista de Bolsistas 100%',
+        'itemselec': 'ADMINISTRAÇÃO',
+        'bolsistas': bolsistas,
+    })
 
-
+@permissao_requerida(item_id='colaboradores')
 def CadastroColaboradores(request):
-    if dict(request.session).get('nome'):# verifica se o usurário está logado
-        if (dict(request.session).get('usertip') == 'glanchonete')or(dict(request.session).get('usertip') == 'admin'): # Verifica permissão de gerente ou admin
-            menu = 'CONFIGURAÇÃO'
-            if (dict(request.session).get('usertip') == 'admin'):
-                menu = 'ADMINISTRAÇÃO'
-            ListaErros = []
-            ListaAcertos = []
-            form = CadastroAlunosColaboradoresForm()
-            if request.method == 'POST':#se veio pelo post
-                ListaAlunosAD = GetListaEstudantesAD()
-                form = CadastroAlunosColaboradoresForm(data=request.POST)
-                if form.is_valid():#se o formulário foi válido, ou seja todos os campos obrigatórios preecnhidos
-                    usuarios = form.cleaned_data['usuarios']
-                    ListaCPFsDigitados = list(map(str, usuarios.split('\n'))) #Transforma todos os cpfs digitados no campo usuários em uma lista
-                    # Percorre a lista de cpfs
-                    for cpf in ListaCPFsDigitados:
-                        cpf = str(cpf.replace('\r', ''))
-                        if (cpf in ListaAlunosAD):
-                            try:
-                                alunoobj = ExisteAlunoCadastrado(cpf)
-                                if alunoobj:
-                                    pessoaobj = pessoa.objects.get(usuario=cpf) #pega uma instancia da pessoa com o cpf listado
-                                    aluno = ExisteAlunoCadastrado(pessoaobj.id)
-                                else:
-                                    retorno = SalvaAluno(cpf)
-                                    aluno = retorno['aluno']
-                                    pessoaobj = retorno['pessoa']
-                                colab = alunoscolaboradores(id_pessoa=pessoaobj)
-                                colab.save()
-                                ListaAcertos.append("O CPF: "+ cpf+ " Foi adicionado com sucesso!")
-                            except:
-                                ListaErros.append("O CPF: "+ cpf+ " Não foi adicionado")
+    ListaErros = []
+    ListaAcertos = []
+    form = CadastroAlunosColaboradoresForm()
+    if request.method == 'POST':
+        ListaAlunosAD = GetListaEstudantesAD()
+        form = CadastroAlunosColaboradoresForm(data=request.POST)
+        if form.is_valid():
+            usuarios = form.cleaned_data['usuarios']
+            ListaCPFsDigitados = list(map(str, usuarios.split('\n'))) 
+            for cpf in ListaCPFsDigitados:
+                cpf = str(cpf.replace('\r', '').strip())
+                if not cpf: continue
+                if (cpf in ListaAlunosAD):
+                    try:
+                        alunoobj = ExisteAlunoCadastrado(cpf)
+                        if alunoobj:
+                            pessoaobj = pessoa.objects.get(usuario=cpf)
                         else:
-                            ListaErros.append("O CPF: "+ cpf+ " Não é de um aluno do IFTO")
-                    return render(request, 'administracao/admin_cadastro_colaboradores.html', {
-                        'title': 'Cadastro de Alunos Colaboradores',
-                        'ListaErros': ListaErros,
-                        'ListaAcertos': ListaAcertos,
-                        'itemselec': menu,
-                        'form': CadastroAlunosColaboradoresForm(),
-                    })
-            return render(request, 'administracao/admin_cadastro_colaboradores.html', {
-                'title': 'Cadastro de Alunos Colaboradores',
-                'itemselec': menu,
-                'form': form,
-            })
-        else:
-            messages.error(request, "Você não tem permissão para acessar esta página, redirecionando para HOME")
-            return redirect(r('Home'))
-    else:
-        return redirect(r('Login'))
+                            retorno = SalvaAluno(cpf)
+                            pessoaobj = retorno['pessoa']
+                        
+                        colab, created = alunoscolaboradores.objects.get_or_create(id_pessoa=pessoaobj)
+                        if created:
+                            ListaAcertos.append(f"O CPF: {cpf} Foi adicionado com sucesso!")
+                        else:
+                            ListaErros.append(f"O CPF: {cpf} já é colaborador.")
+                    except:
+                        ListaErros.append(f"Erro ao processar o CPF: {cpf}")
+                else:
+                    ListaErros.append(f"O CPF: {cpf} Não é de um aluno do IFTO")
+                    
+    return render(request, 'administracao/admin_cadastro_colaboradores.html', {
+        'title': 'Cadastro de Colaboradores',
+        'itemselec': 'ADMINISTRAÇÃO',
+        'form': form,
+        'ListaErros': ListaErros,
+        'ListaAcertos': ListaAcertos,
+    })
 
-
+@permissao_requerida(item_id='colaboradores')
 def ExcluirColaboradores(request):
-    if dict(request.session).get('nome'):# verifica se o usurário está logado
-        if (dict(request.session).get('usertip') == 'glanchonete')or(dict(request.session).get('usertip') == 'admin'):  # Verifica permissão de gerente ou admin
-            menu = 'CONFIGURAÇÃO'
-            if (dict(request.session).get('usertip') == 'admin'):
-                menu = 'ADMINISTRAÇÃO'
-            colaboradores = alunoscolaboradores.objects.select_related('id_pessoa')
-            if request.method == 'POST':
-                check = False
-                for aluno in colaboradores:
-                    if request.POST.get(str(aluno.id)):
-                        check = True
-                        try:
-                            aluno.delete()
-                            messages.success(request, 'Aluno Colaborador '+ str(aluno.id_pessoa.nome)+ ' excluído')
-                        except:
-                            messages.error(request, 'Erro ao exluir colaborador '+ str(aluno.id))
-                if not check:
-                    messages.error(request, 'Selecione pelo menos 1 aluno para excluir')
-                return redirect(r('ExcluirColaboradores'))
-            else:
-                return render(request, 'administracao/admin_conferir_cadastro_colaboradores.html', {
-                    'title': 'Lista de Alunos Colaboradores',
-                    'itemselec': menu,
-                    'colaboradores': colaboradores,
-                })
-        else:
-            messages.error(request, "Você não tem permissão para acessar esta página, redirecionando para HOME")
-            return redirect(r('Home'))
-    else:
-        return redirect(r('Login'))
-
+    colaboradores = alunoscolaboradores.objects.select_related('id_pessoa').all()
+    if request.method == 'POST':
+        check = False
+        for aluno in colaboradores:
+            if request.POST.get(str(aluno.id)):
+                check = True
+                try:
+                    nome = aluno.id_pessoa.nome
+                    aluno.delete()
+                    messages.success(request, f'Colaborador {nome} excluído')
+                except:
+                    messages.error(request, f'Erro ao exluir colaborador {aluno.id_pessoa.nome}')
+        if not check:
+            messages.error(request, 'Selecione pelo menos 1 aluno para excluir')
+        return redirect(r('ExcluirColaboradores'))
+    return render(request, 'administracao/admin_conferir_cadastro_colaboradores.html', {
+        'title': 'Lista de Alunos Colaboradores',
+        'itemselec': 'ADMINISTRAÇÃO',
+        'colaboradores': colaboradores,
+    })
 
 def GetListaEstudantesAD():
-    # tenta conectar ao banco de dados para pegar parametros do ldap
     ou = ''
     filter = ''
     try:
@@ -421,89 +297,66 @@ def GetListaEstudantesAD():
                 return False
         return ListaAlunos
 
-
+@permissao_requerida(item_id='config_pix')
 def ConfigPix(request):
-    if dict(request.session).get('nome'):# verifica se o usurário está logado
-        if dict(request.session).get('usertip') == 'admin':# Verifica permissão de administrador
-            try:
-                configobj = config.objects.get(id=1)
-            except config.DoesNotExist:
-                configobj = config.objects.create(id=1, dominio='', endservidor='', gadmin='', ou='', filter='')
+    try:
+        configobj = config.objects.get(id=1)
+    except config.DoesNotExist:
+        configobj = config.objects.create(id=1)
 
-            if request.method == 'POST':
-                form = ConfigPixForm(data=request.POST, instance=configobj)
-                if form.is_valid():
-                    form.save()
-                    messages.success(request, 'Configurações de PIX salvas com sucesso!')
-                    return redirect(r('ConfigPix'))
-            else:
-                form = ConfigPixForm(instance=configobj)
-
-            return render(request, 'administracao/admin_config_pix.html', {
-                'title': 'Configuração PIX',
-                'itemselec': 'ADMINISTRAÇÃO',
-                'form': form,
-            })
-        else:
-            messages.error(request, "Você não tem permissão para acessar esta página.")
-            return redirect(r('Home'))
+    if request.method == 'POST':
+        form = ConfigPixForm(data=request.POST, instance=configobj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Configurações de PIX salvas com sucesso!')
+            return redirect(r('ConfigPix'))
     else:
-        return redirect(r('Login'))
+        form = ConfigPixForm(instance=configobj)
 
+    return render(request, 'administracao/admin_config_pix.html', {
+        'title': 'Configuração PIX',
+        'itemselec': 'ADMINISTRAÇÃO',
+        'form': form,
+    })
 
+@permissao_requerida(item_id='cardapio_hub')
+def MenuGestaoCardapio(request):
+    return render(request, 'administracao/menu_cardapio.html', {
+        'title': 'Gestão de Cardápios',
+        'itemselec': 'ADMINISTRAÇÃO',
+    })
+
+@permissao_requerida(item_id='cardapio_dia')
 def GerenciarCardapio(request):
-    if not request.session.get('nome'):
-        return redirect(r('Login'))
-    
-    # Permitir admin e lanchonete (operadores)
-    if request.session.get('usertip') not in ['admin', 'lanchonete']:
-        messages.error(request, "Acesso Negado.")
-        return redirect(r('Home'))
-
     hoje = datetime.date.today()
-    
     if request.method == 'POST':
         tipo = request.POST.get('tipo')
         itens_selecionados = request.POST.getlist('itens')
-        
         if not itens_selecionados:
-            messages.warning(request, "Selecione ao menos um item para o cardápio.")
+            messages.warning(request, "Selecione ao menos um item.")
         else:
             itens_str = ", ".join(itens_selecionados)
-            cardapio, created = CardapioDia.objects.update_or_create(
-                data=hoje,
-                tipo=tipo,
-                defaults={'itens': itens_str}
-            )
-            messages.success(request, f"Cardápio de {cardapio.get_tipo_display()} salvo com sucesso!")
+            CardapioDia.objects.update_or_create(data=hoje, tipo=tipo, defaults={'itens': itens_str})
+            messages.success(request, "Cardápio salvo!")
             return redirect(r('GerenciarCardapio'))
 
-    # Buscar cardápios de hoje para exibir o que já está salvo
     cardapios_hoje = CardapioDia.objects.filter(data=hoje)
     cardapio_dict = {c.tipo: c.itens.split(", ") for c in cardapios_hoje}
-
-    # Pegar as opções do banco de dados agrupadas por categoria
     food_options = {}
     for cat_key, cat_name in OpcaoAlimento.CATEGORIAS:
         food_options[cat_name] = OpcaoAlimento.objects.filter(categoria=cat_key).values_list('nome', flat=True)
 
     return render(request, 'administracao/gerenciar_cardapio.html', {
         'title': 'Gerenciar Cardápio',
-        'itemselec': 'HOME',
+        'itemselec': 'ADMINISTRAÇÃO',
         'food_options': food_options,
         'cardapio_hoje': cardapio_dict,
         'hoje': hoje,
     })
 
-
+@permissao_requerida(item_id='opcoes_alimento')
 def GerenciarOpcoesAlimento(request):
-    if not request.session.get('nome') or request.session.get('usertip') not in ['admin', 'lanchonete']:
-        messages.error(request, "Acesso Negado.")
-        return redirect(r('Home'))
-
-    # Carga Inicial de Proteção (se o banco estiver vazio, carrega do constants.py)
     if not OpcaoAlimento.objects.exists():
-        from restaurante.core.constants import FOOD_OPTIONS
         for cat, itens in FOOD_OPTIONS.items():
             for item in itens:
                 OpcaoAlimento.objects.get_or_create(nome=item, categoria=cat)
@@ -512,81 +365,200 @@ def GerenciarOpcoesAlimento(request):
         nome = request.POST.get('nome')
         categoria = request.POST.get('categoria')
         if nome and categoria:
-            try:
-                OpcaoAlimento.objects.create(nome=nome, categoria=categoria)
-                messages.success(request, f"Item '{nome}' adicionado com sucesso!")
-            except:
-                messages.error(request, "Erro ao adicionar item. Verifique se o nome já existe.")
+            OpcaoAlimento.objects.get_or_create(nome=nome, categoria=categoria)
+            messages.success(request, f"Item '{nome}' adicionado.")
         return redirect(r('GerenciarOpcoesAlimento'))
 
     opcoes = OpcaoAlimento.objects.all()
     categorias = OpcaoAlimento.CATEGORIAS
-
     return render(request, 'administracao/opcoes_alimento.html', {
         'title': 'Opções de Alimentos',
-        'itemselec': 'HOME',
+        'itemselec': 'ADMINISTRAÇÃO',
         'opcoes': opcoes,
         'categorias': categorias,
     })
 
-
+@permissao_requerida(item_id='opcoes_alimento')
 def RemoverOpcaoAlimento(request, id_opcao):
-    if not request.session.get('nome') or request.session.get('usertip') not in ['admin', 'lanchonete']:
-        return redirect(r('Home'))
-    
-    try:
-        opcao = OpcaoAlimento.objects.get(pk=id_opcao)
-        nome = opcao.nome
-        opcao.delete()
-        messages.success(request, f"Item '{nome}' removido.")
-    except:
-        messages.error(request, "Erro ao remover item.")
-    
+    OpcaoAlimento.objects.filter(pk=id_opcao).delete()
+    messages.success(request, "Item removido.")
     return redirect(r('GerenciarOpcoesAlimento'))
 
-
+@permissao_requerida(item_id='opcoes_alimento')
 def ImportarOpcoesJSON(request):
     if request.method == 'POST' and request.FILES.get('arquivo_json'):
         try:
-            arquivo = request.FILES['arquivo_json']
-            dados = json.load(arquivo)
-            
-            # Formato esperado: {"Categoria": ["Item1", "Item2"]}
-            count = 0
+            dados = json.load(request.FILES['arquivo_json'])
+            valid_cats = [c[0] for c in OpcaoAlimento.CATEGORIAS]
             for cat, itens in dados.items():
-                # Validar categoria
-                valid_cats = [c[0] for c in OpcaoAlimento.CATEGORIAS]
-                if cat not in valid_cats:
-                    continue
-                
-                for item in itens:
-                    obj, created = OpcaoAlimento.objects.get_or_create(nome=item, categoria=cat)
-                    if created:
-                        count += 1
-            
-            messages.success(request, f"Importação concluída! {count} novos itens adicionados.")
-        except Exception as e:
-            messages.error(request, f"Erro ao processar JSON: {str(e)}")
-    
+                if cat in valid_cats:
+                    for item in itens:
+                        OpcaoAlimento.objects.get_or_create(nome=item, categoria=cat)
+            messages.success(request, "Importação concluída!")
+        except:
+            messages.error(request, "Erro ao importar JSON.")
     return redirect(r('GerenciarOpcoesAlimento'))
 
-
+@permissao_requerida(item_id='opcoes_alimento')
 def ExportarOpcoesJSON(request):
-    if not request.session.get('nome') or request.session.get('usertip') not in ['admin', 'lanchonete']:
-        return redirect(r('Home'))
-    
     opcoes = OpcaoAlimento.objects.all()
     dados = {}
-    
     for cat_key, cat_name in OpcaoAlimento.CATEGORIAS:
         itens = list(opcoes.filter(categoria=cat_key).values_list('nome', flat=True))
-        if itens:
-            dados[cat_key] = itens
-            
-    response_data = json.dumps(dados, indent=2, ensure_ascii=False)
+        if itens: dados[cat_key] = itens
     
     from django.http import HttpResponse
-    response = HttpResponse(response_data, content_type='application/json')
-    response['Content-Disposition'] = f'attachment; filename="cardapio_modelo_{datetime.date.today()}.json"'
-    
+    response = HttpResponse(json.dumps(dados, indent=2, ensure_ascii=False), content_type='application/json')
+    response['Content-Disposition'] = f'attachment; filename="opcoes_alimento_{datetime.date.today()}.json"'
     return response
+
+@permissao_requerida(item_id='permissoes')
+def GerenciarPermissoes(request):
+    from restaurante.administracao.models import MenuPermission
+    from restaurante.administracao.forms import MenuPermissionForm
+    
+    ADMIN_GROUP = 'G_PSO_CGTI_SERVIDORES'
+    
+    ALL_MENU_ITEMS = [
+        {'id': 'menu_home', 'label': 'Home / Início', 'category': 'Principal', 'parent': None},
+        {'id': 'user_info', 'label': 'Informações Pessoais (Nome, Foto, Cargo)', 'category': 'Home', 'parent': 'menu_home', 'required': True},
+        {'id': 'shortcut_vendas', 'label': 'Atalho: Venda Manual', 'category': 'Home', 'parent': 'menu_home', 'is_shortcut': True},
+        {'id': 'shortcut_qr', 'label': 'Atalho: Leitura de QR Code', 'category': 'Home', 'parent': 'menu_home', 'is_shortcut': True},
+        {'id': 'shortcut_cardapio', 'label': 'Atalho: Gestão de Cardápios', 'category': 'Home', 'parent': 'menu_home', 'is_shortcut': True},
+        {'id': 'shortcut_relatorios', 'label': 'Atalho: Relatórios', 'category': 'Home', 'parent': 'menu_home', 'is_shortcut': True},
+
+        {'id': 'menu_vendas', 'label': 'Módulo de Vendas', 'category': 'Principal', 'parent': None},
+        {'id': 'vendas_manual', 'label': 'Acesso: Venda Manual', 'category': 'Vendas', 'parent': 'menu_vendas'},
+        {'id': 'leitura_qr', 'label': 'Acesso: Leitura de QR Code', 'category': 'Vendas', 'parent': 'menu_vendas'},
+
+        {'id': 'menu_relatorios', 'label': 'Módulo de Relatórios', 'category': 'Principal', 'parent': None},
+        {'id': 'relatorio_vendas', 'label': 'Relatório de Vendas', 'category': 'Relatórios', 'parent': 'menu_relatorios'},
+        {'id': 'custo_aluno_periodo', 'label': 'Custo do Aluno no Período', 'category': 'Relatórios', 'parent': 'menu_relatorios'},
+
+        {'id': 'menu_admin', 'label': 'Módulo de Administração', 'category': 'Principal', 'parent': None},
+        {'id': 'horario_vendas', 'label': 'Horário Limite das Vendas', 'category': 'Administração', 'parent': 'menu_admin'},
+        {'id': 'bolsistas', 'label': 'Gestão de Bolsistas', 'category': 'Administração', 'parent': 'menu_admin'},
+        {'id': 'colaboradores', 'label': 'Gestão de Colaboradores', 'category': 'Administração', 'parent': 'menu_admin'},
+        {'id': 'cardapio_hub', 'label': 'Gerenciamento de Cardápios (Hub)', 'category': 'Administração', 'parent': 'menu_admin'},
+        
+        {'id': 'cardapio_dia', 'label': 'Cardápio do Dia', 'category': 'Cardápio', 'parent': 'cardapio_hub'},
+        {'id': 'pratos_precos', 'label': 'Pratos & Preços', 'category': 'Cardápio', 'parent': 'cardapio_hub'},
+        {'id': 'opcoes_alimento', 'label': 'Opções de Alimentos', 'category': 'Cardápio', 'parent': 'cardapio_hub'},
+        
+        {'id': 'config_ad', 'label': 'Configuração do AD/LDAP', 'category': 'Administração', 'parent': 'menu_admin'},
+        {'id': 'config_pix', 'label': 'Configuração de Pagamento (PIX)', 'category': 'Administração', 'parent': 'menu_admin'},
+        {'id': 'permissoes', 'label': 'Gerenciar Permissões', 'category': 'Administração', 'parent': 'menu_admin'},
+    ]
+
+    # For legacy references or icons in dashboard
+    QUICK_ACCESS_ITEMS = [
+        {'id': 'shortcut_vendas', 'label': 'Vendas', 'icon': 'fa-store', 'url_name': 'Venda', 'color': '#065f46'},
+        {'id': 'shortcut_qr', 'label': 'QR Code', 'icon': 'fa-qrcode', 'url_name': 'ValidacaoQRCode', 'color': '#6366f1'},
+        {'id': 'shortcut_cardapio', 'label': 'Cardápio', 'icon': 'fa-utensils', 'url_name': 'GerenciarCardapio', 'color': '#f59e0b'},
+        {'id': 'shortcut_relatorios', 'label': 'Relatórios', 'icon': 'fa-chart-pie', 'url_name': 'Relatorios', 'color': '#6d28d9'},
+    ]
+
+    admin_perm, created = MenuPermission.objects.get_or_create(
+        ad_group=ADMIN_GROUP,
+        defaults={
+            'access_type': 'admin',
+            'allowed_menus': ','.join([i['id'] for i in ALL_MENU_ITEMS]),
+            'quick_access': ','.join([i['id'] for i in QUICK_ACCESS_ITEMS]),
+            'default_dashboard': 'funcionario',
+            'can_switch_dashboard': True,
+            'can_sell': True
+        }
+    )
+    if not created:
+        admin_perm.allowed_menus = ','.join([i['id'] for i in ALL_MENU_ITEMS])
+        admin_perm.quick_access = ','.join([i['id'] for i in QUICK_ACCESS_ITEMS])
+        admin_perm.save()
+
+    permissoes = MenuPermission.objects.all().order_by('access_type')
+    form = MenuPermissionForm()
+    
+    if request.method == 'POST':
+        id_perm = request.POST.get('id')
+        if 'excluir' in request.POST:
+            if id_perm:
+                perm_obj = MenuPermission.objects.filter(id=id_perm).first()
+                if perm_obj and perm_obj.ad_group == ADMIN_GROUP:
+                    messages.error(request, "O grupo de Administradores não pode ser removido.")
+                    return redirect(r('GerenciarPermissoes'))
+                MenuPermission.objects.filter(id=id_perm).delete()
+                messages.success(request, "Permissão removida.")
+            return redirect(r('GerenciarPermissoes'))
+            
+        instance = MenuPermission.objects.filter(id=id_perm).first() if id_perm else None
+        if instance and instance.ad_group == ADMIN_GROUP:
+            messages.error(request, "O perfil de Administradores é automático.")
+            return redirect(r('GerenciarPermissoes'))
+
+        form = MenuPermissionForm(data=request.POST, instance=instance)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Salvo com sucesso!")
+            return redirect(r('GerenciarPermissoes'))
+
+    return render(request, 'administracao/admin_gerenciar_permissoes.html', {
+        'title': 'Gerenciar Permissões',
+        'itemselec': 'ADMINISTRAÇÃO',
+        'permissoes': permissoes,
+        'all_menu_items': ALL_MENU_ITEMS,
+        'quick_access_items': QUICK_ACCESS_ITEMS,
+        'form': form,
+        'admin_group_name': ADMIN_GROUP
+    })
+
+@permissao_requerida(item_id='permissoes')
+def ExportarPermissoesJSON(request):
+    from restaurante.administracao.models import MenuPermission
+    permissoes = MenuPermission.objects.all()
+    dados = []
+    
+    for p in permissoes:
+        dados.append({
+            'ad_group': p.ad_group,
+            'access_type': p.access_type,
+            'allowed_menus': p.allowed_menus,
+            'quick_access': p.quick_access,
+            'default_dashboard': p.default_dashboard,
+            'can_switch_dashboard': p.can_switch_dashboard,
+            'can_sell': p.can_sell,
+            'group_label': p.group_label,
+        })
+    
+    import json
+    from django.http import HttpResponse
+    import datetime
+    
+    response = HttpResponse(json.dumps(dados, indent=2, ensure_ascii=False), content_type='application/json')
+    response['Content-Disposition'] = f'attachment; filename="permissoes_restaurante_{datetime.date.today()}.json"'
+    return response
+
+@permissao_requerida(item_id='permissoes')
+def ImportarPermissoesJSON(request):
+    if request.method == 'POST' and request.FILES.get('arquivo_json'):
+        from restaurante.administracao.models import MenuPermission
+        import json
+        try:
+            dados = json.load(request.FILES['arquivo_json'])
+            count = 0
+            for item in dados:
+                MenuPermission.objects.update_or_create(
+                    ad_group=item['ad_group'],
+                    defaults={
+                        'access_type': item['access_type'],
+                        'allowed_menus': item['allowed_menus'],
+                        'quick_access': item['quick_access'],
+                        'default_dashboard': item.get('default_dashboard', 'usuario'),
+                        'can_switch_dashboard': item.get('can_switch_dashboard', False),
+                        'can_sell': item.get('can_sell', False),
+                        'group_label': item.get('group_label', ''),
+                    }
+                )
+                count += 1
+            messages.success(request, f"Importação concluída! {count} perfis atualizados.")
+        except Exception as e:
+            messages.error(request, f"Erro ao importar JSON: {str(e)}")
+    return redirect(r('GerenciarPermissoes'))

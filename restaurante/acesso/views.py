@@ -43,7 +43,25 @@ def Login(request):
                     alunoobj = aluno(id_pessoa=pessoaobj)
                     alunoobj.save()
                 return redirect(r('Home'))
-        return render(request, 'acesso/login.html', {'form': form, 'err': '', 'itemselec': 'HOME', })
+        else:
+            # Capturar erros de validação (como senha incorreta ou usuário fora do escopo)
+            error_message = ""
+            if form.errors:
+                # Pega o primeiro erro encontrado (geralmente non_field_errors do clean)
+                error_list = form.non_field_errors()
+                if error_list:
+                    error_message = error_list[0]
+                else:
+                    # Se não houver non_field_errors, tenta listar o primeiro erro de algum campo
+                    for field, errors in form.errors.items():
+                        error_message = f"{field.capitalize()}: {errors[0]}"
+                        break
+            
+            return render(request, 'acesso/login.html', {
+                'form': form, 
+                'err': error_message, 
+                'itemselec': 'HOME', 
+            })
     else:  # se não veio nada no post cria uma instancia vazia
         # Criar instancia vazia do formulario de login
         request.session['menu'] = ['HOME']
@@ -70,3 +88,25 @@ def Logout(request):
     except KeyError:
         print(sys.exc_info())
     return redirect(r("Login"))
+
+
+def TrocarDashboard(request):
+    if not request.session.get('nome'):
+        return redirect(r('Login'))
+    
+    is_admin = request.session.get('is_admin', False)
+    can_switch = request.session.get('can_switch', False)
+    
+    if is_admin or can_switch:
+        current_mode = request.session.get('dashboard_mode', 'usuario')
+        new_mode = 'funcionario' if current_mode == 'usuario' else 'usuario'
+        request.session['dashboard_mode'] = new_mode
+        
+        # Reconstruir o menu para o novo modo
+        from restaurante.acesso.forms import RebuildMenu
+        RebuildMenu(request)
+        
+        from django.contrib import messages
+        messages.success(request, f"Dashboard alterado para visão de {new_mode.capitalize()}.")
+        
+    return redirect(r('Home'))

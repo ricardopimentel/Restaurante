@@ -15,9 +15,7 @@
         <h1>Cadastro de Vouchers</h1>
         <br>
         <div class="navegation_bar">
-            {% if itemselec == 'CONFIGURAÇÃO' %}
-                <a href="{% url 'Configuracao' %}">Configuração</a>
-            {% elif itemselec == 'ADMINISTRAÇÃO' %}
+            {% if itemselec == 'CONFIGURAÇÃO' or itemselec == 'ADMINISTRAÇÃO' %}
                 <a href="{% url 'Administracao' %}">Administração</a>
             {% endif %}
             <a href="{% url 'ExcluirVouchers' %}">Listar Vouchers</a>

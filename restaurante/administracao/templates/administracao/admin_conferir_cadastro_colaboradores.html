@@ -16,20 +16,20 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
-            margin-bottom: 25px; 
+            margin-bottom: 40px; 
             width: 100%;
         }
 
         .admin-breadcrumb {
-            display: flex; 
+            display: flex;
             justify-content: center;
-            gap: 10px; 
-            font-size: 0.85em; 
-            font-weight: 600; 
+            gap: 10px;
+            font-size: 0.85em;
+            font-weight: 600;
             margin-bottom: 10px;
         }
-        .admin-breadcrumb a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
-        .admin-breadcrumb a:hover { color: var(--admin-primary); }
+        .admin-breadcrumb a { color: var(--admin-primary); text-decoration: none; transition: color 0.2s; }
+        .admin-breadcrumb a:hover { opacity: 0.8; }
         .admin-breadcrumb span { color: #ddd; }
 
         /* Table Card */
@@ -40,22 +40,46 @@
         .table-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #f3f4f6;
+            gap: 20px;
         }
         .table-header h2 {
             margin: 0; font-size: 1.4em; color: var(--text-main); display: flex;
             align-items: center; gap: 12px; font-weight: 800;
         }
 
-        .action-toolbar {
-            display: flex; gap: 12px; margin-bottom: 25px; justify-content: flex-start;
+        .btn-new-admin {
+            background: var(--admin-primary);
+            color: white !important;
+            padding: 10px 25px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 700;
+            font-size: 0.9em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            text-decoration: none !important;
         }
-        .btn-action {
-            display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 10px;
-            background: white; color: var(--text-main); text-decoration: none !important;
-            font-weight: 700; font-size: 0.85em; transition: all 0.2s; border: 1px solid #e5e7eb; box-shadow: var(--shadow-sm);
+        .btn-new-admin:hover {
+            background: var(--admin-secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
         }
-        .btn-action:hover { border-color: var(--admin-primary); color: var(--admin-primary); transform: translateY(-2px); }
-        .btn-action.danger:hover { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
+
+        .btn-delete-action {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-delete-action:hover { transform: scale(1.2); }
 
         #minhaTabela { width: 100% !important; border-collapse: collapse; }
         #minhaTabela thead th {
@@ -71,11 +95,11 @@
     </style>
 
     <div class="admin-page-header">
-        <div>
+        <div style="width: 100%; text-align: center;">
             <div class="admin-breadcrumb">
                 <a href="{% url 'Administracao' %}">Administração</a>
                 <span>/</span>
-                <a href="{% url 'ExcluirColaboradores' %}">Colaboradores</a>
+                <span>Colaboradores</span>
             </div>
             <h1 style="margin: 0; font-size: 1.8em; color: var(--text-main); font-weight: 800;">Alunos Colaboradores</h1>
         </div>
@@ -84,18 +108,17 @@
     <form id="frm" method="post" action="{% url 'ExcluirColaboradores' %}">
         {% csrf_token %}
         
-        <div class="action-toolbar">
-            <a href="{% url 'CadastroColaboradores' %}" class="btn-action">
-                <i class="fas fa-plus-circle"></i> Novo Cadastro
-            </a>
-            <button type="submit" class="btn-action danger" title="Remover Colaboradores Selecionados">
-                <i class="fas fa-trash-alt"></i> Excluir Selecionados
-            </button>
-        </div>
-
         <div class="admin-table-card">
             <div class="table-header">
                 <h2><i class="fas fa-user-tie" style="color: var(--admin-primary);"></i> Colaboradores Ativos</h2>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <a href="{% url 'CadastroColaboradores' %}" class="btn-new-admin">
+                        <i class="fas fa-plus"></i> Novo Cadastro
+                    </a>
+                    <button type="submit" class="btn-delete-action" title="Excluir Selecionados">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
             </div>
 
             <table id="minhaTabela">

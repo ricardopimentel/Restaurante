@@ -168,4 +168,24 @@ class ConfigPixForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ConfigPixForm, self).__init__(*args, **kwargs)
         self.fields['mp_access_token'].label = "Mercado Pago Access Token"
-        self.fields['webhook_url'].label = "Webhook URL"
+        self.fields['webhook_url'].label = "Webhook URL"
+
+class MenuPermissionForm(forms.ModelForm):
+    class Meta:
+        from restaurante.administracao.models import MenuPermission
+        model = MenuPermission
+        fields = ('access_type', 'ad_group', 'group_label', 'allowed_menus', 'default_dashboard', 'can_switch_dashboard', 'can_sell', 'quick_access')
+        widgets = {
+            'allowed_menus': forms.HiddenInput(),
+            'quick_access': forms.HiddenInput(),
+            'ad_group': forms.TextInput(attrs={'placeholder': 'Ex: G_PSO_GERENCIA_LANCHONETE'}),
+            'group_label': forms.TextInput(attrs={'placeholder': 'Ex: Administrador, Vendedor, Coordenador'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(MenuPermissionForm, self).__init__(*args, **kwargs)
+        self.fields['access_type'].label = "Tipo de Acesso"
+        self.fields['ad_group'].label = "Grupo do AD"
+        self.fields['default_dashboard'].label = "Visão Padrão"
+        self.fields['can_switch_dashboard'].label = "Pode trocar de Dashboard?"
+        self.fields['can_sell'].label = "Pode realizar venda?"
