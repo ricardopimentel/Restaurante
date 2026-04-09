@@ -387,16 +387,23 @@ def RemoverOpcaoAlimento(request, id_opcao):
 @permissao_requerida(item_id='opcoes_alimento')
 def ImportarOpcoesJSON(request):
     if request.method == 'POST' and request.FILES.get('arquivo_json'):
+        from django.db import transaction
         try:
             dados = json.load(request.FILES['arquivo_json'])
             valid_cats = [c[0] for c in OpcaoAlimento.CATEGORIAS]
-            for cat, itens in dados.items():
-                if cat in valid_cats:
-                    for item in itens:
-                        OpcaoAlimento.objects.get_or_create(nome=item, categoria=cat)
-            messages.success(request, "Importação concluída!")
-        except:
-            messages.error(request, "Erro ao importar JSON.")
+            
+            with transaction.atomic():
+                # Limpar biblioteca atual antes de importar
+                OpcaoAlimento.objects.all().delete()
+                
+                for cat, itens in dados.items():
+                    if cat in valid_cats:
+                        for item in itens:
+                            OpcaoAlimento.objects.create(nome=item, categoria=cat)
+            
+            messages.success(request, "Biblioteca substituída com sucesso!")
+        except Exception as e:
+            messages.error(request, f"Erro ao importar JSON: {str(e)}")
     return redirect(r('GerenciarOpcoesAlimento'))
 
 @permissao_requerida(item_id='opcoes_alimento')
