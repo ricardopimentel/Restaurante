@@ -113,11 +113,17 @@ def Home(request):
                     
                     hoje = timezone.now().date()
                     
-                    # Vendas Diretas Hoje
-                    context['vendas_hoje'] = venda.objects.filter(data__date=hoje).count()
+                    # Vendas Diretas Hoje (Almoço antes das 15h, Janta depois)
+                    vendas_qs = venda.objects.filter(data__date=hoje)
+                    context['vendas_almoco_hoje'] = vendas_qs.filter(data__hour__lt=15).count()
+                    context['vendas_janta_hoje'] = vendas_qs.filter(data__hour__gte=15).count()
+                    context['vendas_hoje_total'] = vendas_qs.count()
                     
                     # Tickets Validados Hoje
-                    context['validacoes_hoje'] = TicketAluno.objects.filter(usado=True, data_utilizacao__date=hoje).count()
+                    val_qs = TicketAluno.objects.filter(usado=True, data_utilizacao__date=hoje)
+                    context['val_almoco_hoje'] = val_qs.filter(data_utilizacao__hour__lt=15).count()
+                    context['val_janta_hoje'] = val_qs.filter(data_utilizacao__hour__gte=15).count()
+                    context['val_hoje_total'] = val_qs.count()
                     
                 except Exception as e:
                     print("Erro ao carregar stats de funcionário:", e)
