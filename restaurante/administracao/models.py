@@ -11,6 +11,7 @@ class config(models.Model):
     mp_access_token = models.CharField('Mercado Pago Access Token', max_length=255, null=True, blank=True)
     webhook_url = models.CharField('Webhook URL', max_length=255, null=True, blank=True)
     pix_fee = models.DecimalField('Taxa PIX (%)', max_digits=5, decimal_places=2, default=0.00)
+    pix_test_mode = models.BooleanField('Modo Teste PIX', default=False)
 
 class MenuPermission(models.Model):
     TIPOS_ACESSO = (

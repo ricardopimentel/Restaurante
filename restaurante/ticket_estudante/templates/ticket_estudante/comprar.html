@@ -158,6 +158,71 @@
             box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
         }
 
+        /* Quantity Selector */
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            background: linear-gradient(to bottom, #f8fafc, #ffffff);
+            padding: 15px;
+            border-radius: 16px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .quantity-btn {
+            background: white;
+            border: 2px solid #e2e8f0;
+            color: var(--primary-dark);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .quantity-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .quantity-btn:active {
+            transform: translateY(0);
+        }
+
+        .quantity-input-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .quantity-input-box label {
+            font-size: 0.75em;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .quantity-input {
+            width: 60px;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: 800;
+            color: var(--text-main);
+            border: none;
+            background: transparent;
+            outline: none;
+        }
+
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -179,32 +244,53 @@
                     </a>
                 </div>
             {% else %}
-                <p id="step-1-title" style="text-align: left; font-size: 0.85em; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;">1. Escolha a Refeição</p>
+                {% if almoco and janta and preco_almoco != preco_janta %}
+                    <p id="step-1-title" style="text-align: left; font-size: 0.85em; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;">1. Escolha a Refeição</p>
+                {% endif %}
                 
                 <form id="payment-form">
                     {% csrf_token %}
                     
                     <div id="selection-area">
-                        <div class="meal-selector">
-                            {% if almoco %}
-                            <label class="meal-option">
-                                <input type="radio" name="tipo_refeicao" value="Almoço" data-price="{{ preco_almoco|stringformat:'.2f' }}" checked>
-                                <div class="meal-label">
-                                    <i class="fas fa-sun"></i>
-                                    <span>Almoço</span>
-                                </div>
-                            </label>
-                            {% endif %}
-                            
-                            {% if janta %}
-                            <label class="meal-option">
-                                <input type="radio" name="tipo_refeicao" value="Janta" data-price="{{ preco_janta|stringformat:'.2f' }}" {% if not almoco %}checked{% endif %}>
-                                <div class="meal-label">
-                                    <i class="fas fa-moon"></i>
-                                    <span>Janta</span>
-                                </div>
-                            </label>
-                            {% endif %}
+                        {% if almoco and janta and preco_almoco != preco_janta %}
+                            <div class="meal-selector">
+                                {% if almoco %}
+                                <label class="meal-option">
+                                    <input type="radio" name="tipo_refeicao" value="Almoço" data-price="{{ preco_almoco|stringformat:'.2f' }}" checked>
+                                    <div class="meal-label">
+                                        <i class="fas fa-sun"></i>
+                                        <span>Almoço</span>
+                                    </div>
+                                </label>
+                                {% endif %}
+                                
+                                {% if janta %}
+                                <label class="meal-option">
+                                    <input type="radio" name="tipo_refeicao" value="Janta" data-price="{{ preco_janta|stringformat:'.2f' }}" {% if not almoco %}checked{% endif %}>
+                                    <div class="meal-label">
+                                        <i class="fas fa-moon"></i>
+                                        <span>Janta</span>
+                                    </div>
+                                </label>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div style="display: none;">
+                                {% if almoco %}
+                                    <input type="radio" name="tipo_refeicao" value="Almoço" data-price="{{ preco_almoco|stringformat:'.2f' }}" checked>
+                                {% elif janta %}
+                                    <input type="radio" name="tipo_refeicao" value="Janta" data-price="{{ preco_janta|stringformat:'.2f' }}" checked>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        <div class="quantity-selector">
+                            <button type="button" class="quantity-btn" id="btn-minus"><i class="fas fa-minus"></i></button>
+                            <div class="quantity-input-box">
+                                <label>Quantidade</label>
+                                <input type="number" id="quantidade" name="quantidade" class="quantity-input" value="1" min="1" max="20" readonly>
+                            </div>
+                            <button type="button" class="quantity-btn" id="btn-plus"><i class="fas fa-plus"></i></button>
                         </div>
 
                         <p style="text-align: left; font-size: 0.85em; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;">2. Resumo de Valor</p>
@@ -233,9 +319,15 @@
                             </div>
                         {% endif %}
 
-                        <button type="submit" class="btn-purchase" id="btn-submit" style="margin-top: 10px;">
-                            <i class="fas fa-{% if is_cem %}magic{% else %}bolt{% endif %}"></i>
-                            {% if is_cem %}Gerar Ticket Gratuito{% else %}Gerar Pagamento PIX{% endif %}
+                        <button type="submit" class="btn-purchase" id="btn-submit" style="margin-top: 10px; {% if pix_test_mode and not is_cem %}background-color: #ef4444 !important; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3) !important;{% endif %}">
+                            <i class="fas fa-{% if is_cem %}magic{% elif pix_test_mode %}vial{% else %}bolt{% endif %}"></i>
+                            {% if is_cem %}
+                                Gerar Ticket Gratuito
+                            {% elif pix_test_mode %}
+                                Gerar PIX Fake (Testes)
+                            {% else %}
+                                Gerar Pagamento PIX
+                            {% endif %}
                         </button>
                     </div>
 
@@ -290,7 +382,12 @@
                 const checkedOption = $('input[name="tipo_refeicao"]:checked');
                 if (!checkedOption.length) return;
 
-                const platePrice = parseFloat(checkedOption.data('price').toString().replace(',', '.'));
+                let qtd = parseInt($('#quantidade').val()) || 1;
+                if (qtd < 1) qtd = 1;
+                if (qtd > 20) qtd = 20;
+
+                const basePlatePrice = parseFloat(checkedOption.data('price').toString().replace(',', '.'));
+                const platePrice = basePlatePrice * qtd;
                 const feeAmount = platePrice > 0 ? (platePrice * (pixFeePercent / 100)) : 0;
                 const totalPrice = platePrice + feeAmount;
 
@@ -304,6 +401,22 @@
                     displayPrice.css('opacity', '1');
                 }, 100);
             }
+
+            $('#btn-minus').on('click', function() {
+                let current = parseInt($('#quantidade').val()) || 1;
+                if (current > 1) {
+                    $('#quantidade').val(current - 1);
+                    updatePriceDisplay();
+                }
+            });
+
+            $('#btn-plus').on('click', function() {
+                let current = parseInt($('#quantidade').val()) || 1;
+                if (current < 20) {
+                    $('#quantidade').val(current + 1);
+                    updatePriceDisplay();
+                }
+            });
 
             $('input[name="tipo_refeicao"]').on('change', updatePriceDisplay);
             

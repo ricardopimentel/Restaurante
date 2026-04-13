@@ -111,6 +111,7 @@ def ComprarTicket(request):
         'janta': janta,
         'is_cem': is_cem,
         'pix_fee': getattr(get_config(), 'pix_fee', 0.0),
+        'pix_test_mode': getattr(get_config(), 'pix_test_mode', False),
         'preco_almoco': 0.0 if is_cem else (almoco.preco_aluno if almoco else 0.0),
         'preco_janta': 0.0 if is_cem else (janta.preco_aluno if janta else 0.0),
     }
@@ -130,6 +131,13 @@ def SimularPagamento(request):
         tipo = request.POST.get('tipo_refeicao', 'Almoço')
         prato_selecionado = prato.objects.filter(descricao=tipo).first()
         
+        try:
+            quantidade = int(request.POST.get('quantidade', 1))
+        except ValueError:
+            quantidade = 1
+        if quantidade < 1: quantidade = 1
+        if quantidade > 20: quantidade = 20
+
         if not prato_selecionado:
             return JsonResponse({'error': 'Prato não encontrado'}, status=404)
 
@@ -139,18 +147,49 @@ def SimularPagamento(request):
         # BUSCA TAXA PIX (%)
         conf = get_config()
         pix_fee_percent = float(getattr(conf, 'pix_fee', 0.0))
-        valor_com_taxa = float(valor) * (1 + (pix_fee_percent / 100)) if valor > 0 else 0.0
+        
+        valor_total_sem_taxa = valor * quantidade
+        valor_com_taxa = float(valor_total_sem_taxa) * (1 + (pix_fee_percent / 100)) if valor_total_sem_taxa > 0 else 0.0
 
-        # SE FOR CEM, CRIA O TICKET JÁ PAGO E RETORNA SUCESSO DIRETO
-        if is_cem or valor <= 0:
-            ticket = TicketAluno.objects.create(
-                id_aluno=aluno_obj, 
-                valor=0.0, 
-                tipo_refeicao=tipo,
-                pago=True,
-                data_pagamento=timezone.now()
-            )
+        # SE FOR CEM, CRIA OS N TICKETS JÁ PAGOS E RETORNA SUCESSO DIRETO
+        if is_cem or valor_total_sem_taxa <= 0:
+            for _ in range(quantidade):
+                TicketAluno.objects.create(
+                    id_aluno=aluno_obj, 
+                    valor=0.0, 
+                    tipo_refeicao=tipo,
+                    pago=True,
+                    data_pagamento=timezone.now()
+                )
             return JsonResponse({'status': 'approved', 'redirect': r('TicketsEstudante')})
+
+        # MODO TESTE PIX
+        pix_test_mode = getattr(conf, 'pix_test_mode', False)
+        if pix_test_mode and not (is_cem or valor_total_sem_taxa <= 0):
+            import uuid
+            test_id = 'TESTE_' + str(uuid.uuid4())
+            tickets_criados = []
+            for _ in range(quantidade):
+                t = TicketAluno.objects.create(
+                    id_aluno=aluno_obj, 
+                    valor=valor, 
+                    tipo_refeicao=tipo,
+                    pago=False,
+                    data_pagamento=None,
+                    id_pagamento_externo=test_id,
+                    pix_copia_e_cola=f"00020101021226580014br.gov.bcb.pix0136{test_id}52040000530398654041.005802BR5915TESTE6009SAO PAULO62070503***63041234",
+                    pix_qr_code_base64="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+                )
+                tickets_criados.append(t)
+            
+            primeiro_uuid = tickets_criados[0].uuid
+
+            return JsonResponse({
+                'status': 'pending',
+                'ticket_uuid': str(primeiro_uuid),
+                'pix_code': tickets_criados[0].pix_copia_e_cola,
+                'pix_qr': tickets_criados[0].pix_qr_code_base64
+            })
 
         # INTEGRAÇÃO REAL MERCADO PAGO
         try:
@@ -160,7 +199,7 @@ def SimularPagamento(request):
             
             payment_data = {
                 "transaction_amount": float(valor_com_taxa),
-                "description": f"Ticket {tipo} (+ Taxa PIX) - Cantina IFTO",
+                "description": f"{quantidade}x Ticket {tipo} - Cantina IFTO",
                 "payment_method_id": "pix",
                 "payer": {
                     "email": f"{aluno_obj.id_pessoa.usuario}@ifto.edu.br",
@@ -184,22 +223,27 @@ def SimularPagamento(request):
             payment = payment_response["response"]
 
             if payment.get('status') == 'pending' or payment.get('status') == 'approved':
-                ticket = TicketAluno.objects.create(
-                    id_aluno=aluno_obj, 
-                    valor=valor, 
-                    tipo_refeicao=tipo,
-                    pago=(payment.get('status') == 'approved'),
-                    data_pagamento=timezone.now() if payment.get('status') == 'approved' else None,
-                    id_pagamento_externo=str(payment.get('id')),
-                    pix_copia_e_cola=payment['point_of_interaction']['transaction_data']['qr_code'],
-                    pix_qr_code_base64=payment['point_of_interaction']['transaction_data']['qr_code_base64']
-                )
+                tickets_criados = []
+                for _ in range(quantidade):
+                    t = TicketAluno.objects.create(
+                        id_aluno=aluno_obj, 
+                        valor=valor, 
+                        tipo_refeicao=tipo,
+                        pago=(payment.get('status') == 'approved'),
+                        data_pagamento=timezone.now() if payment.get('status') == 'approved' else None,
+                        id_pagamento_externo=str(payment.get('id')),
+                        pix_copia_e_cola=payment['point_of_interaction']['transaction_data']['qr_code'],
+                        pix_qr_code_base64=payment['point_of_interaction']['transaction_data']['qr_code_base64']
+                    )
+                    tickets_criados.append(t)
                 
+                primeiro_uuid = tickets_criados[0].uuid
+
                 return JsonResponse({
                     'status': payment.get('status'),
-                    'ticket_uuid': str(ticket.uuid),
-                    'pix_code': ticket.pix_copia_e_cola,
-                    'pix_qr': ticket.pix_qr_code_base64
+                    'ticket_uuid': str(primeiro_uuid),
+                    'pix_code': payment['point_of_interaction']['transaction_data']['qr_code'],
+                    'pix_qr': payment['point_of_interaction']['transaction_data']['qr_code_base64']
                 })
             else:
                 return JsonResponse({'error': 'Status de pagamento inesperado', 'detail': payment}, status=400)
@@ -227,6 +271,17 @@ def StatusTicket(request, uuid):
     
     # Se ainda estiver pendente no banco local, tentamos uma consulta ativa na API do MP
     if not ticket.pago and ticket.id_pagamento_externo:
+        # CHECK MODO TESTE
+        if ticket.id_pagamento_externo.startswith('TESTE_'):
+            time_diff = (timezone.now() - ticket.data_compra).total_seconds()
+            if time_diff >= 3:
+                TicketAluno.objects.filter(id_pagamento_externo=ticket.id_pagamento_externo).update(
+                    pago=True,
+                    data_pagamento=timezone.now()
+                )
+                ticket.pago = True
+            return JsonResponse({'status': 'approved' if ticket.pago else 'pending'})
+
         try:
             mp_sdk = get_sdk()
             payment_info = mp_sdk.payment().get(ticket.id_pagamento_externo)
@@ -234,9 +289,11 @@ def StatusTicket(request, uuid):
             if payment_info["status"] in [200, 201]:
                 mp_status = payment_info["response"].get("status")
                 if mp_status == 'approved':
+                    TicketAluno.objects.filter(id_pagamento_externo=ticket.id_pagamento_externo).update(
+                        pago=True,
+                        data_pagamento=timezone.now()
+                    )
                     ticket.pago = True
-                    ticket.data_pagamento = timezone.now()
-                    ticket.save()
         except Exception as e:
             # Se a consulta ativa falhar (ex: rede), apenas ignoramos e retornamos o status local
             pass
@@ -261,11 +318,10 @@ def WebhookPix(request):
                 status = payment_info["response"].get("status")
                 
                 if status == 'approved':
-                    ticket = TicketAluno.objects.filter(id_pagamento_externo=id_pagamento).first()
-                    if ticket:
-                        ticket.pago = True
-                        ticket.data_pagamento = timezone.now()
-                        ticket.save()
+                    TicketAluno.objects.filter(id_pagamento_externo=id_pagamento).update(
+                        pago=True,
+                        data_pagamento=timezone.now()
+                    )
         except:
             pass
                     

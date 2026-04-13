@@ -159,11 +159,12 @@ class CadastroAlunosColaboradoresForm(forms.Form):
 class ConfigPixForm(forms.ModelForm):
     class Meta:
         model = config
-        fields = ('mp_access_token', 'webhook_url', 'pix_fee')
+        fields = ('mp_access_token', 'webhook_url', 'pix_fee', 'pix_test_mode')
         widgets = {
             'mp_access_token': forms.PasswordInput(render_value=True, attrs={'placeholder': 'APP_USR-...'}),
             'webhook_url': forms.TextInput(attrs={'placeholder': 'https://...'}),
             'pix_fee': forms.NumberInput(attrs={'step': '0.01', 'placeholder': '0.00'}),
+            'pix_test_mode': forms.CheckboxInput(attrs={'class': 'checkbox', 'style': 'width: 20px; height: 20px;'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -171,6 +172,7 @@ class ConfigPixForm(forms.ModelForm):
         self.fields['mp_access_token'].label = "Mercado Pago Access Token"
         self.fields['webhook_url'].label = "Webhook URL"
         self.fields['pix_fee'].label = "Taxa de Serviço PIX (%)"
+        self.fields['pix_test_mode'].label = "Ativar Modo de Teste PIX Automático"
 
 class MenuPermissionForm(forms.ModelForm):
     class Meta:

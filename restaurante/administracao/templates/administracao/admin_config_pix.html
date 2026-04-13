@@ -78,7 +78,9 @@
             letter-spacing: 0.5px;
         }
 
-        .form-group input {
+        .form-group input[type="text"],
+        .form-group input[type="password"],
+        .form-group input[type="number"] {
             width: 100%;
             padding: 14px 18px;
             border-radius: 14px;
@@ -89,11 +91,21 @@
             transition: all 0.3s ease;
         }
 
-        .form-group input:focus {
+        .form-group input[type="text"]:focus,
+        .form-group input[type="password"]:focus,
+        .form-group input[type="number"]:focus {
             outline: none;
             border-color: var(--admin-primary);
             background: white;
             box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-group input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: var(--admin-primary);
+            margin-top: 5px;
         }
 
         .help-text {

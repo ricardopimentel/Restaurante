@@ -74,8 +74,8 @@
             <!-- QR Section -->
             <div style="padding: 30px; background: #ffffff;">
                 <p style="color: #6b7280; font-size: 0.9em; margin-bottom: 20px;">Apresente no leitor do balcão</p>
-                <div style="margin: 0 auto; display: inline-block; padding: 10px; background: white; border-radius: 12px; box-shadow: 0 0 0 1px #f3f4f6, 0 4px 15px rgba(0,0,0,0.05);">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={{ ticket.uuid }}" alt="QR Code Ticket" style="width: 250px; height: 250px; border-radius: 0; display: block;">
+                <div style="margin: 0 auto; display: inline-block; padding: 10px; background: white; border-radius: 12px; box-shadow: 0 0 0 1px #f3f4f6, 0 4px 15px rgba(0,0,0,0.05); max-width: 100%; box-sizing: border-box;">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={{ ticket.uuid }}" alt="QR Code Ticket" style="max-width: 100%; height: auto; aspect-ratio: 1/1; border-radius: 0; display: block; margin: 0 auto;">
                 </div>
                 <p style="font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 1px; color: #d1d5db; margin-top: 15px; word-break: break-all;">{{ ticket.uuid }}</p>
             </div>
