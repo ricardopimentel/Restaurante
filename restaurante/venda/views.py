@@ -1,6 +1,7 @@
 import sys
 from django.contrib import messages
 from django.shortcuts import render, redirect, resolve_url as r
+from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
 from restaurante.administracao.models import config
 from restaurante.core.libs.calendario import calendario
@@ -35,32 +36,47 @@ def ValidacaoQRCode(request):
 
 @permissao_requerida(item_id='vendas_manual')
 def Venda(request):
-    # tenta conectar ao banco de dados para pegar parametros do ldap
-    ou = ''
-    filter = ''
-    try:
-        conf = config.objects.get(id=1)
-        ou = conf.ou
-        filter = conf.filter
-    except:
-        pass
-    # Inicia variáveis
-    ListaAlunos = []
-    con = conexaoAD(usuario, senha, ou, filter)
-    retorno = con.ListaAlunos()
+    # Controle de Limpeza de Cache (Forçar Sincronização)
+    if 'refresh' in request.GET:
+        cache.delete('venda_lista_alunos_ad')
+        messages.success(request, 'A lista de alunos foi sincronizada com o Active Directory.')
+        return redirect('Venda')
 
-    if str(retorno) == 'i':
-	    messages.error(request, 'Falha ao realizar a consulta verifique o usuário "'+ usuario+'"')
-    else:
-        for lista in retorno:
-            try:
-                if lista.get('raw_attributes'):
-                    ListaAlunos.append({
-                        'nome': (lista['raw_attributes']['displayName'][0]).decode('UTF-8'),
-                        'cpf': (lista['raw_attributes']['sAMAccountName'][0]).decode('UTF-8'),
-                    })
-            except:
-                messages.error(request, str(sys.exc_info()[1]))
+    # Tenta buscar no cache
+    ListaAlunos = cache.get('venda_lista_alunos_ad')
+    
+    if ListaAlunos is None:
+        # tenta conectar ao banco de dados para pegar parametros do ldap
+        ou = ''
+        filter = ''
+        try:
+            conf = config.objects.get(id=1)
+            ou = conf.ou
+            filter = conf.filter
+        except:
+            pass
+            
+        ListaAlunos = []
+        con = conexaoAD(usuario, senha, ou, filter)
+        retorno = con.ListaAlunos()
+
+        if str(retorno) == 'i':
+            messages.error(request, 'Falha ao realizar a consulta verifique o usuário "'+ usuario+'"')
+        else:
+            for lista in retorno:
+                try:
+                    if lista.get('raw_attributes'):
+                        ListaAlunos.append({
+                            'nome': (lista['raw_attributes']['displayName'][0]).decode('UTF-8'),
+                            'cpf': (lista['raw_attributes']['sAMAccountName'][0]).decode('UTF-8'),
+                        })
+                except:
+                    messages.error(request, str(sys.exc_info()[1]))
+            
+            # Só atualiza a memória se achou registros válidos, armazena por 1 Hora (3600 sec)
+            if ListaAlunos:
+                cache.set('venda_lista_alunos_ad', ListaAlunos, timeout=3600)
+
     return render(request, 'venda/venda.html', {
         'title': 'Venda',
         'itemselec': 'VENDAS',
