@@ -221,7 +221,14 @@ def SalvarVenda(request, id_aluno, id_prato, id_pessoa):
         data = datetime.datetime.now()
 
         pratoobj = prato.objects.get(id=id_prato)
-        usuariorestauranteobj = usuariorestaurante.objects.select_related('id_pessoa').get(id_pessoa__usuario=str(request.session['userl']))
+        userl = str(request.session.get('userl', ''))
+        
+        try:
+            usuariorestauranteobj = usuariorestaurante.objects.select_related('id_pessoa').get(id_pessoa__usuario=userl)
+        except usuariorestaurante.DoesNotExist:
+            pessoa_logged = pessoa.objects.get(usuario=userl)
+            usuariorestauranteobj = usuariorestaurante.objects.create(id_pessoa=pessoa_logged)
+
         alunoobj = aluno.objects.get(id=id_aluno)
 
         cem = VerificarUsuarioCem(id_pessoa) #verifica se a bolsa é 100%
