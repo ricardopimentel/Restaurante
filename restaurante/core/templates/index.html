@@ -16,7 +16,7 @@
             <div style="background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%); padding: 15px 25px; display: flex; align-items: center; justify-content: space-between;">
                 <div style="display: flex; align-items: center; gap: 12px; color: white;">
                     <i class="fas fa-utensils" style="font-size: 1.5em;"></i>
-                    <h2 style="margin: 0; font-size: 1.2em; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Cardápio de {{ cardapio_dia.tipo }}</h2>
+                    <h2 style="margin: 0; font-size: 1.2em; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Cardápio {% if cardapio_dia.tipo == 'Almoço' %}do Almoço{% else %}da Janta{% endif %}</h2>
                 </div>
                 <span style="background: rgba(255,255,255,0.2); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 700;">Hoje: {{ hoje|date:"d/m" }}</span>
             </div>

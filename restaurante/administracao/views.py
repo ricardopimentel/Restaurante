@@ -337,7 +337,8 @@ def GerenciarCardapio(request):
         else:
             itens_str = ", ".join(itens_selecionados)
             CardapioDia.objects.update_or_create(data=hoje, tipo=tipo, defaults={'itens': itens_str})
-            messages.success(request, "Cardápio salvo!")
+            tipo_label = "do Almoço" if tipo == 'ALMOCO' else "da Janta"
+            messages.success(request, f"Cardápio {tipo_label} salvo!")
             return redirect(r('GerenciarCardapio'))
 
     cardapios_hoje = CardapioDia.objects.filter(data=hoje)
@@ -431,7 +432,7 @@ def GerenciarPermissoes(request):
         {'id': 'user_info', 'label': 'Informações Pessoais (Nome, Foto, Cargo)', 'category': 'Home', 'parent': 'menu_home', 'required': True},
         {'id': 'shortcut_vendas', 'label': 'Atalho: Venda Manual', 'category': 'Home', 'parent': 'menu_home', 'is_shortcut': True},
         {'id': 'shortcut_qr', 'label': 'Atalho: Leitura de QR Code', 'category': 'Home', 'parent': 'menu_home', 'is_shortcut': True},
-        {'id': 'shortcut_cardapio', 'label': 'Atalho: Gestão de Cardápios', 'category': 'Home', 'parent': 'menu_home', 'is_shortcut': True},
+        {'id': 'shortcut_cardapio', 'label': 'Atalho: Cardápio', 'category': 'Home', 'parent': 'menu_home', 'is_shortcut': True},
         {'id': 'shortcut_relatorios', 'label': 'Atalho: Relatórios', 'category': 'Home', 'parent': 'menu_home', 'is_shortcut': True},
 
         {'id': 'menu_vendas', 'label': 'Módulo de Vendas', 'category': 'Principal', 'parent': None},

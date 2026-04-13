@@ -70,9 +70,14 @@ def MontarMenu(request, ret, usuario):
     group_label = ''
     
     # Se houver múltiplos perfis, pegamos as permissões mais amplas
-    # Priorizamos o rótulo de perfis Admin
-    matching_profiles.sort(key=lambda p: p.access_type == 'admin', reverse=True)
+    # Priorizamos perfis de tipo Admin na ordenação
+    matching_profiles.sort(key=lambda p: (p.access_type == 'admin', p.access_type == 'glanchonete'), reverse=True)
     
+    # Determinar Rótulo (Label) do cargo - Prioridade absoluta para perfis Admin
+    # Se for Admin Global (is_admin), já começamos com "Administrador"
+    if is_admin:
+        group_label = 'Administrador'
+
     for p in matching_profiles:
         allowed_items.extend(p.get_allowed_list())
         if p.quick_access:
@@ -81,16 +86,23 @@ def MontarMenu(request, ret, usuario):
         if p.can_sell: can_sell = True
         if p.default_dashboard == 'funcionario': default_dashboard = 'funcionario'
         
-        # O rótulo é pego do primeiro perfil (que será Admin se existir devido ao sort acima)
-        if not group_label and p.group_label:
-            group_label = p.group_label
+        # O rótulo é pego do perfil de maior prioridade. 
+        # Se for um perfil Admin, ele sobrescreve o label genérico de is_admin ou qualquer outro.
+        if p.group_label:
+            if p.access_type == 'admin':
+                group_label = p.group_label
+            elif not group_label:
+                group_label = p.group_label
     
+    # Se ainda for admin e não tiver rótulo nenhum (caso raro)
+    if is_admin and not group_label:
+        group_label = 'Administrador'
+
     # Fallback/Segurança para Admins (mesmo que o DB seja limpo ou falhe)
     if is_admin:
         can_switch = True
         can_sell = True
         default_dashboard = 'funcionario'
-        if not group_label: group_label = 'Administrador'
         # Adiciona atalhos de admin se não estiverem no DB (redundância)
         admin_defaults = [
             'menu_vendas', 'menu_relatorios', 'horario_vendas', 'bolsistas', 

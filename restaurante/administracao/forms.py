@@ -159,16 +159,18 @@ class CadastroAlunosColaboradoresForm(forms.Form):
 class ConfigPixForm(forms.ModelForm):
     class Meta:
         model = config
-        fields = ('mp_access_token', 'webhook_url')
+        fields = ('mp_access_token', 'webhook_url', 'pix_fee')
         widgets = {
             'mp_access_token': forms.PasswordInput(render_value=True, attrs={'placeholder': 'APP_USR-...'}),
             'webhook_url': forms.TextInput(attrs={'placeholder': 'https://...'}),
+            'pix_fee': forms.NumberInput(attrs={'step': '0.01', 'placeholder': '0.00'}),
         }
 
     def __init__(self, *args, **kwargs):
         super(ConfigPixForm, self).__init__(*args, **kwargs)
         self.fields['mp_access_token'].label = "Mercado Pago Access Token"
         self.fields['webhook_url'].label = "Webhook URL"
+        self.fields['pix_fee'].label = "Taxa de Serviço PIX (%)"
 
 class MenuPermissionForm(forms.ModelForm):
     class Meta:

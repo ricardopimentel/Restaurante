@@ -208,9 +208,23 @@
                         </div>
 
                         <p style="text-align: left; font-size: 0.85em; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;">2. Resumo de Valor</p>
-                        <div class="price-section">
-                            <span class="price-label">Total a Pagar</span>
-                            <span class="price-value" id="display-price">R$ {{ preco_almoco|default:preco_janta|stringformat:'.2f' }}</span>
+                        <div class="price-section" style="align-items: stretch; gap: 12px; padding: 25px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.95em; color: var(--text-main);">
+                                <span style="font-weight: 500;">Valor do Prato:</span>
+                                <span style="font-weight: 700;" id="plate-price-display">R$ 0,00</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.9em; color: #64748b;">
+                                <span style="display: flex; align-items: center; gap: 5px;">
+                                    Taxa de Conveniência ({{ pix_fee|stringformat:'g' }}%)
+                                    <i class="fas fa-info-circle" style="font-size: 0.8em;" title="Taxa cobrada para processamento do pagamento via PIX."></i>
+                                </span>
+                                <span style="font-weight: 600;" id="fee-value-display">R$ 0,00</span>
+                            </div>
+                            <div style="height: 1px; background: #e2e8f0; margin: 5px 0;"></div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span class="price-label" style="margin: 0; font-size: 0.9em;">Total a Pagar</span>
+                                <span class="price-value" id="display-price" style="font-size: 2.2em; margin: 0;">R$ 0,00</span>
+                            </div>
                         </div>
 
                         {% if is_cem %}
@@ -270,15 +284,31 @@
     <script>
         $(function() {
             // Atualizar preço
-            $('input[name="tipo_refeicao"]').on('change', function() {
-                const newPrice = $(this).data('price');
+            const pixFeePercent = parseFloat("{{ pix_fee|stringformat:'.2f'|default:'0' }}".replace(',', '.'));
+
+            function updatePriceDisplay() {
+                const checkedOption = $('input[name="tipo_refeicao"]:checked');
+                if (!checkedOption.length) return;
+
+                const platePrice = parseFloat(checkedOption.data('price').toString().replace(',', '.'));
+                const feeAmount = platePrice > 0 ? (platePrice * (pixFeePercent / 100)) : 0;
+                const totalPrice = platePrice + feeAmount;
+
+                $('#plate-price-display').text('R$ ' + platePrice.toFixed(2).replace('.', ','));
+                $('#fee-value-display').text('R$ ' + feeAmount.toFixed(2).replace('.', ','));
+                
                 const displayPrice = $('#display-price');
                 displayPrice.css('opacity', '0.5');
                 setTimeout(() => {
-                    displayPrice.text('R$ ' + newPrice);
+                    displayPrice.text('R$ ' + totalPrice.toFixed(2).replace('.', ','));
                     displayPrice.css('opacity', '1');
                 }, 100);
-            });
+            }
+
+            $('input[name="tipo_refeicao"]').on('change', updatePriceDisplay);
+            
+            // Inicializar display
+            updatePriceDisplay();
 
             // Processar Pagamento via AJAX
             $('#payment-form').on('submit', function(e) {

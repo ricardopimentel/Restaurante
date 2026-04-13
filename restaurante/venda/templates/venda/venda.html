@@ -216,66 +216,98 @@
                     </div>
 
                     
-                    <!-- DATA TABLE MODERNIZED -->
-                    <div style="overflow-x: auto;">
-                        <table id="minhaTabela" style="width: 100%; border-collapse: separate; border-spacing: 0 10px;">
-                            <thead>
-                                <tr>
-                                    <th style="padding: 15px; text-align: left; color: var(--text-muted); font-weight: 600; font-size: 0.85em; text-transform: uppercase;">Nome do Aluno</th>
-                                    <th style="padding: 15px; text-align: left; color: var(--text-muted); font-weight: 600; font-size: 0.85em; text-transform: uppercase;">CPF / Matrícula</th>
-                                    <th style="padding: 15px; text-align: right; color: var(--text-muted); font-weight: 600; font-size: 0.85em; text-transform: uppercase;">Ação</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {%for aluno in alunos%}
-                                    <tr style="background: white; transition: all 0.2s;" onmouseover="this.style.boxShadow='0 4px 10px rgba(0,0,0,0.05)'" onmouseout="this.style.boxShadow='none'">
-                                        <td style="padding: 15px; border-radius: 12px 0 0 12px; font-weight: 600; color: var(--text-main);">
-                                            {{ aluno.nome }}
-                                        </td>
-                                        <td style="padding: 15px; color: var(--text-muted); font-family: monospace; font-size: 1.1em;">
-                                            {{ aluno.cpf }}
-                                        </td>
-                                        <td style="padding: 15px; border-radius: 0 12px 12px 0; text-align: right;">
-                                            <a href="{% url 'Vender' id_pessoa=aluno.cpf %}" style="display: inline-block; padding: 8px 15px; border-radius: 8px; background: rgba(16, 185, 129, 0.1); color: var(--primary-dark); text-decoration: none !important; border-bottom: none !important; font-weight: 700; font-size: 0.85em; transition: all 0.2s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='rgba(16, 185, 129, 0.1)'; this.style.color='var(--primary-dark)'">
-                                                Selecionar <i class="fas fa-chevron-right" style="font-size: 0.8em; margin-left: 5px;"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                {%endfor%}
-                            </tbody>
-                        </table>
+<!-- LISTA DE ALUNOS PARA TELA MENOR/SMARTPHONES -->
+                    <div style="margin-bottom: 20px; position: relative;">
+                        <i class="fas fa-search" style="position: absolute; left: 16px; top: 16px; color: #9ca3af; font-size: 1.1em;"></i>
+                        <input type="text" id="searchInput" placeholder="Pesquisar por nome ou CPF..." autocomplete="off" style="width: 100%; padding: 15px 15px 15px 45px; border-radius: 14px; border: 2px solid #f3f4f6; box-shadow: var(--shadow-sm); font-size: 1.05em; font-family: 'Outfit', sans-serif; outline: none; transition: all 0.3s; color: var(--text-main); box-sizing: border-box;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 4px rgba(16,185,129,0.1)'" onblur="this.style.borderColor='#f3f4f6'; this.style.boxShadow='var(--shadow-sm)'">
+                    </div>
+
+                    <div id="alunoList" style="display: flex; flex-direction: column; gap: 12px; max-height: 60vh; overflow-y: auto; padding-right: 5px; scrollbar-width: thin; scrollbar-color: var(--primary) transparent;">
+                        {% for aluno in alunos %}
+                        <div class="aluno-card" data-nome="{{ aluno.nome|lower }}" data-cpf="{{ aluno.cpf }}" style="background: white; border: 1px solid #e5e7eb; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 15px; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
+                            <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+                                <div style="flex: 1;">
+                                    <h3 class="aluno-nome" style="margin: 0 0 6px 0; font-size: 1.15em; color: var(--text-main); line-height: 1.3;">{{ aluno.nome }}</h3>
+                                    <div class="aluno-cpf" style="color: var(--text-muted); font-size: 0.95em; font-family: monospace; display: flex; align-items: center; gap: 6px;">
+                                        <i class="far fa-id-card"></i> {{ aluno.cpf }}
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="{% url 'Vender' id_pessoa=aluno.cpf %}" style="display: flex; justify-content: center; align-items: center; width: 100%; padding: 14px; border-radius: 12px; background: rgba(16, 185, 129, 0.1); color: var(--primary-dark); text-decoration: none; font-weight: 700; font-size: 1em; transition: all 0.2s; box-sizing: border-box;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='rgba(16, 185, 129, 0.1)'; this.style.color='var(--primary-dark)'">
+                                <i class="fas fa-check-circle" style="margin-right: 8px;"></i> Selecionar para Venda
+                            </a>
+                        </div>
+                        {% endfor %}
+                        <div id="noResults" style="display: none; text-align: center; padding: 40px 20px; color: var(--text-muted);">
+                            <i class="fas fa-search-minus" style="font-size: 3em; margin-bottom: 15px; opacity: 0.5;"></i>
+                            <p style="margin: 0; font-size: 1.1em; font-weight: 500;">Nenhum aluno encontrado</p>
+                        </div>
                     </div>
                 </div>
             {% endif %}
         </div>
 
+        <style>
+            /* Custom Scrollbar for the list */
+            #alunoList::-webkit-scrollbar {
+                width: 6px;
+            }
+            #alunoList::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            #alunoList::-webkit-scrollbar-thumb {
+                background-color: var(--primary);
+                border-radius: 20px;
+            }
+            
+            /* Highlighting search match placeholder */
+            .highlight {
+                background-color: #fef08a;
+                color: #854d0e;
+                padding: 0 2px;
+                border-radius: 3px;
+                font-weight: bold;
+            }
+        </style>
+
         <script>
-            $(document).ready(function () {
-                $('#minhaTabela').DataTable({
-                    "bPaginate": true,
-                    "bLengthChange": false,
-                    "bFilter": true,
-                    "bInfo": true,
-                    "bAutoWidth": true,
-                    "language": {
-                        "sEmptyTable": "Nenhum registro encontrado",
-                        "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
-                        "sInfoEmpty": "Mostrando 0 até 0 de 0 registros",
-                        "sInfoFiltered": "(Filtrados de _MAX_ registros)",
-                        "sInfoThousands": ".",
-                        "sLengthMenu": "_MENU_ resultados por página",
-                        "sLoadingRecords": "Carregando...",
-                        "sProcessing": "Processando...",
-                        "sZeroRecords": "Nenhum registro encontrado",
-                        "sSearch": "Pesquisar Aluno",
-                        "oPaginate": {
-                        "sNext": "»",
-                        "sPrevious": "«",
-                        "sFirst": "Primeiro",
-                        "sLast": "Último"
-                        }
-                    },
-                });
+            document.addEventListener('DOMContentLoaded', function () {
+                // Search functionality for pure HTML list
+                const searchInput = document.getElementById('searchInput');
+                const alunoList = document.getElementById('alunoList');
+                const noResults = document.getElementById('noResults');
+                
+                if (searchInput && alunoList) {
+                    const cards = alunoList.querySelectorAll('.aluno-card');
+                    
+                    let timeout = null;
+
+                    searchInput.addEventListener('input', function(e) {
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => {
+                            const term = e.target.value.toLowerCase().trim();
+                            let visibleCount = 0;
+                            
+                            cards.forEach(card => {
+                                const nome = card.getAttribute('data-nome');
+                                const cpf = card.getAttribute('data-cpf');
+                                
+                                if (nome.includes(term) || cpf.includes(term)) {
+                                    card.style.display = 'flex';
+                                    visibleCount++;
+                                } else {
+                                    card.style.display = 'none';
+                                }
+                            });
+                            
+                            if (visibleCount === 0 && cards.length > 0) {
+                                noResults.style.display = 'block';
+                            } else {
+                                noResults.style.display = 'none';
+                            }
+                        }, 150);
+                    });
+                }
 
                 // PREVENT DOUBLE SUBMISSION
                 const saleForm = document.getElementById('frm');
@@ -300,8 +332,6 @@
                         }
                         
                         // Prevent second submission if user clicks fast again
-                        // Although button is disabled, some browsers might trigger multiple times 
-                        // if clicked very fast before disabled sets in
                         if (finalizeBtn.getAttribute('data-submitted') === 'true') {
                             e.preventDefault();
                             return false;

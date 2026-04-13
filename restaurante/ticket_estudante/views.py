@@ -110,6 +110,7 @@ def ComprarTicket(request):
         'almoco': almoco,
         'janta': janta,
         'is_cem': is_cem,
+        'pix_fee': getattr(get_config(), 'pix_fee', 0.0),
         'preco_almoco': 0.0 if is_cem else (almoco.preco_aluno if almoco else 0.0),
         'preco_janta': 0.0 if is_cem else (janta.preco_aluno if janta else 0.0),
     }
@@ -134,12 +135,17 @@ def SimularPagamento(request):
 
         is_cem = alunoscem.objects.filter(id_pessoa=aluno_obj.id_pessoa).exists()
         valor = 0.0 if is_cem else prato_selecionado.preco_aluno
+        
+        # BUSCA TAXA PIX (%)
+        conf = get_config()
+        pix_fee_percent = float(getattr(conf, 'pix_fee', 0.0))
+        valor_com_taxa = float(valor) * (1 + (pix_fee_percent / 100)) if valor > 0 else 0.0
 
         # SE FOR CEM, CRIA O TICKET JÁ PAGO E RETORNA SUCESSO DIRETO
         if is_cem or valor <= 0:
             ticket = TicketAluno.objects.create(
                 id_aluno=aluno_obj, 
-                valor=valor, 
+                valor=0.0, 
                 tipo_refeicao=tipo,
                 pago=True,
                 data_pagamento=timezone.now()
@@ -149,13 +155,12 @@ def SimularPagamento(request):
         # INTEGRAÇÃO REAL MERCADO PAGO
         try:
             mp_sdk = get_sdk()
-            conf = get_config()
             
             webhook_url = getattr(conf, 'webhook_url', None) or config('WEBHOOK_URL', default='')
             
             payment_data = {
-                "transaction_amount": float(valor),
-                "description": f"Ticket {tipo} - Cantina IFTO",
+                "transaction_amount": float(valor_com_taxa),
+                "description": f"Ticket {tipo} (+ Taxa PIX) - Cantina IFTO",
                 "payment_method_id": "pix",
                 "payer": {
                     "email": f"{aluno_obj.id_pessoa.usuario}@ifto.edu.br",

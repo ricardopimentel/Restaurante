@@ -10,6 +10,7 @@ class config(models.Model):
     hora_fechamento_vendas = models.TimeField('Horário do Fechamento das Vendas', default='23:59:59')
     mp_access_token = models.CharField('Mercado Pago Access Token', max_length=255, null=True, blank=True)
     webhook_url = models.CharField('Webhook URL', max_length=255, null=True, blank=True)
+    pix_fee = models.DecimalField('Taxa PIX (%)', max_digits=5, decimal_places=2, default=0.00)
 
 class MenuPermission(models.Model):
     TIPOS_ACESSO = (
