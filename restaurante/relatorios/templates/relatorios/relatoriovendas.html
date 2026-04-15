@@ -413,8 +413,8 @@
             flex-shrink: 0;
         }
 
-        .sale-icon.almoco { background: #fef3c7; color: #d97706; }
-        .sale-icon.janta { background: #EEF2FF; color: #6366F1; }
+        .sale-icon.almoco { background: #FFFBEB; color: #D97706; }
+        .sale-icon.janta { background: #EEF2FF; color: #4F46E5; }
         .sale-icon.outro { background: #f1f5f9; color: #64748b; }
 
         .sale-details {
@@ -584,8 +584,8 @@
                 <div class="sub-value">
                     <span style="font-weight: 800; color: var(--report-primary); font-size: 1em; margin-bottom: 5px;">Total: {{soma|real}}</span>
                     <div style="display: flex; gap: 8px;">
-                        <span class="source-badge" title="Vendas Manuais"><i class="fas fa-hand-holding-usd"></i> {{cont_manual}}</span>
-                        <span class="source-badge" title="Vendas por Ticket (App)"><i class="fas fa-qrcode"></i> {{cont_ticket}}</span>
+                        <span class="source-badge" title="Vendas Manuais"><i class="fas fa-hand-holding-usd" style="color: #a55192;"></i> {{cont_manual}}</span>
+                        <span class="source-badge" title="Vendas por Ticket (App)"><i class="fas fa-qrcode" style="color: #0891b2;"></i> {{cont_ticket}}</span>
                     </div>
                 </div>
             </div>
@@ -601,8 +601,8 @@
                 <div class="sub-value">
                     <span style="font-weight: 800; color: #059669; font-size: 1em; margin-bottom: 5px;">Total: {{valorcem|real}}</span>
                     <div style="display: flex; gap: 8px;">
-                        <span class="source-badge" title="Manual"><i class="fas fa-hand-holding-usd"></i> {{m_cem}}</span>
-                        <span class="source-badge" title="Ticket"><i class="fas fa-qrcode"></i> {{t_cem}}</span>
+                        <span class="source-badge" title="Manual"><i class="fas fa-hand-holding-usd" style="color: #a55192;"></i> {{m_cem}}</span>
+                        <span class="source-badge" title="Ticket"><i class="fas fa-qrcode" style="color: #0891b2;"></i> {{t_cem}}</span>
                     </div>
                 </div>
             </div>
@@ -618,8 +618,8 @@
                 <div class="sub-value">
                     <span style="font-weight: 800; color: #D97706; font-size: 1em; margin-bottom: 5px;">Total: {{valoralmoco|real}}</span>
                     <div style="display: flex; gap: 8px;">
-                        <span class="source-badge" title="Manual"><i class="fas fa-hand-holding-usd"></i> {{m_almoco}}</span>
-                        <span class="source-badge" title="Ticket"><i class="fas fa-qrcode"></i> {{t_almoco}}</span>
+                        <span class="source-badge" title="Manual"><i class="fas fa-hand-holding-usd" style="color: #a55192;"></i> {{m_almoco}}</span>
+                        <span class="source-badge" title="Ticket"><i class="fas fa-qrcode" style="color: #0891b2;"></i> {{t_almoco}}</span>
                     </div>
                 </div>
             </div>
@@ -635,8 +635,8 @@
                 <div class="sub-value">
                     <span style="font-weight: 800; color: #4F46E5; font-size: 1em; margin-bottom: 5px;">Total: {{valorjanta|real}}</span>
                     <div style="display: flex; gap: 8px;">
-                        <span class="source-badge" title="Manual"><i class="fas fa-hand-holding-usd"></i> {{m_janta}}</span>
-                        <span class="source-badge" title="Ticket"><i class="fas fa-qrcode"></i> {{t_janta}}</span>
+                        <span class="source-badge" title="Manual"><i class="fas fa-hand-holding-usd" style="color: #a55192;"></i> {{m_janta}}</span>
+                        <span class="source-badge" title="Ticket"><i class="fas fa-qrcode" style="color: #0891b2;"></i> {{t_janta}}</span>
                     </div>
                 </div>
             </div>
@@ -725,10 +725,12 @@
                         <div class="group-card" data-search="{{ item.data__date|date:'d/m/Y' }}" data-name="{{ item.data__date|date:'Y-m-d' }}" data-date="{{ item.data__date|date:'Ymd' }}" data-price="{{ item.dia_soma|stringformat:'f' }}">
                             <div class="group-date">
                                 <span class="date">{{ item.data__date|date:"d/m/Y" }}</span>
-                                <div style="display: flex; gap: 10px; margin-top: 5px;">
+                                <div style="display: flex; gap: 10px; margin-top: 5px; flex-wrap: wrap;">
                                     <span class="count" title="Almoços"><i class="fas fa-sun" style="color: #F59E0B;"></i> {{ item.qtd_almoco }}</span>
                                     <span class="count" title="Jantas"><i class="fas fa-moon" style="color: #6366F1;"></i> {{ item.qtd_janta }}</span>
                                     <span class="count" title="Bolsistas CEM"><i class="fas fa-graduation-cap" style="color: #10B981;"></i> {{ item.qtd_cem }}</span>
+                                    <span class="count" title="Caixa (Manual)"><i class="fas fa-hand-holding-usd" style="color: #a55192;"></i> {{ item.qtd_manual }}</span>
+                                    <span class="count" title="App (QR-Code)"><i class="fas fa-qrcode" style="color: #0891b2;"></i> {{ item.qtd_ticket }}</span>
                                 </div>
                             </div>
                             <div class="group-value">
@@ -739,7 +741,7 @@
                 {% else %}
                     {% for item in venda %}
                         <div class="sale-card" 
-                             data-search="{{ item.id_aluno.id_pessoa.nome|lower }} {{ item.id_aluno.id_pessoa.usuario|lower }} {{ item.data|convert_datetime|lower }}"
+                             data-search="{{ item.id_aluno.id_pessoa.nome|lower }} {{ item.id_aluno.id_pessoa.usuario|lower }} {{ item.data|convert_datetime|lower }} {% if item.origem == 'TICKET' %}app aplicativo qr-code{% else %}caixa manual{% endif %}"
                              data-name="{{ item.id_aluno.id_pessoa.nome|lower }}"
                              data-date="{{ item.data|date:'YmdHis' }}"
                              data-price="{{ item.valor|stringformat:'f' }}">
@@ -752,8 +754,18 @@
                             <div class="sale-details">
                                 <span class="sale-student">{{ item.id_aluno.id_pessoa|title }}</span>
                                 <div class="sale-meta">
-                                    <span><i class="fas fa-id-card"></i> {{ item.id_aluno.id_pessoa.usuario }}</span>
-                                    <span><i class="fas fa-utensils"></i> {{ item.id_prato.descricao }}</span>
+                                    <span><i class="fas fa-id-card" style="color: var(--report-primary);"></i> {{ item.id_aluno.id_pessoa.usuario }}</span>
+                                    <span>
+                                        <i class="fas fa-{% if item.id_prato.descricao == 'Almoço' %}sun{% elif item.id_prato.descricao == 'Janta' %}moon{% else %}utensils{% endif %}"
+                                           style="{% if item.id_prato.descricao == 'Almoço' %}color: #D97706;{% elif item.id_prato.descricao == 'Janta' %}color: #4F46E5;{% endif %}"></i> {{ item.id_prato.descricao }}
+                                    </span>
+                                    <span title="Origem da Venda">
+                                        {% if item.origem == 'TICKET' %}
+                                            <i class="fas fa-qrcode" style="color: #0891b2;"></i> App
+                                        {% else %}
+                                            <i class="fas fa-hand-holding-usd" style="color: #a55192;"></i> Caixa
+                                        {% endif %}
+                                    </span>
                                 </div>
                             </div>
 

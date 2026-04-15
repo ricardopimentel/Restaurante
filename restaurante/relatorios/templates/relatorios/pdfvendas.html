@@ -146,25 +146,25 @@
                 <p class="kpi-label">Faturamento Total</p>
                 <p class="kpi-value">{{ cont_manual|add:cont_ticket }}</p>
                 <p class="kpi-sub color-purple">Total: {{ soma|real }}</p>
-                <p class="kpi-detail">Manual: {{ cont_manual }} | App: {{ cont_ticket }}</p>
+                <p class="kpi-detail">Manual: <span style="color: #a55192;">{{ cont_manual }}</span> | App: <span style="color: #0891b2;">{{ cont_ticket }}</span></p>
             </td>
             <td width="25%">
                 <p class="kpi-label">Vendas CEM</p>
                 <p class="kpi-value">{{ contcem }}</p>
                 <p class="kpi-sub color-green">Total: {{ valorcem|real }}</p>
-                <p class="kpi-detail">Manual: {{ m_cem }} | App: {{ t_cem }}</p>
+                <p class="kpi-detail">Manual: <span style="color: #a55192;">{{ m_cem }}</span> | App: <span style="color: #0891b2;">{{ t_cem }}</span></p>
             </td>
             <td width="25%">
                 <p class="kpi-label">Almoços</p>
                 <p class="kpi-value">{{ contalmoco }}</p>
                 <p class="kpi-sub color-orange">Total: {{ valoralmoco|real }}</p>
-                <p class="kpi-detail">Manual: {{ m_almoco }} | App: {{ t_almoco }}</p>
+                <p class="kpi-detail">Manual: <span style="color: #a55192;">{{ m_almoco }}</span> | App: <span style="color: #0891b2;">{{ t_almoco }}</span></p>
             </td>
             <td width="25%">
                 <p class="kpi-label">Jantas</p>
                 <p class="kpi-value">{{ contjanta }}</p>
                 <p class="kpi-sub color-indigo">Total: {{ valorjanta|real }}</p>
-                <p class="kpi-detail">Manual: {{ m_janta }} | App: {{ t_janta }}</p>
+                <p class="kpi-detail">Manual: <span style="color: #a55192;">{{ m_janta }}</span> | App: <span style="color: #0891b2;">{{ t_janta }}</span></p>
             </td>
         </tr>
     </table>
@@ -182,9 +182,10 @@
                 </tr>
             {% else %}
                 <tr>
-                    <th width="20%">Data/Hora</th>
-                    <th width="40%">Estudante</th>
-                    <th width="20%">Matrícula</th>
+                    <th width="15%">Data/Hora</th>
+                    <th width="35%">Estudante</th>
+                    <th width="15%">Matrícula</th>
+                    <th width="15%">Origem</th>
                     <th width="20%" class="text-right">Valor</th>
                 </tr>
             {% endif %}
@@ -197,7 +198,10 @@
                         <td>{{ item.qtd_almoco }}</td>
                         <td>{{ item.qtd_janta }}</td>
                         <td>{{ item.qtd_cem }}</td>
-                        <td>{{ item.dia_qtd }} atend.</td>
+                        <td>
+                            <div class="bold">{{ item.dia_qtd }} atend.</div>
+                            <div style="font-size: 0.8em; color: #666;">M: {{ item.qtd_manual }} | A: {{ item.qtd_ticket }}</div>
+                        </td>
                         <td class="text-right bold">{{ item.dia_soma|real }}</td>
                     </tr>
                 {% endfor %}
@@ -207,6 +211,7 @@
                         <td>{{ item.data|convert_datetime }}</td>
                         <td class="bold">{{ item.id_aluno.id_pessoa.nome|title }}</td>
                         <td>{{ item.id_aluno.id_pessoa.usuario }}</td>
+                        <td>{% if item.origem == 'TICKET' %}App{% else %}Caixa{% endif %}</td>
                         <td class="text-right bold">{{ item.valor|real }}</td>
                     </tr>
                 {% endfor %}
