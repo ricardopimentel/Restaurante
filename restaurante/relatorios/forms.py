@@ -6,6 +6,7 @@ class RelatorioVendasForm(forms.Form):
     campo_data_final = forms.DateField(label="Data Final", widget=forms.DateInput(attrs={'type': 'date'}))
     campo_aluno = forms.ChoiceField(label="Aluno")
     campo_tipo = forms.ChoiceField(label="Tipo?")
+    agrupar_por_dia = forms.BooleanField(label="Agrupar resultados por dia?", required=False)
 
     def __init__(self, request, CHOICES, *args, **kwargs):
         super(RelatorioVendasForm, self).__init__(*args, **kwargs)
@@ -16,6 +17,7 @@ class RelatorioVendasForm(forms.Form):
                                             ("1", "Total"),
                                             ("0", "Parcial"),
                                             )
+        self.fields['agrupar_por_dia'].widget.attrs.update({'class': 'form-check-input'})
 
     def clean(self):
         cleaned_data = self.cleaned_data
@@ -28,3 +30,13 @@ class RelatorioVendasForm(forms.Form):
             raise forms.ValidationError("A data inicial deve ser menor que a data final", code='invalid')
 
         return cleaned_data
+
+
+class RelatorioCustoAlunoForm(RelatorioVendasForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Remove campos irrelevantes para este relatório específico
+        if 'agrupar_por_dia' in self.fields:
+            del self.fields['agrupar_por_dia']
+        if 'campo_tipo' in self.fields:
+            del self.fields['campo_tipo']

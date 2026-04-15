@@ -216,7 +216,7 @@ def ExisteAlunoCadastrado(id_pessoa):
         return False
 
 
-def SalvarVenda(request, id_aluno, id_prato, id_pessoa):
+def SalvarVenda(request, id_aluno, id_prato, id_pessoa, origem='MANUAL'):
     try:
         data = datetime.datetime.now()
 
@@ -238,9 +238,9 @@ def SalvarVenda(request, id_aluno, id_prato, id_pessoa):
         valor_final = (pratoobj.preco + pratoobj.preco_aluno) if cem else pratoobj.preco
 
         if cem: #verifica se a bolsa é 100%
-            vendaobj = venda(data=data, valor=valor_final, id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj, cem=True)
+            vendaobj = venda(data=data, valor=valor_final, id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj, cem=True, origem=origem)
         else:
-            vendaobj = venda(data=data, valor=valor_final, id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj)
+            vendaobj = venda(data=data, valor=valor_final, id_aluno=alunoobj, id_prato=pratoobj, id_usuario_restaurante=usuariorestauranteobj, origem=origem)
         vendaobj.save()#salva venda
 
         return True
@@ -329,7 +329,7 @@ def ValidarTicket(request):
             return redirect('ValidacaoQRCode')
             
         try:
-            sucesso = SalvarVenda(request, ticket.id_aluno.id, prato_ativo.id, ticket.id_aluno.id_pessoa.usuario)
+            sucesso = SalvarVenda(request, ticket.id_aluno.id, prato_ativo.id, ticket.id_aluno.id_pessoa.usuario, origem='TICKET')
             if sucesso:
                 ticket.usado = True
                 ticket.data_utilizacao = timezone.now()

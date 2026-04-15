@@ -51,6 +51,7 @@ class venda (models.Model):
     id_prato = models.ForeignKey(prato, on_delete=models.PROTECT)
     id_usuario_restaurante = models.ForeignKey(usuariorestaurante, on_delete=models.PROTECT)
     id_aluno = models.ForeignKey(aluno, on_delete=models.PROTECT)
+    origem = models.CharField(max_length=10, default='MANUAL')
 
 
 class alunoscem (models.Model):

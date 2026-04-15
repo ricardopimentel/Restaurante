@@ -227,6 +227,143 @@
             color: var(--text-main);
             font-size: 0.9em;
         }
+
+        /* Card-based List Styles */
+        .cost-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 15px;
+            width: 100%;
+        }
+
+        .cost-card {
+            background: white;
+            border-radius: 16px;
+            padding: 18px;
+            border: 1px solid #f1f5f9;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .cost-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--report-primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .cost-avatar {
+            width: 50px;
+            height: 50px;
+            background: var(--report-bg);
+            color: var(--report-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4em;
+            flex-shrink: 0;
+        }
+
+        .cost-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .cost-student-name {
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 1em;
+            margin-bottom: 2px;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cost-student-user {
+            font-size: 0.8em;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        .cost-total {
+            text-align: right;
+            font-weight: 800;
+            color: var(--report-secondary);
+            font-size: 1.25em;
+        }
+
+        .instant-search {
+            width: 100%;
+            margin-bottom: 25px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex: 1;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--report-primary);
+            font-size: 1.1em;
+        }
+
+        .search-wrapper input {
+            width: 100%;
+            padding: 14px 15px 14px 45px;
+            border-radius: 14px;
+            border: 2px solid #e2e8f0;
+            outline: none;
+            transition: all 0.2s;
+            font-size: 1em;
+            background: white;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .search-wrapper input:focus {
+            border-color: var(--report-primary);
+            box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.1);
+        }
+
+        .sort-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .sort-wrapper label {
+            font-size: 0.75em;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .sort-wrapper select {
+            border: none;
+            outline: none;
+            background: transparent;
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 0.9em;
+            cursor: pointer;
+        }
     </style>
 
     <div class="report-header">
@@ -295,41 +432,87 @@
     </div>
 
     {% if venda %}
-        <div class="table-area">
-            <table id="minhaTabela">
-                <thead>
-                    <tr>
-                        <th>Aluno</th>
-                        <th>CPF / Matrícula</th>
-                        <th>Custo Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {%for item in venda%}
-                        <tr>
-                            <td style="font-weight: 700;">{{item.id_aluno__id_pessoa__nome|title}}</td>
-                            <td style="font-family: monospace; color: var(--text-muted);">{{item.id_aluno__id_pessoa__usuario}}</td>
-                            <td style="font-weight: 800; color: var(--report-secondary);">{{item.soma|real}}</td>
-                        </tr>
-                    {%endfor%}
-                </tbody>
-            </table>
+        <div class="table-area" style="background: transparent; border: none; box-shadow: none; padding: 0;">
+            <div class="instant-search">
+                <div class="search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="instant-filter" placeholder="Buscar por aluno ou matrícula nesta página...">
+                </div>
+
+                <div class="sort-wrapper">
+                    <label><i class="fas fa-sort-amount-down"></i> Ordenar:</label>
+                    <select id="sort-selector">
+                        <option value="name-asc">Nome (A-Z)</option>
+                        <option value="name-desc">Nome (Z-A)</option>
+                        <option value="price-desc">Custo (Maior)</option>
+                        <option value="price-asc">Custo (Menor)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="cost-list" id="cost-container">
+                {% for item in venda %}
+                    <div class="cost-card" 
+                         data-search="{{ item.id_aluno__id_pessoa__nome|lower }} {{ item.id_aluno__id_pessoa__usuario|lower }}"
+                         data-name="{{ item.id_aluno__id_pessoa__nome|lower }}"
+                         data-price="{{ item.soma|stringformat:'f' }}">
+                        <div class="cost-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="cost-info">
+                            <span class="cost-student-name">{{ item.id_aluno__id_pessoa__nome|title }}</span>
+                            <span class="cost-student-user">{{ item.id_aluno__id_pessoa__usuario }}</span>
+                        </div>
+                        <div class="cost-total">
+                            {{ item.soma|real }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
         </div>
 
         <script>
             $(document).ready(function () {
-                $('#minhaTabela').DataTable({
-                    "bPaginate": true,
-                    "bLengthChange": true,
-                    "language": {
-                        "sEmptyTable": "Nenhum registro encontrado",
-                        "sSearch": "<i class='fas fa-search' style='color:#999'></i> ",
-                        "oPaginate": {
-                            "sNext": "<i class='fas fa-chevron-right'></i>",
-                            "sPrevious": "<i class='fas fa-chevron-left'></i>"
+                // Instant Filter Logic
+                $('#instant-filter').on('keyup', function() {
+                    const value = $(this).val().toLowerCase();
+                    $("#cost-container .cost-card").filter(function() {
+                        $(this).toggle($(this).attr('data-search').indexOf(value) > -1)
+                    });
+                });
+
+                // Sorting Logic
+                $('#sort-selector').on('change', function() {
+                    const sortVal = $(this).val();
+                    const container = $('#cost-container');
+                    const cards = container.children('.cost-card').get();
+
+                    cards.sort(function(a, b) {
+                        let valA, valB;
+                        
+                        switch(sortVal) {
+                            case 'name-asc':
+                                valA = $(a).attr('data-name');
+                                valB = $(b).attr('data-name');
+                                return valA.localeCompare(valB);
+                            case 'name-desc':
+                                valA = $(a).attr('data-name');
+                                valB = $(b).attr('data-name');
+                                return valB.localeCompare(valA);
+                            case 'price-asc':
+                                valA = parseFloat($(a).attr('data-price'));
+                                valB = parseFloat($(b).attr('data-price'));
+                                return valA - valB;
+                            case 'price-desc':
+                                valA = parseFloat($(a).attr('data-price'));
+                                valB = parseFloat($(b).attr('data-price'));
+                                return valB - valA;
                         }
-                    },
-                    "dom": '<"top"f>rt<"bottom"p><"clear">'
+                    });
+
+                    $.each(cards, function(idx, card) {
+                        container.append(card);
+                    });
                 });
             });
         </script>

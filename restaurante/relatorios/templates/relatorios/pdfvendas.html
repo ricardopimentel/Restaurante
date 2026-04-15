@@ -1,132 +1,222 @@
 {% load restaurante_extras %}
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta name="pdfkit-orientation" content="portrait"/>
-		<meta charset="UTF-8"/>
-		<title>{%block titulo%}{{title}}{%endblock%}</title>
-		<style>
-			.header_content{
-				width: 100%;
-				border: 1px solid #f2f2f2;
-				border-radius: 6px;
-			}
-			
-			.header_content table{
-				width: 100%;
-			}
-			
-			#right{
-				text-align: right;
-			}
-			
-			#center{
-				text-align: center;
-			}
-
-		    h1{
-		    	text-align: center;
-		    }
-		    
-		    table{
-		    	text-align: center;
-		    	width: 100%;
-		    }
-		    
-		    .content table {
-			    border-collapse: collapse;
-			    width: 100%;
-			    background: aqua;
-			}
-			
-			.content th, td {
-			    text-align: left;
-			    padding: 8px;
-			}
-			
-			.content tr:nth-child(even){background-color: #f2f2f2}
-
-            .content tr{
-                page-break-inside: avoid;
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Vendas - Cantina IFTO</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+            @frame footer {
+                -pdf-frame-content: footerContent;
+                bottom: 1cm;
+                margin-left: 2cm;
+                margin-right: 2cm;
+                height: 1cm;
             }
-			
-			.content th {
-			    background-color: #4CAF50;
-			    color: white;
-			}
+        }
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #333;
+            line-height: 1.4;
+            font-size: 10pt;
+        }
+        .header {
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .header table { width: 100%; }
+        .logo { width: 120px; }
+        .title-box { text-align: right; }
+        .report-title {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #111;
+            margin: 0;
+        }
+        .report-subtitle {
+            font-size: 9pt;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .summary-grid {
+            width: 100%;
+            margin-bottom: 25px;
+        }
+        .summary-grid td { 
+            vertical-align: top; 
+            padding: 10px;
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+        }
+        .kpi-label { 
+            font-size: 7pt; 
+            color: #6b7280; 
+            text-transform: uppercase; 
+            font-weight: bold; 
+            margin: 0;
+            padding-bottom: 5px;
+        }
+        .kpi-value { 
+            font-size: 16pt; 
+            font-weight: bold; 
+            color: #111; 
+            margin: 0;
+        }
+        .kpi-sub { 
+            font-size: 9pt; 
+            font-weight: bold; 
+            margin-top: 2px;
+            margin-bottom: 5px;
+        }
+        .kpi-detail {
+            font-size: 7pt;
+            color: #6b7280;
+            border-top: 1px solid #eee;
+            padding-top: 5px;
+            margin-top: 5px;
+        }
+        
+        .color-purple { color: #a855f7; }
+        .color-green { color: #10b981; }
+        .color-orange { color: #f59e0b; }
+        .color-indigo { color: #6366f1; }
 
-		    .content thead {
-                display: table-header-group
-            }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .data-table th {
+            background-color: #f3f4f6;
+            color: #374151;
+            font-weight: bold;
+            text-align: left;
+            padding: 10px 8px;
+            border-bottom: 1px solid #d1d5db;
+            font-size: 9pt;
+        }
+        .data-table td {
+            padding: 8px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 9pt;
+        }
+        .data-table tr:nth-child(even) { background-color: #fafafa; }
 
-		</style>
-	</head>
-	
-	<body>
-		<div class="header_content">
-		   	<table class="content">
-		   		<tbody>
-		   			<tr>
-						<td> <img alt="" src="{{base_dir}}/core/static/images/IFTO.jpg"> </td>
-				    	<td id="right"> <p id="direita">{% now "j" %} de {% now "F"%} de {%now "Y"%} às {%now "H:i" %}</p> </td>
-				    </tr>
-				</tbody>
-		   	</table>
-		</div>
-	
-		<!-- Conteúdo -->
-		<div class="container-geral">
-			<h1>Relatório de Vendas</h1>
-			<div class="conteiner-right">
-				<table class="content">
-					<thead>
-						<tr>
-							<th><b>Data</b></th>
-							<th><b>Aluno</b></th>
-							<th><b>Matrícula</b></th>
-							<th><b>Preço</b></th>
-						</tr>
-					</thead>				
-					<tbody>
-						{%for item in venda%}
-							<tr>
-								<td>{{item.data|convert_datetime}}</td>
-                                <td>{{item.id_aluno.id_pessoa|title}}</td>
-                                <td>{{item.id_aluno.id_pessoa.usuario}}</td>
-                                <td>{{item.valor|real}}</td>
-							</tr>
-						{%endfor%}
-					</tbody>
-				</table>
-				<br>
-				
-				<p style="font-size: 20px" id="direita">O total gasto no período de {{datainicial|convert_date}} a {{datafinal|convert_date}} é:   <b style="font-size: 30px">   {{soma|real}}</b></p>
-				<p id="direita">Vendas 100% no periodo <b>{{contcem}}</b> valor: <b>{{valorcem|real}}</b></p>
-				<p id="direita">Almoços no periodo <b>{{contalmoco}}</b> valor: <b>{{valoralmoco|real}}</p></b>
-				<p id="direita">Jantas no periodo <b>{{contjanta}}</b> valor: <b>{{valorjanta|real}}</p></b>
-			</div>
-			
-			<div>
-				<br>
-				<br>
-				<h1>Filtros Utilizados:</h1>
-				<br>
-				<table>
-		    		<tbody>
-		    			<tr>
-                            <td id="center"> <p><b>Data Inicial</b></p> </td>
-                            <td id="center"> <p><b>Data Final</b></p> </td>
-							<td id="center"> <p><b>Aluno</b></p> </td>
-					    </tr>
-					    <tr>
-                            <td id="center"> <p>{{datainicial|convert_date}}</p> </td>
-                            <td id="center"> <p>{{datafinal|convert_date}}</p> </td>
-							<td id="center"> <p>{%if aluno%}{{aluno.id_pessoa.nome|title}}{%else%}Todos{%endif%}</p> </td>
-					    </tr>
-					</tbody>
-	    		</table>
-		    	<br>
-			</div>
-		</div>
-	</body>
+        .footer-note {
+            font-size: 8pt;
+            color: #9ca3af;
+            text-align: center;
+            margin-top: 50px;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 10px;
+        }
+
+        .bold { font-weight: bold; }
+        .text-right { text-align: right; }
+        .emerald { color: #10b981; }
+    </style>
+</head>
+<body>
+    <div id="footerContent" style="text-align: center; font-size: 8pt; color: #9ca3af;">
+        Página <pdf:pagenumber> de <pdf:pagecount>
+    </div>
+
+    <div class="header">
+        <table>
+            <tr>
+                <td class="logo">
+                    <img src="{{ base_dir }}/core/static/images/IFTO.jpg" width="120">
+                </td>
+                <td class="title-box">
+                    <p class="report-title">Relatório de Vendas</p>
+                    <p class="report-subtitle">Cantina IFTO - Campus Paraíso do Tocantins</p>
+                    <p class="report-subtitle">Período: {{ datainicial|convert_date }} a {{ datafinal|convert_date }}</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="summary-grid">
+        <tr>
+            <td width="25%">
+                <p class="kpi-label">Faturamento Total</p>
+                <p class="kpi-value">{{ cont_manual|add:cont_ticket }}</p>
+                <p class="kpi-sub color-purple">Total: {{ soma|real }}</p>
+                <p class="kpi-detail">Manual: {{ cont_manual }} | App: {{ cont_ticket }}</p>
+            </td>
+            <td width="25%">
+                <p class="kpi-label">Vendas CEM</p>
+                <p class="kpi-value">{{ contcem }}</p>
+                <p class="kpi-sub color-green">Total: {{ valorcem|real }}</p>
+                <p class="kpi-detail">Manual: {{ m_cem }} | App: {{ t_cem }}</p>
+            </td>
+            <td width="25%">
+                <p class="kpi-label">Almoços</p>
+                <p class="kpi-value">{{ contalmoco }}</p>
+                <p class="kpi-sub color-orange">Total: {{ valoralmoco|real }}</p>
+                <p class="kpi-detail">Manual: {{ m_almoco }} | App: {{ t_almoco }}</p>
+            </td>
+            <td width="25%">
+                <p class="kpi-label">Jantas</p>
+                <p class="kpi-value">{{ contjanta }}</p>
+                <p class="kpi-sub color-indigo">Total: {{ valorjanta|real }}</p>
+                <p class="kpi-detail">Manual: {{ m_janta }} | App: {{ t_janta }}</p>
+            </td>
+        </tr>
+    </table>
+
+    <table class="data-table">
+        <thead>
+            {% if grouped %}
+                <tr>
+                    <th width="20%">Data</th>
+                    <th width="15%">Almoços</th>
+                    <th width="15%">Jantas</th>
+                    <th width="15%">CEM</th>
+                    <th width="15%">Qtd. Total</th>
+                    <th width="20%" class="text-right">Valor Total</th>
+                </tr>
+            {% else %}
+                <tr>
+                    <th width="20%">Data/Hora</th>
+                    <th width="40%">Estudante</th>
+                    <th width="20%">Matrícula</th>
+                    <th width="20%" class="text-right">Valor</th>
+                </tr>
+            {% endif %}
+        </thead>
+        <tbody>
+            {% if grouped %}
+                {% for item in venda %}
+                    <tr>
+                        <td class="bold">{{ item.data__date|date:"d/m/Y" }}</td>
+                        <td>{{ item.qtd_almoco }}</td>
+                        <td>{{ item.qtd_janta }}</td>
+                        <td>{{ item.qtd_cem }}</td>
+                        <td>{{ item.dia_qtd }} atend.</td>
+                        <td class="text-right bold">{{ item.dia_soma|real }}</td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                {% for item in venda %}
+                    <tr>
+                        <td>{{ item.data|convert_datetime }}</td>
+                        <td class="bold">{{ item.id_aluno.id_pessoa.nome|title }}</td>
+                        <td>{{ item.id_aluno.id_pessoa.usuario }}</td>
+                        <td class="text-right bold">{{ item.valor|real }}</td>
+                    </tr>
+                {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+
+    <div class="footer-note">
+        Este documento é uma exportação oficial do sistema de gestão da Cantina IFTO.<br>
+        Gerado em {% now "d/m/Y H:i" %} - Responsável: {{ request.session.nome }}
+    </div>
+</body>
 </html>

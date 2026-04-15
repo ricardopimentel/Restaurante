@@ -61,28 +61,76 @@
             border: 1px solid #f3f4f6;
             box-shadow: var(--shadow-sm);
             display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .kpi-content {
+            display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 2px;
+            z-index: 1;
+        }
+
+        .kpi-icon-box {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            background: #f8fafc;
+            color: var(--report-primary);
+            transition: all 0.3s ease;
+        }
+
+        .kpi-card:hover .kpi-icon-box {
+            background: var(--report-primary);
+            color: white;
         }
         
         .kpi-card .label {
-            font-size: 0.8em;
-            font-weight: 700;
+            font-size: 0.75em;
+            font-weight: 800;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
         
         .kpi-card .value {
-            font-size: 1.5em; /* Slightly smaller for compactness */
-            font-weight: 800;
+            font-size: 1.7em;
+            font-weight: 900;
             color: var(--text-main);
+            margin: 2px 0;
         }
         
         .kpi-card .sub-value {
-            font-size: 0.8em;
-            color: var(--report-primary);
+            font-size: 0.75em;
+            color: var(--text-muted);
             font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .source-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.9em;
+            padding: 2px 6px;
+            border-radius: 6px;
+            background: #f1f5f9;
+            color: var(--text-main);
         }
         
         /* Floating Filter Card */
@@ -239,6 +287,260 @@
             color: var(--text-main);
             font-size: 0.9em;
         }
+
+        /* Card-based List Styles */
+        .sales-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 15px;
+            width: 100%;
+        }
+
+        .report-warning {
+            display: none;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #92400e;
+            padding: 12px 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .report-warning i {
+            font-size: 1.2em;
+        }
+
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 10px;
+            width: fit-content;
+        }
+
+        .form-check-input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .form-check-label {
+            font-size: 0.85em;
+            font-weight: 700;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+
+        /* Grouped Card Style */
+        .group-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #f1f5f9;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+            margin-bottom: 12px;
+        }
+
+        .group-card:hover {
+            border-color: var(--report-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .group-date {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .group-date .date {
+            font-weight: 800;
+            font-size: 1.1em;
+            color: var(--text-main);
+        }
+
+        .group-date .count {
+            font-size: 0.8em;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .group-value {
+            font-size: 1.3em;
+            font-weight: 900;
+            color: var(--report-primary);
+        }
+
+        .sale-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid #f1f5f9;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sale-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--report-primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .sale-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+
+        .sale-icon.almoco { background: #fef3c7; color: #d97706; }
+        .sale-icon.janta { background: #EEF2FF; color: #6366F1; }
+        .sale-icon.outro { background: #f1f5f9; color: #64748b; }
+
+        .sale-details {
+            flex: 1;
+            min-width: 0;
+            text-align: left;
+        }
+
+        .sale-student {
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 0.95em;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+
+        .sale-meta {
+            font-size: 0.75em;
+            color: var(--text-muted);
+            display: flex;
+            gap: 10px;
+        }
+
+        .sale-price {
+            text-align: right;
+            font-weight: 800;
+            color: var(--text-main);
+            font-size: 1.1em;
+        }
+
+        .sale-date-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #f8fafc;
+            padding: 4px 10px;
+            border-bottom-left-radius: 12px;
+            font-size: 0.65em;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .instant-search {
+            width: 100%;
+            margin-bottom: 25px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex: 1;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--report-primary);
+            font-size: 1.1em;
+        }
+
+        .search-wrapper input {
+            width: 100%;
+            padding: 14px 15px 14px 45px;
+            border-radius: 14px;
+            border: 2px solid #e2e8f0;
+            outline: none;
+            transition: all 0.2s;
+            font-size: 1em;
+            background: white;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .search-wrapper input:focus {
+            border-color: var(--report-primary);
+            box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.1);
+        }
+
+        .sort-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .sort-wrapper label {
+            font-size: 0.75em;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .sort-wrapper select {
+            border: none;
+            outline: none;
+            background: transparent;
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            .instant-search {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .sales-list {
+                grid-template-columns: 1fr;
+            }
+            .sale-card {
+                padding: 12px;
+            }
+        }
     </style>
 
     <div class="report-header">
@@ -274,25 +576,73 @@
     <!-- Summary Dashboard atop everything -->
     {% if venda %}
     <div class="kpi-container">
-        <div class="kpi-card">
-            <span class="label">Faturamento Total</span>
-            <span class="value">{{soma|real}}</span>
-            <span class="sub-value">Total do período</span>
+        <!-- Faturamento with breakdown -->
+        <div class="kpi-card" style="border-bottom: 4px solid var(--report-primary);">
+            <div class="kpi-content">
+                <span class="label">Faturamento Total</span>
+                <span class="value">{{cont_manual|add:cont_ticket}}</span>
+                <div class="sub-value">
+                    <span style="font-weight: 800; color: var(--report-primary); font-size: 1em; margin-bottom: 5px;">Total: {{soma|real}}</span>
+                    <div style="display: flex; gap: 8px;">
+                        <span class="source-badge" title="Vendas Manuais"><i class="fas fa-hand-holding-usd"></i> {{cont_manual}}</span>
+                        <span class="source-badge" title="Vendas por Ticket (App)"><i class="fas fa-qrcode"></i> {{cont_ticket}}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="kpi-icon-box" style="color: var(--report-primary); background: var(--report-bg);">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
         </div>
-        <div class="kpi-card">
-            <span class="label">Vendas CEM</span>
-            <span class="value">{{contcem}}</span>
-            <span class="sub-value">Valor: {{valorcem|real}}</span>
+
+        <div class="kpi-card" style="border-bottom: 4px solid #10B981;">
+            <div class="kpi-content">
+                <span class="label">Vendas CEM</span>
+                <span class="value">{{contcem}}</span>
+                <div class="sub-value">
+                    <span style="font-weight: 800; color: #059669; font-size: 1em; margin-bottom: 5px;">Total: {{valorcem|real}}</span>
+                    <div style="display: flex; gap: 8px;">
+                        <span class="source-badge" title="Manual"><i class="fas fa-hand-holding-usd"></i> {{m_cem}}</span>
+                        <span class="source-badge" title="Ticket"><i class="fas fa-qrcode"></i> {{t_cem}}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="kpi-icon-box" style="color: #10B981; background: #ECFDF5;">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
         </div>
-        <div class="kpi-card" style="border-left: 3px solid #F59E0B;">
-            <span class="label">Almoços</span>
-            <span class="value">{{contalmoco}}</span>
-            <span class="sub-value">Total: {{valoralmoco|real}}</span>
+
+        <div class="kpi-card" style="border-bottom: 4px solid #F59E0B;">
+            <div class="kpi-content">
+                <span class="label">Almoços</span>
+                <span class="value">{{contalmoco}}</span>
+                <div class="sub-value">
+                    <span style="font-weight: 800; color: #D97706; font-size: 1em; margin-bottom: 5px;">Total: {{valoralmoco|real}}</span>
+                    <div style="display: flex; gap: 8px;">
+                        <span class="source-badge" title="Manual"><i class="fas fa-hand-holding-usd"></i> {{m_almoco}}</span>
+                        <span class="source-badge" title="Ticket"><i class="fas fa-qrcode"></i> {{t_almoco}}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="kpi-icon-box" style="color: #F59E0B; background: #FFFBEB;">
+                <i class="fas fa-sun"></i>
+            </div>
         </div>
-        <div class="kpi-card" style="border-left: 3px solid #10B981;">
-            <span class="label">Jantas</span>
-            <span class="value">{{contjanta}}</span>
-            <span class="sub-value">Total: {{valorjanta|real}}</span>
+
+        <div class="kpi-card" style="border-bottom: 4px solid #6366F1;">
+            <div class="kpi-content">
+                <span class="label">Jantas</span>
+                <span class="value">{{contjanta}}</span>
+                <div class="sub-value">
+                    <span style="font-weight: 800; color: #4F46E5; font-size: 1em; margin-bottom: 5px;">Total: {{valorjanta|real}}</span>
+                    <div style="display: flex; gap: 8px;">
+                        <span class="source-badge" title="Manual"><i class="fas fa-hand-holding-usd"></i> {{m_janta}}</span>
+                        <span class="source-badge" title="Ticket"><i class="fas fa-qrcode"></i> {{t_janta}}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="kpi-icon-box" style="color: #6366F1; background: #EEF2FF;">
+                <i class="fas fa-moon"></i>
+            </div>
         </div>
     </div>
     {% endif %}
@@ -310,14 +660,35 @@
             <i class="fas fa-chevron-down" style="color: var(--text-muted); font-size: 0.8em;"></i>
         </div>
         <div id="filter-body" style="{% if venda %}display: none;{% else %}display: block;{% endif %}">
+            <!-- Warning Banner -->
+            <div id="date-warning" class="report-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <strong>Período Longo Selecionado!</strong> 
+                    Para evitar lentidão ou erro de memória, recomendamos ativar o <b>Agrupamento por Dia</b>.
+                </div>
+            </div>
+
             <form method="post" action="{% url 'RelatorioVendas' %}" class="filter-form">{% csrf_token %}
                 {% for field in form %}
-                    <div>
-                        <label>{{ field.label }}</label>
-                        {{ field }}
-                    </div>
+                    {% if field.name != 'agrupar_por_dia' %}
+                        <div>
+                            <label>{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                    {% endif %}
                 {% endfor %}
-                <div style="flex: 0 0 auto;">
+                
+                <div style="flex: 1 1 100%;">
+                    <div class="form-check">
+                        {{ form.agrupar_por_dia }}
+                        <label class="form-check-label" for="{{ form.agrupar_por_dia.id_for_label }}">
+                            Agrupar resultados por dia? (Recomendado para anexos fiscais e períodos longos)
+                        </label>
+                    </div>
+                </div>
+
+                <div style="flex: 0 0 auto; margin-top: 15px;">
                     <button type="submit" class="btn-filter">
                         <i class="fas fa-search" style="margin-right: 5px;"></i> Pesquisar
                     </button>
@@ -327,45 +698,147 @@
     </div>
 
     {% if venda %}
-        <!-- Table Section -->
-        <div class="table-area">
-            <table id="minhaTabela">
-                <thead>
-                    <tr>
-                        <th>Data</th>
-                        <th>Aluno</th>
-                        <th>Matrícula</th>
-                        <th>Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {%for item in venda%}
-                        <tr>
-                            <td style="font-weight: 600; color: var(--report-secondary);">{{item.data|convert_datetime}}</td>
-                            <td style="font-weight: 700;">{{item.id_aluno.id_pessoa|title}}</td>
-                            <td style="font-family: monospace; color: var(--text-muted);">{{item.id_aluno.id_pessoa.usuario}}</td>
-                            <td style="font-weight: 800; color: var(--text-main);">{{item.valor|real}}</td>
-                        </tr>
-                    {%endfor%}
-                </tbody>
-            </table>
+        <!-- List Section -->
+        <div class="table-area" style="background: transparent; border: none; box-shadow: none; padding: 0;">
+            <div class="instant-search">
+                <div class="search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="instant-filter" placeholder="Buscar por aluno, matrícula ou data nesta página...">
+                </div>
+                
+                <div class="sort-wrapper">
+                    <label><i class="fas fa-sort-amount-down"></i> Ordenar:</label>
+                    <select id="sort-selector">
+                        <option value="date-desc">Data (Recente)</option>
+                        <option value="date-asc">Data (Antiga)</option>
+                        <option value="name-asc">Nome (A-Z)</option>
+                        <option value="name-desc">Nome (Z-A)</option>
+                        <option value="price-desc">Valor (Maior)</option>
+                        <option value="price-asc">Valor (Menor)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="sales-list" id="sales-container">
+                {% if request.session.agrupar_por_dia %}
+                    {% for item in venda %}
+                        <div class="group-card" data-search="{{ item.data__date|date:'d/m/Y' }}" data-name="{{ item.data__date|date:'Y-m-d' }}" data-date="{{ item.data__date|date:'Ymd' }}" data-price="{{ item.dia_soma|stringformat:'f' }}">
+                            <div class="group-date">
+                                <span class="date">{{ item.data__date|date:"d/m/Y" }}</span>
+                                <div style="display: flex; gap: 10px; margin-top: 5px;">
+                                    <span class="count" title="Almoços"><i class="fas fa-sun" style="color: #F59E0B;"></i> {{ item.qtd_almoco }}</span>
+                                    <span class="count" title="Jantas"><i class="fas fa-moon" style="color: #6366F1;"></i> {{ item.qtd_janta }}</span>
+                                    <span class="count" title="Bolsistas CEM"><i class="fas fa-graduation-cap" style="color: #10B981;"></i> {{ item.qtd_cem }}</span>
+                                </div>
+                            </div>
+                            <div class="group-value">
+                                {{ item.dia_soma|real }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    {% for item in venda %}
+                        <div class="sale-card" 
+                             data-search="{{ item.id_aluno.id_pessoa.nome|lower }} {{ item.id_aluno.id_pessoa.usuario|lower }} {{ item.data|convert_datetime|lower }}"
+                             data-name="{{ item.id_aluno.id_pessoa.nome|lower }}"
+                             data-date="{{ item.data|date:'YmdHis' }}"
+                             data-price="{{ item.valor|stringformat:'f' }}">
+                            <div class="sale-date-badge">{{ item.data|convert_datetime }}</div>
+                            
+                            <div class="sale-icon {% if item.id_prato.descricao == 'Almoço' %}almoco{% elif item.id_prato.descricao == 'Janta' %}janta{% else %}outro{% endif %}">
+                                <i class="fas fa-{% if item.id_prato.descricao == 'Almoço' %}sun{% elif item.id_prato.descricao == 'Janta' %}moon{% else %}utensils{% endif %}"></i>
+                            </div>
+
+                            <div class="sale-details">
+                                <span class="sale-student">{{ item.id_aluno.id_pessoa|title }}</span>
+                                <div class="sale-meta">
+                                    <span><i class="fas fa-id-card"></i> {{ item.id_aluno.id_pessoa.usuario }}</span>
+                                    <span><i class="fas fa-utensils"></i> {{ item.id_prato.descricao }}</span>
+                                </div>
+                            </div>
+
+                            <div class="sale-price">
+                                {{ item.valor|real }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
         </div>
 
         <script>
             $(document).ready(function () {
-                $('#minhaTabela').DataTable({
-                    "bPaginate": true,
-                    "bLengthChange": true,
-                    "language": {
-                        "sEmptyTable": "Nenhum registro encontrado",
-                        "sInfo": "Pág. _START_ a _END_ de _TOTAL_",
-                        "sSearch": "<i class='fas fa-search' style='color:#999'></i> ",
-                        "oPaginate": {
-                            "sNext": "<i class='fas fa-chevron-right'></i>",
-                            "sPrevious": "<i class='fas fa-chevron-left'></i>"
+                // Warning Logic for long periods
+                function checkDateRange() {
+                    const start = $('#id_campo_data_inicial').val();
+                    const end = $('#id_campo_data_final').val();
+                    const grouped = $('#id_agrupar_por_dia').is(':checked');
+                    
+                    if (start && end) {
+                        const d1 = new Date(start);
+                        const d2 = new Date(end);
+                        const diffTime = Math.abs(d2 - d1);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        
+                        if (diffDays > 30 && !grouped) {
+                            $('#date-warning').css('display', 'flex');
+                        } else {
+                            $('#date-warning').hide();
                         }
-                    },
-                    "dom": '<"top"f>rt<"bottom"p><"clear">'
+                    }
+                }
+
+                $('#id_campo_data_inicial, #id_campo_data_final, #id_agrupar_por_dia').on('change', checkDateRange);
+                checkDateRange(); // Executa ao carregar
+
+                // Instant Filter Logic
+                $('#instant-filter').on('keyup', function() {
+                    const value = $(this).val().toLowerCase();
+                    $("#sales-container > div").filter(function() {
+                        $(this).toggle($(this).attr('data-search').indexOf(value) > -1)
+                    });
+                });
+
+                // Sorting Logic
+                $('#sort-selector').on('change', function() {
+                    const sortVal = $(this).val();
+                    const container = $('#sales-container');
+                    const cards = container.children('div').get();
+
+                    cards.sort(function(a, b) {
+                        let valA, valB;
+                        
+                        switch(sortVal) {
+                            case 'name-asc':
+                                valA = $(a).attr('data-name');
+                                valB = $(b).attr('data-name');
+                                return valA.localeCompare(valB);
+                            case 'name-desc':
+                                valA = $(a).attr('data-name');
+                                valB = $(b).attr('data-name');
+                                return valB.localeCompare(valA);
+                            case 'date-asc':
+                                valA = $(a).attr('data-date');
+                                valB = $(b).attr('data-date');
+                                return valA - valB;
+                            case 'date-desc':
+                                valA = $(a).attr('data-date');
+                                valB = $(b).attr('data-date');
+                                return valB - valA;
+                            case 'price-asc':
+                                valA = parseFloat($(a).attr('data-price'));
+                                valB = parseFloat($(b).attr('data-price'));
+                                return valA - valB;
+                            case 'price-desc':
+                                valA = parseFloat($(a).attr('data-price'));
+                                valB = parseFloat($(b).attr('data-price'));
+                                return valB - valA;
+                        }
+                    });
+
+                    $.each(cards, function(idx, card) {
+                        container.append(card);
+                    });
                 });
             });
         </script>

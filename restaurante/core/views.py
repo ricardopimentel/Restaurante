@@ -115,16 +115,32 @@ def Home(request):
                     
                     # Vendas Diretas Hoje (Almoço antes das 15h, Janta depois)
                     vendas_qs = venda.objects.filter(data__date=hoje)
-                    context['vendas_almoco_hoje'] = vendas_qs.filter(data__hour__lt=15).count()
-                    context['vendas_janta_hoje'] = vendas_qs.filter(data__hour__gte=15).count()
                     context['vendas_hoje_total'] = vendas_qs.count()
-                    
-                    # Tickets Validados Hoje
-                    val_qs = TicketAluno.objects.filter(usado=True, data_utilizacao__date=hoje)
-                    context['val_almoco_hoje'] = val_qs.filter(data_utilizacao__hour__lt=15).count()
-                    context['val_janta_hoje'] = val_qs.filter(data_utilizacao__hour__gte=15).count()
-                    context['val_hoje_total'] = val_qs.count()
-                    
+                    context['vendas_hoje_manual'] = vendas_qs.filter(origem='MANUAL').count()
+                    context['vendas_hoje_ticket'] = vendas_qs.filter(origem='TICKET').count()
+
+                    # Vendas CEM Hoje
+                    cem_qs = vendas_qs.filter(cem=True)
+                    context['cem_hoje_total'] = cem_qs.count()
+                    context['cem_hoje_manual'] = cem_qs.filter(origem='MANUAL').count()
+                    context['cem_hoje_ticket'] = cem_qs.filter(origem='TICKET').count()
+
+                    # Almoços Hoje
+                    almoco_qs = vendas_qs.filter(data__hour__lt=15)
+                    context['almoco_hoje_total'] = almoco_qs.count()
+                    context['almoco_hoje_manual'] = almoco_qs.filter(origem='MANUAL').count()
+                    context['almoco_hoje_ticket'] = almoco_qs.filter(origem='TICKET').count()
+
+                    # Jantas Hoje
+                    janta_qs = vendas_qs.filter(data__hour__gte=15)
+                    context['janta_hoje_total'] = janta_qs.count()
+                    context['janta_hoje_manual'] = janta_qs.filter(origem='MANUAL').count()
+                    context['janta_hoje_ticket'] = janta_qs.filter(origem='TICKET').count()
+
+                    # Manteve apenas por compatibilidade legada se necessário
+                    context['vendas_almoco_hoje'] = almoco_qs.count()
+                    context['vendas_janta_hoje'] = janta_qs.count()
+
                 except Exception as e:
                     print("Erro ao carregar stats de funcionário:", e)
             
