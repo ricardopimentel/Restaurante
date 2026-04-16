@@ -46,7 +46,58 @@
                     <i class="fas fa-bars"></i>
                 </button>
                 
-                <!-- Navigation Menu will be relocated to the body root for better blur rendering -->
+                <!-- Desktop Navigation Menu (Standard Flex Layout) -->
+                <div class="navbar-collapse navbar-desktop" id="navbar-collapse-desktop">
+                    <div class="navbar-menu">
+                        {% if request.session.menu %}
+                            {% for item in request.session.menu %}
+                                {% if item != 'logo' and item != 'sair' %}
+                                    <a href="/{{ request.session.url|get_at_index:forloop.counter0 }}" class="nav-link {% if item == itemselec %}active{% endif %}">
+                                        <i class="fas fa-{% if item == 'HOME' %}home{% elif item == 'TICKETS' %}ticket-alt{% elif item == 'COMPRAR' %}shopping-cart{% elif item == 'VENDAS' %}store{% elif item == 'RELATÓRIOS' %}chart-pie{% elif item == 'CONFIGURAÇÃO' %}cog{% elif item == 'BOLSA CEM' or item == 'COLABORADORES' or item == 'PRATOS' %}list-alt{% else %}star{% endif %}"></i>
+                                        {{ item }}
+                                    </a>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        
+                        <!-- PWA Install Button (Hidden by default) -->
+                        <a href="javascript:void(0)" id="pwa-install-btn" class="nav-link" style="display: none; color: #f59e0b;">
+                            <i class="fas fa-download"></i>
+                            Instalar App
+                        </a>
+                    </div>
+                    
+                    <div class="navbar-user">
+                        {% if request.session.nome %}
+                            <div class="user-profile-container">
+                                <button class="user-profile-trigger" id="profile-trigger" title="{{ request.session.nome }}">
+                                    <i class="fas fa-user-circle"></i>
+                                </button>
+                                <div class="user-dropdown" id="user-dropdown">
+                                    <div class="dropdown-header">
+                                        <span class="user-name">{{ request.session.nome }}</span>
+                                        <span class="user-role">Conectado</span>
+                                    </div>
+                                    <div class="dropdown-divider"></div>
+                                    {% if request.session.is_admin or request.session.can_switch %}
+                                        <a href="{% url 'TrocarDashboard' %}" class="dropdown-item">
+                                            <i class="fas fa-exchange-alt"></i> 
+                                            Visão {% if request.session.dashboard_mode == 'usuario' %}Funcionário{% else %}Usuário{% endif %}
+                                        </a>
+                                        <div class="dropdown-divider"></div>
+                                    {% endif %}
+                                    <a href="{% url 'Logout' %}" class="dropdown-item logout">
+                                        <i class="fas fa-sign-out-alt"></i> Sair
+                                    </a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="user-greeting">
+                                <span>Visitante</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </nav>
 		
@@ -81,8 +132,8 @@
         <!-- Menu Overlay to block background interaction -->
         <div class="menu-overlay" id="menu-overlay"></div>
 
-        <!-- RELOCATED MOBILE MENU: Isolated for backdrop-filter compatibility -->
-        <div class="navbar-collapse" id="navbar-collapse">
+        <!-- MOBILE SIDEBAR: Isolated for backdrop-filter compatibility -->
+        <div class="navbar-collapse navbar-mobile" id="navbar-collapse-mobile">
             <!-- Close button positioned absolutely to match the original toggle location -->
             <button id="close-menu" style="position: absolute; top: 15px; right: 30px; background: none; border: none; font-size: 1.5rem; color: var(--primary-dark); cursor: pointer; padding: 5px; transition: transform 0.2s; z-index: 2010;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
                 <i class="fas fa-times"></i>
@@ -143,7 +194,7 @@
 
             // Toggle Mobile Menu
             $('#navbar-toggle, #close-menu, #menu-overlay').on('click', function() {
-                $('#navbar-collapse').toggleClass('active');
+                $('#navbar-collapse-mobile').toggleClass('active');
                 $('#menu-overlay').toggleClass('active');
                 $('body').toggleClass('menu-open');
                 $('#navbar-toggle i').toggleClass('fa-bars fa-times');
