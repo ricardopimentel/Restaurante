@@ -276,6 +276,13 @@
         $(document).ready(function() {
             $('.shortcut-link').on('click', function() {
                 const $icon = $(this).find('i');
+                const $link = $(this);
+                
+                // Salva a classe original se ainda não foi salva
+                if (!$icon.attr('data-original-class')) {
+                    $icon.attr('data-original-class', $icon.attr('class'));
+                }
+                
                 const currentColor = $icon.css('color');
                 
                 // Transforma o ícone em um spinner de carregamento
@@ -288,8 +295,28 @@
                 });
                 
                 // Evita cliques duplos enquanto carrega
-                $(this).css('pointer-events', 'none');
-                $(this).find('div').css('opacity', '0.7');
+                $link.css('pointer-events', 'none');
+                $link.find('div').css('opacity', '0.7');
+            });
+
+            // Corrigir o problema de animação travada ao voltar no navegador (BFCache)
+            window.addEventListener('pageshow', function(event) {
+                // event.persisted é true se a página foi carregada do cache (ex: botão voltar)
+                if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                    $('.shortcut-link').each(function() {
+                        const $link = $(this);
+                        const $icon = $link.find('i');
+                        const originalClass = $icon.attr('data-original-class');
+                        
+                        if (originalClass) {
+                            // Restaura o ícone original
+                            $icon.removeClass().addClass(originalClass);
+                            // Restaura pointer events e opacidade
+                            $link.css('pointer-events', 'auto');
+                            $link.find('div').css('opacity', '1');
+                        }
+                    });
+                }
             });
         });
     </script>
