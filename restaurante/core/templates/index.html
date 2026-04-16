@@ -184,7 +184,7 @@
                 <h2 style="margin: 0 0 20px 0; font-size: 1.1em; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid #eee; padding-bottom: 10px;">🚀 Acesso Rápido</h2>
                 <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
                     {% for shortcut in quick_shortcuts %}
-                        <a href="{% url shortcut.url_name %}" style="text-decoration: none !important; border-bottom: none !important; flex: 1; min-width: 100px; display: block;">
+                        <a href="{% url shortcut.url_name %}" class="shortcut-link" style="text-decoration: none !important; border-bottom: none !important; flex: 1; min-width: 100px; display: block;">
                             <div style="padding: 20px 10px; border-radius: 16px; background: {{ shortcut.color }}08; text-align: center; border: 1px solid {{ shortcut.color }}15; transition: all 0.2s;" onmouseover="this.style.background='{{ shortcut.color }}15'; this.style.transform='translateY(-3px)'" onmouseout="this.style.background='{{ shortcut.color }}08'; this.style.transform='translateY(0)'">
                                 <i class="fas {{ shortcut.icon }}" style="font-size: 32px; color: {{ shortcut.color }}; margin-bottom: 10px;"></i>
                                 <p style="margin: 0; font-size: 0.85em; font-weight: 700; color: var(--text-main);">{{ shortcut.label }}</p>
@@ -272,5 +272,26 @@
         </div>
     {% endif %}
 
+    <script>
+        $(document).ready(function() {
+            $('.shortcut-link').on('click', function() {
+                const $icon = $(this).find('i');
+                const currentColor = $icon.css('color');
+                
+                // Transforma o ícone em um spinner de carregamento
+                $icon.removeClass().addClass('fas fa-spinner fa-spin');
+                $icon.css({
+                    'font-size': '32px',
+                    'color': currentColor,
+                    'margin-bottom': '10px',
+                    'display': 'inline-block'
+                });
+                
+                // Evita cliques duplos enquanto carrega
+                $(this).css('pointer-events', 'none');
+                $(this).find('div').css('opacity', '0.7');
+            });
+        });
+    </script>
 {%endblock%}
 

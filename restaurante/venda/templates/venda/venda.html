@@ -36,29 +36,44 @@
             <span style="color: #ddd;">/</span>
             <span style="color: var(--text-muted);">Venda Manual</span>
         </div>
+        <style>
+            @media (max-width: 600px) {
+                .venda-stepper {
+                    flex-direction: column !important;
+                    gap: 15px !important;
+                    padding: 15px !important;
+                }
+                .venda-stepper-steps {
+                    gap: 15px !important;
+                    width: 100% !important;
+                }
+                .venda-stepper-line {
+                    width: 30px !important;
+                }
+                .btn-cancelar-venda {
+                    width: 100% !important;
+                    text-align: center !important;
+                    padding: 8px !important;
+                }
+            }
+        </style>
 
         <!-- MODERN SALES STEPPER -->
-        <div style="width: 100%; max-width: 1000px; margin: 0 auto 30px auto; padding: 20px; background: var(--surface-glass); backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.4); box-shadow: var(--shadow-md); display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 40px; flex: 1; justify-content: center;">
+        <div class="venda-stepper" style="width: 100%; max-width: 1000px; margin: 0 auto 30px auto; padding: 20px; background: var(--surface-glass); backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.4); box-shadow: var(--shadow-md); display: flex; justify-content: space-between; align-items: center; transition: all 0.3s;">
+            <div class="venda-stepper-steps" style="display: flex; align-items: center; gap: 40px; flex: 1; justify-content: center;">
                 <!-- Step 1: Identificação -->
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: {% if step == 'pri' %}1{% else %}0.5{% endif %};">
                     <div style="width: 40px; height: 40px; border-radius: 12px; background: {% if step == 'pri' %}var(--primary){% else %}#e5e7eb{% endif %}; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">1</div>
                     <span style="font-size: 0.8em; font-weight: 600; color: var(--text-main);">Identificação</span>
                 </div>
-                <div style="height: 2px; width: 40px; background: #e5e7eb;"></div>
-                <!-- Step 2: Escolha -->
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: {% if step == 'seg' or step == 'ter' %}1{% else %}0.5{% endif %};">
-                    <div style="width: 40px; height: 40px; border-radius: 12px; background: {% if step == 'seg' or step == 'ter' %}var(--primary){% else %}#e5e7eb{% endif %}; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">2</div>
-                    <span style="font-size: 0.8em; font-weight: 600; color: var(--text-main);">Prato/Ticket</span>
-                </div>
-                <div style="height: 2px; width: 40px; background: #e5e7eb;"></div>
-                <!-- Step 3: Confirmação -->
+                <div class="venda-stepper-line" style="height: 2px; width: 60px; background: #e5e7eb;"></div>
+                <!-- Step 2: Confirmação -->
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: {% if step == 'fim' %}1{% else %}0.5{% endif %};">
-                    <div style="width: 40px; height: 40px; border-radius: 12px; background: {% if step == 'fim' %}var(--primary){% else %}#e5e7eb{% endif %}; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">3</div>
+                    <div style="width: 40px; height: 40px; border-radius: 12px; background: {% if step == 'fim' %}var(--primary){% else %}#e5e7eb{% endif %}; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">2</div>
                     <span style="font-size: 0.8em; font-weight: 600; color: var(--text-main);">Confirmação</span>
                 </div>
             </div>
-            <a href="{% url 'Vendas' %}" style="padding: 10px 15px; border-radius: 12px; background: #fee2e2; color: #b91c1c; text-decoration: none !important; border-bottom: none !important; font-size: 0.85em; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
+            <a href="{% url 'Vendas' %}" class="btn-cancelar-venda" style="padding: 10px 15px; border-radius: 12px; background: #fee2e2; color: #b91c1c; text-decoration: none !important; border-bottom: none !important; font-size: 0.85em; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
                 <i class="fas fa-times"></i> Cancelar
             </a>
         </div>
@@ -136,7 +151,7 @@
                                         max-width: 320px;
                                         padding: 16px 20px;
                                         border-radius: 14px;
-                                        border: 2px solid #f3f4f6;
+                                        border: 2px solid #10b981;
                                         background: #ffffff;
                                         font-family: 'Outfit', sans-serif;
                                         font-size: 1.1em;
@@ -220,14 +235,14 @@
                     <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: stretch;">
                         <div style="position: relative; flex: 1;">
                             <i class="fas fa-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 1.1em;"></i>
-                            <input type="text" id="searchInput" placeholder="Pesquisar por nome ou CPF..." autocomplete="off" style="width: 100%; height: 100%; padding: 15px 15px 15px 45px; border-radius: 14px; border: 2px solid #f3f4f6; box-shadow: var(--shadow-sm); font-size: 1.05em; font-family: 'Outfit', sans-serif; outline: none; transition: all 0.3s; color: var(--text-main); box-sizing: border-box;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 4px rgba(16,185,129,0.1)'" onblur="this.style.borderColor='#f3f4f6'; this.style.boxShadow='var(--shadow-sm)'">
+                            <input type="text" id="searchInput" placeholder="Pesquisar por nome ou CPF..." autocomplete="off" style="width: 100%; height: 100%; padding: 15px 15px 15px 45px; border-radius: 14px; border: 2px solid #10b981; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1); font-size: 1.05em; font-family: 'Outfit', sans-serif; outline: none; transition: all 0.3s; color: var(--text-main); box-sizing: border-box; background: white;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 4px rgba(16,185,129,0.2)'" onblur="this.style.borderColor='#10b981'; this.style.boxShadow='0 4px 6px -1px rgba(16, 185, 129, 0.1)'">
                         </div>
-                        <a href="?refresh=1" class="btn-sync" title="Sincronizar Lista do AD" style="display: flex; align-items: center; justify-content: center; padding: 0 20px; background: white; border: 2px solid #f3f4f6; border-radius: 14px; color: var(--primary); text-decoration: none; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow-sm);" onmouseover="this.style.borderColor='var(--primary)'; this.style.background='rgba(16, 185, 129, 0.05)'" onmouseout="this.style.borderColor='#f3f4f6'; this.style.background='white'">
+                        <a href="?refresh=1" class="btn-sync" title="Sincronizar Lista do AD" style="display: flex; align-items: center; justify-content: center; padding: 0 20px; background: white; border: 2px solid #10b981; border-radius: 14px; color: var(--primary); text-decoration: none; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow-sm);" onmouseover="this.style.background='rgba(16, 185, 129, 0.05)'" onmouseout="this.style.background='white'">
                             <i class="fas fa-sync-alt" style="font-size: 1.2em;"></i>
                         </a>
                     </div>
 
-                    <div id="alunoList" style="display: flex; flex-direction: column; gap: 12px; max-height: 60vh; overflow-y: auto; padding-right: 5px; scrollbar-width: thin; scrollbar-color: var(--primary) transparent;">
+                    <div id="alunoList" style="display: flex; flex-direction: column; gap: 12px; padding-right: 0;">
                         {% for aluno in alunos %}
                         <div class="aluno-card" data-nome="{{ aluno.nome|lower }}" data-cpf="{{ aluno.cpf }}" style="background: white; border: 1px solid #e5e7eb; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 15px; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
                             <div style="display: flex; align-items: flex-start; justify-content: space-between;">
