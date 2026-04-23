@@ -81,7 +81,7 @@ class CadastroPratoForm(forms.ModelForm):
 
     class Meta:  # Define os campos vindos do Modelo
         model = prato
-        fields = ('descricao', 'preco', 'preco_aluno', 'status')
+        fields = ('descricao', 'preco', 'preco_aluno', 'preco_servidor', 'status')
 
     def __init__(self, *args, **kwargs):  # INIT define caracteristicas para os campos de formulário vindos do Model (banco de dados)
         super(CadastroPratoForm, self).__init__(*args, **kwargs)
@@ -97,22 +97,28 @@ class CadastroPratoForm(forms.ModelForm):
             'placeholder': 'Preço Aluno',
             'title': 'Preço pago pelo estudante (PIX)'})
         self.fields['preco_aluno'].label = ''
+        self.fields['preco_servidor'].widget = forms.TextInput(attrs={
+            'placeholder': 'Preço Servidor',
+            'title': 'Preço pago pelo servidor (PIX)'})
+        self.fields['preco_servidor'].label = ''
 
     def clean(self):
         cleaned_data = self.cleaned_data
         Descricao = cleaned_data.get("descricao")
         Preco = cleaned_data.get("preco")
         PrecoAluno = cleaned_data.get("preco_aluno")
+        PrecoServidor = cleaned_data.get("preco_servidor")
         Status = cleaned_data.get("status")
         Id = cleaned_data.get("id")
 
         try:
             if Id:
                 pratoobj = prato.objects.get(id=Id)
-                pratoobj.descricao = Descricao; pratoobj.preco = Preco; pratoobj.preco_aluno = PrecoAluno; pratoobj.status = Status
+                pratoobj.descricao = Descricao; pratoobj.preco = Preco; pratoobj.preco_aluno = PrecoAluno; 
+                pratoobj.preco_servidor = PrecoServidor; pratoobj.status = Status
                 pratoobj.save()
             else:
-                pratoobj = prato(descricao=Descricao, preco=Preco, preco_aluno=PrecoAluno, status=Status)
+                pratoobj = prato(descricao=Descricao, preco=Preco, preco_aluno=PrecoAluno, preco_servidor=PrecoServidor, status=Status)
                 pratoobj.save()
         except:
             raise forms.ValidationError("Não foi possível salvar o prato", code='invalid')
@@ -188,6 +194,8 @@ class MenuPermissionForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(MenuPermissionForm, self).__init__(*args, **kwargs)
+        from restaurante.administracao.models import MenuPermission
+        self.fields['access_type'].choices = MenuPermission.TIPOS_ACESSO
         self.fields['access_type'].label = "Tipo de Acesso"
         self.fields['ad_group'].label = "Grupo do AD"
         self.fields['default_dashboard'].label = "Visão Padrão"

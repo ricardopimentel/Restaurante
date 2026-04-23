@@ -10,4 +10,6 @@ urlpatterns = [
     re_path(r'^pdfvendas/$', views.PdfVendas, name='PdfVendas'),
     re_path(r'^pdfcustoalunoperiodo/$', views.PdfCustoAlunoPeriodo, name='PdfCustoAlunoPeriodo'),
     re_path(r'^csvvendas/$', views.CsvVendas, name='CsvVendas'),
+    re_path(r'^relatorioservidores/$', views.RelatorioVendasServidor, name='RelatorioVendasServidor'),
+    re_path(r'^pdfvendasservidor/$', views.PdfVendasServidor, name='PdfVendasServidor'),
 ]

@@ -1,0 +1,168 @@
+{% load restaurante_extras %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Vendas Servidores - Cantina IFTO</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+            @frame footer {
+                -pdf-frame-content: footerContent;
+                bottom: 1cm;
+                margin-left: 2cm;
+                margin-right: 2cm;
+                height: 1cm;
+            }
+        }
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #333;
+            line-height: 1.4;
+            font-size: 10pt;
+        }
+        .header {
+            border-bottom: 2px solid #0ea5e9;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .header table { width: 100%; }
+        .logo { width: 120px; }
+        .title-box { text-align: right; }
+        .report-title {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #111;
+            margin: 0;
+        }
+        .report-subtitle {
+            font-size: 9pt;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .summary-grid {
+            width: 100%;
+            margin-bottom: 25px;
+        }
+        .summary-grid td { 
+            vertical-align: top; 
+            padding: 15px;
+            background-color: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+        }
+        .kpi-label { 
+            font-size: 7pt; 
+            color: #0369a1; 
+            text-transform: uppercase; 
+            font-weight: bold; 
+            margin: 0;
+            padding-bottom: 5px;
+        }
+        .kpi-value { 
+            font-size: 16pt; 
+            font-weight: bold; 
+            color: #111; 
+            margin: 0;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .data-table th {
+            background-color: #f8fafc;
+            color: #334155;
+            font-weight: bold;
+            text-align: left;
+            padding: 10px 8px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 9pt;
+        }
+        .data-table td {
+            padding: 8px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 9pt;
+        }
+        .data-table tr:nth-child(even) { background-color: #fcfcfc; }
+
+        .footer-note {
+            font-size: 8pt;
+            color: #9ca3af;
+            text-align: center;
+            margin-top: 50px;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 10px;
+        }
+
+        .bold { font-weight: bold; }
+        .text-right { text-align: right; }
+    </style>
+</head>
+<body>
+    <div id="footerContent" style="text-align: center; font-size: 8pt; color: #9ca3af;">
+        Página <pdf:pagenumber> de <pdf:pagecount>
+    </div>
+
+    <div class="header">
+        <table>
+            <tr>
+                <td class="logo">
+                    <img src="{{ base_dir }}/core/static/images/IFTO.jpg" width="120">
+                </td>
+                <td class="title-box">
+                    <p class="report-title">Relatório de Vendas - Servidores</p>
+                    <p class="report-subtitle">Cantina IFTO - Campus Paraíso do Tocantins</p>
+                    <p class="report-subtitle">Período: {{ datainicial|convert_date }} a {{ datafinal|convert_date }}</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="summary-grid">
+        <tr>
+            <td width="50%">
+                <p class="kpi-label">Total Atendimentos</p>
+                <p class="kpi-value">{{ venda|length }}</p>
+            </td>
+            <td width="50%">
+                <p class="kpi-label">Faturamento Total</p>
+                <p class="kpi-value">{{ soma|real }}</p>
+            </td>
+        </tr>
+    </table>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th width="20%">Data/Hora</th>
+                <th width="40%">Servidor</th>
+                <th width="20%">Refeição</th>
+                <th width="20%" class="text-right">Valor Pago</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in venda %}
+                <tr>
+                    <td>{{ item.data|date:"d/m/Y H:i" }}</td>
+                    <td class="bold">{{ item.id_servidor.id_pessoa.nome|title }}</td>
+                    <td>{{ item.id_prato.descricao }}</td>
+                    <td class="text-right bold">{{ item.valor_pago|real }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 20px;">Nenhum registro encontrado.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer-note">
+        Este documento é uma exportação oficial do sistema de gestão da Cantina IFTO para o perfil Servidores.<br>
+        Gerado em {% now "d/m/Y H:i" %} - Responsável: {{ request.session.nome }}
+    </div>
+</body>
+</html>

@@ -10,23 +10,40 @@ def Home(request):
         if request.session['nome']:
             context = {'err': '', 'itemselec': 'HOME'}
             
-            if request.session.get('usertip') == 'aluno':
+            usertip = request.session.get('usertip')
+            dashboard_mode = request.session.get('dashboard_mode', 'usuario')
+
+            if dashboard_mode == 'usuario':
                 try:
-                    from restaurante.core.models import aluno, pessoa, alunoscem
-                    from restaurante.ticket_estudante.models import TicketAluno
+                    from restaurante.core.models import aluno, servidor, pessoa, alunoscem
+                    from restaurante.ticket_estudante.models import TicketAluno, TicketServidor
                     from restaurante.venda.views import ExistePratoCadastrado
 
                     pessoa_obj = pessoa.objects.get(usuario=request.session['userl'])
-                    # Tenta buscar aluno, se não existir, cria ou ignora gracefuly
-                    aluno_obj = aluno.objects.filter(id_pessoa=pessoa_obj).first()
                     
-                    if aluno_obj:
+                    # Identifica e garante o perfil conforme o usertip
+                    perfil_obj = None
+                    if usertip == 'servidor':
+                        perfil_obj, created = servidor.objects.get_or_create(
+                            id_pessoa=pessoa_obj, 
+                            defaults={'status': True}
+                        )
+                        # Se existia mas estava inativo, forçamos o status para True para garantir acesso
+                        if not created and not perfil_obj.status:
+                            perfil_obj.status = True
+                            perfil_obj.save()
+                    else:
+                        perfil_obj, created = aluno.objects.get_or_create(id_pessoa=pessoa_obj)
+                    
+                    if perfil_obj:
                         # --- 1. PRATO ATIVO ---
                         try:
                             from restaurante.venda.views import ExistePratoCadastrado
                             prato_obj_ativo = ExistePratoCadastrado(request.session['userl'])
                             if prato_obj_ativo:
-                                context['prato_info'] = {'status': True, 'descricao': prato_obj_ativo.descricao, 'preco': prato_obj_ativo.preco_aluno}
+                                # Define o preço conforme o perfil
+                                preco_exibir = prato_obj_ativo.preco_servidor if usertip == 'servidor' else prato_obj_ativo.preco_aluno
+                                context['prato_info'] = {'status': True, 'descricao': prato_obj_ativo.descricao, 'preco': preco_exibir}
                             else:
                                 context['prato_info'] = {'status': False, 'erro': 'Atendimento encerrado ou sem pratos cadastrados para este horário.'}
                         except Exception as e:
@@ -34,7 +51,13 @@ def Home(request):
 
                         # --- 2. CARTEIRA (TICKETS) ---
                         try:
-                            tickets_ativos_qs = TicketAluno.objects.filter(id_aluno=aluno_obj, usado=False, pago=True).order_by('-data_compra')
+                            # Verifica se o objeto de perfil é do tipo Servidor ou Aluno
+                            is_srv_obj = hasattr(perfil_obj, 'siap') # SIAP existe no modelo Servidor
+                            
+                            if is_srv_obj:
+                                tickets_ativos_qs = TicketServidor.objects.filter(id_servidor=perfil_obj, usado=False, pago=True).order_by('-data_compra')
+                            else:
+                                tickets_ativos_qs = TicketAluno.objects.filter(id_aluno=perfil_obj, usado=False, pago=True).order_by('-data_compra')
                             context['tickets_ativos'] = tickets_ativos_qs.count()
                             if context['tickets_ativos'] > 0:
                                 context['primeiro_ticket_uuid'] = tickets_ativos_qs.first().uuid
@@ -43,8 +66,10 @@ def Home(request):
 
                         # --- 3. HISTÓRICO RECENTE ---
                         try:
-                            from restaurante.ticket_estudante.models import TicketAluno
-                            historico = TicketAluno.objects.filter(id_aluno=aluno_obj, usado=True).order_by('-data_utilizacao', '-data_compra')[:3]
+                            if is_srv_obj:
+                                historico = TicketServidor.objects.filter(id_servidor=perfil_obj, usado=True).order_by('-data_utilizacao', '-data_compra')[:3]
+                            else:
+                                historico = TicketAluno.objects.filter(id_aluno=perfil_obj, usado=True).order_by('-data_utilizacao', '-data_compra')[:3]
                             context['historico'] = historico
                         except:
                             context['historico'] = []
@@ -52,12 +77,15 @@ def Home(request):
                         # --- 4. CATEGORIA ---
                         try:
                             from restaurante.core.models import alunoscem, alunoscolaboradores
-                            is_cem = alunoscem.objects.filter(id_pessoa=pessoa_obj).exists()
-                            is_colab = alunoscolaboradores.objects.filter(id_pessoa=pessoa_obj).exists()
-                            if is_cem: context['categoria'] = 'Bolsista CEM (Gratuidade)'
-                            elif is_colab: context['categoria'] = 'Aluno Colaborador'
-                            else: context['categoria'] = 'Estudante Regular'
-                            context['is_cem'] = is_cem
+                            if is_srv_obj:
+                                context['categoria'] = 'Servidor'
+                            else:
+                                is_cem = alunoscem.objects.filter(id_pessoa=pessoa_obj).exists()
+                                is_colab = alunoscolaboradores.objects.filter(id_pessoa=pessoa_obj).exists()
+                                if is_cem: context['categoria'] = 'Bolsista CEM (Gratuidade)'
+                                elif is_colab: context['categoria'] = 'Aluno Colaborador'
+                                else: context['categoria'] = 'Estudante Regular'
+                                context['is_cem'] = is_cem
                         except:
                             context['categoria'] = 'Estudante Regular'
 
@@ -79,7 +107,10 @@ def Home(request):
                             context['periodo_selecionado'] = periodo
 
                             # Filtra por tickets USADOS (consumo) no período
-                            resumo_qs = TicketAluno.objects.filter(id_aluno=aluno_obj, usado=True)
+                            if is_srv_obj:
+                                resumo_qs = TicketServidor.objects.filter(id_servidor=perfil_obj, usado=True)
+                            else:
+                                resumo_qs = TicketAluno.objects.filter(id_aluno=perfil_obj, usado=True)
                             if periodo != 'tudo':
                                 # Fallback para data_compra caso data_utilizacao seja nula (registros antigos)
                                 from django.db.models import Q
@@ -136,6 +167,13 @@ def Home(request):
                     context['janta_hoje_total'] = janta_qs.count()
                     context['janta_hoje_manual'] = janta_qs.filter(origem='MANUAL').count()
                     context['janta_hoje_ticket'] = janta_qs.filter(origem='TICKET').count()
+
+                    # --- VENDAS SERVIDORES HOJE ---
+                    from restaurante.core.models import VendaServidor
+                    vendas_srv_qs = VendaServidor.objects.filter(data__date=hoje)
+                    context['srv_hoje_total'] = vendas_srv_qs.count()
+                    context['srv_almoco_hoje'] = vendas_srv_qs.filter(data__hour__lt=15).count()
+                    context['srv_janta_hoje'] = vendas_srv_qs.filter(data__hour__gte=15).count()
 
                     # Manteve apenas por compatibilidade legada se necessário
                     context['vendas_almoco_hoje'] = almoco_qs.count()

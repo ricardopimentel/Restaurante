@@ -126,11 +126,28 @@ def MontarMenu(request, ret, usuario):
     request.session['quick_access_items'] = quick_access
     request.session['allowed_items'] = allowed_items
     request.session['group_label'] = group_label
+    # Coletar todos os perfis disponíveis para o seletor
+    profiles_data = []
+    if is_admin:
+        profiles_data.append({'type': 'admin', 'label': group_label or 'Administrador'})
+    
+    for p in matching_profiles:
+        # Adiciona se não for duplicado
+        if not any(pd['type'] == p.access_type for pd in profiles_data):
+            profiles_data.append({'type': p.access_type, 'label': p.group_label or p.get_access_type_display()})
+    
+    request.session['available_profiles'] = profiles_data
+    request.session['access_types'] = [p['type'] for p in profiles_data]
     
     # Compatibilidade com código legado (usertip)
-    if is_admin: request.session['usertip'] = 'admin'
-    elif default_dashboard == 'funcionario': request.session['usertip'] = 'lanchonete'
-    else: request.session['usertip'] = 'aluno'
+    if is_admin: 
+        request.session['usertip'] = 'admin'
+    elif any(p.access_type == 'servidor' for p in matching_profiles):
+        request.session['usertip'] = 'servidor'
+    elif default_dashboard == 'funcionario': 
+        request.session['usertip'] = 'lanchonete'
+    else: 
+        request.session['usertip'] = 'aluno'
 
     try:
         request.session['mail'] = result['mail']

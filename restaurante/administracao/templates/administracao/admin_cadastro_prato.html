@@ -223,6 +223,7 @@
                         <th>Descrição</th>
                         <th>Preço (Normal)</th>
                         <th>Preço (Estudante)</th>
+                        <th>Preço (Servidor)</th>
                         <th style="text-align: center;">Ações</th>
                     </tr>
                 </thead>
@@ -236,6 +237,7 @@
                             </td>
                             <td style="font-family: monospace; font-weight: 600;">R$ {{ prato.preco }}</td>
                             <td style="font-family: monospace; font-weight: 600;">R$ {{ prato.preco_aluno }}</td>
+                            <td style="font-family: monospace; font-weight: 600;">R$ {{ prato.preco_servidor }}</td>
                             <td style="text-align: center;">
                                 <input type="checkbox" name="{{ prato.id }}" style="width: 18px; height: 18px;">
                             </td>

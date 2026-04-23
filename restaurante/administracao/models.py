@@ -14,10 +14,12 @@ class config(models.Model):
     pix_test_mode = models.BooleanField('Modo Teste PIX', default=False)
 
 class MenuPermission(models.Model):
+    # Tipos de acesso permitidos no sistema restaurante
     TIPOS_ACESSO = (
         ('admin', 'Administrador'),
         ('lanchonete', 'Lanchonete'),
         ('aluno', 'Aluno'),
+        ('servidor', 'Servidor'),
         ('glanchonete', 'Gerência Lanchonete'),
     )
     access_type = models.CharField('Tipo de Acesso', max_length=20, choices=TIPOS_ACESSO)

@@ -256,7 +256,7 @@
                             <div class="meal-selector">
                                 {% if almoco %}
                                 <label class="meal-option">
-                                    <input type="radio" name="tipo_refeicao" value="Almoço" data-price="{{ preco_almoco|stringformat:'.2f' }}" checked>
+                                    <input type="radio" name="tipo_refeicao" value="{{ almoco.descricao }}" data-price="{{ preco_almoco|stringformat:'.2f' }}" checked>
                                     <div class="meal-label">
                                         <i class="fas fa-sun"></i>
                                         <span>Almoço</span>
@@ -266,7 +266,7 @@
                                 
                                 {% if janta %}
                                 <label class="meal-option">
-                                    <input type="radio" name="tipo_refeicao" value="Janta" data-price="{{ preco_janta|stringformat:'.2f' }}" {% if not almoco %}checked{% endif %}>
+                                    <input type="radio" name="tipo_refeicao" value="{{ janta.descricao }}" data-price="{{ preco_janta|stringformat:'.2f' }}" {% if not almoco %}checked{% endif %}>
                                     <div class="meal-label">
                                         <i class="fas fa-moon"></i>
                                         <span>Janta</span>
@@ -277,9 +277,9 @@
                         {% else %}
                             <div style="display: none;">
                                 {% if almoco %}
-                                    <input type="radio" name="tipo_refeicao" value="Almoço" data-price="{{ preco_almoco|stringformat:'.2f' }}" checked>
+                                    <input type="radio" name="tipo_refeicao" value="{{ almoco.descricao }}" data-price="{{ preco_almoco|stringformat:'.2f' }}" checked>
                                 {% elif janta %}
-                                    <input type="radio" name="tipo_refeicao" value="Janta" data-price="{{ preco_janta|stringformat:'.2f' }}" checked>
+                                    <input type="radio" name="tipo_refeicao" value="{{ janta.descricao }}" data-price="{{ preco_janta|stringformat:'.2f' }}" checked>
                                 {% endif %}
                             </div>
                         {% endif %}
@@ -296,21 +296,30 @@
                         <!-- ADICIONAIS -->
                         {% if adicionais %}
                         <p style="text-align: left; font-size: 0.85em; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;">2. Deseja algo a mais? (Adicionais)</p>
-                        <div id="adicionais-container" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px;">
-                            {% for add in adicionais %}
-                            <div class="adicional-row" style="display: flex; align-items: center; justify-content: space-between; background: white; padding: 12px 18px; border-radius: 16px; border: 1px solid #f1f5f9;">
-                                <div style="display: flex; flex-direction: column;">
-                                    <span style="font-weight: 700; font-size: 0.95em; color: var(--text-main);">{{ add.nome }}</span>
-                                    <span style="font-size: 0.85em; color: var(--primary); font-weight: 600;">+ R$ {{ add.valor|stringformat:'.2f' }}</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 12px; background: #f8fafc; padding: 5px; border-radius: 12px;">
-                                    <button type="button" class="btn-add-minus" onclick="changeAdd('{{ add.id }}', -1, '{{ add.valor|stringformat:'.2f' }}')" style="width: 28px; height: 28px; border-radius: 8px; border: none; background: white; cursor: pointer; color: var(--text-muted);"><i class="fas fa-minus" style="font-size: 0.8em;"></i></button>
-                                    <span id="add-qtd-{{ add.id }}" class="add-qtd-val" data-id="{{ add.id }}" data-price="{{ add.valor|stringformat:'.2f' }}" style="font-weight: 800; font-size: 1.1em; width: 20px; text-align: center;">0</span>
-                                    <button type="button" class="btn-add-plus" onclick="changeAdd('{{ add.id }}', 1, '{{ add.valor|stringformat:'.2f' }}')" style="width: 28px; height: 28px; border-radius: 8px; border: none; background: white; cursor: pointer; color: var(--primary);"><i class="fas fa-plus" style="font-size: 0.8em;"></i></button>
-                                </div>
-                            </div>
-                            {% endfor %}
+                        
+                        <div id="selected-addons-container" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+                            <!-- Itens selecionados aparecerão aqui via JS -->
                         </div>
+
+                        <button type="button" id="btn-toggle-addons" style="width: 100%; padding: 12px; background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 12px; color: var(--text-muted); font-weight: 700; font-size: 0.85em; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 25px;">
+                            <i class="fas fa-plus-circle"></i> Adicionar Acompanhamentos
+                        </button>
+
+                        <div id="addons-picker" style="display: none; background: #f8fafc; border-radius: 20px; padding: 20px; margin-bottom: 25px; border: 1px solid #e2e8f0; animation: fadeIn 0.3s ease;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <span style="font-size: 0.8em; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Opções Disponíveis</span>
+                                <button type="button" onclick="$('#addons-picker').slideUp()" style="border: none; background: transparent; color: #94a3b8; cursor: pointer;"><i class="fas fa-times"></i></button>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
+                                {% for add in adicionais %}
+                                <div class="addon-picker-item" data-id="{{ add.id }}" data-nome="{{ add.nome }}" data-valor="{{ add.valor|stringformat:'.2f' }}" onclick="selectAddon('{{ add.id }}')" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: white; border-radius: 12px; border: 1px solid #f1f5f9; cursor: pointer; transition: all 0.2s;">
+                                    <span style="font-weight: 600; font-size: 0.9em; color: var(--text-main);">{{ add.nome }}</span>
+                                    <span style="font-weight: 700; color: var(--primary); font-size: 0.85em;">+ R$ {{ add.valor|stringformat:'.2f' }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
                         <input type="hidden" name="adicionais_json" id="adicionais_json" value="[]">
                         {% endif %}
 
@@ -400,20 +409,58 @@
 
     <script>
         $(function() {
+            // Toggle Addons Picker
+            $('#btn-toggle-addons').on('click', function() {
+                $('#addons-picker').slideToggle(300);
+            });
+
+            // Selection Logic
+            window.selectAddon = function(id) {
+                const item = $(`.addon-picker-item[data-id="${id}"]`);
+                const nome = item.data('nome');
+                const valor = item.data('valor');
+                
+                // Hide from picker
+                item.hide();
+                if ($('.addon-picker-item:visible').length === 0) {
+                    $('#addons-picker').slideUp();
+                }
+
+                // Add to selected container
+                const html = `
+                    <div class="selected-addon-row" id="selected-add-${id}" style="display: flex; align-items: center; justify-content: space-between; background: #f0fdf4; padding: 12px 18px; border-radius: 16px; border: 1px solid #dcfce7; animation: slideUp 0.3s ease;">
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-weight: 700; font-size: 0.95em; color: var(--text-main);">${nome}</span>
+                            <span style="font-size: 0.85em; color: var(--primary); font-weight: 600;">+ R$ ${valor.toString().replace('.', ',')}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px; background: white; padding: 5px; border-radius: 12px; border: 1px solid #dcfce7;">
+                            <button type="button" onclick="changeAdd('${id}', -1, '${valor}')" style="width: 28px; height: 28px; border-radius: 8px; border: none; background: #f8fafc; cursor: pointer; color: var(--text-muted);"><i class="fas fa-minus" style="font-size: 0.8em;"></i></button>
+                            <span id="add-qtd-${id}" class="add-qtd-val" data-id="${id}" data-price="${valor}" style="font-weight: 800; font-size: 1.1em; width: 20px; text-align: center;">1</span>
+                            <button type="button" onclick="changeAdd('${id}', 1, '${valor}')" style="width: 28px; height: 28px; border-radius: 8px; border: none; background: #f8fafc; cursor: pointer; color: var(--primary);"><i class="fas fa-plus" style="font-size: 0.8em;"></i></button>
+                        </div>
+                    </div>
+                `;
+                $('#selected-addons-container').append(html);
+                updatePriceDisplay();
+            };
+
             // Atualizar preço
             const pixFeePercent = parseFloat("{{ pix_fee|stringformat:'.2f'|default:'0' }}".replace(',', '.'));
 
-            let valorTotalAdicionais = 0;
-
             window.changeAdd = function(id, delta, valor) {
-                const valNumeric = parseFloat(valor.toString().replace(',', '.'));
                 const el = $('#add-qtd-' + id);
                 let current = parseInt(el.text()) || 0;
                 let next = current + delta;
-                if (next < 0) next = 0;
-                if (next > 10) next = 10;
                 
-                el.text(next);
+                if (next <= 0) {
+                    // Remove item and show back in picker
+                    $(`#selected-add-${id}`).remove();
+                    $(`.addon-picker-item[data-id="${id}"]`).fadeIn();
+                } else {
+                    if (next > 10) next = 10;
+                    el.text(next);
+                }
+                
                 updatePriceDisplay();
             };
 
@@ -432,7 +479,6 @@
                     const q = parseInt($(this).text());
                     if (q > 0) {
                         const id = $(this).data('id');
-                        // Ler o preço direto do atributo data-price (mais seguro que o texto da tela)
                         const price = parseFloat($(this).attr('data-price').toString().replace(',', '.'));
                         valorAddsUnitario += price * q;
                         adds.push({id: id, qtd: q});

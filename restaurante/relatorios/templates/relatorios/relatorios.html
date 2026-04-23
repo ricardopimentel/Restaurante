@@ -115,6 +115,7 @@
         </div>
 
         <div class="report-grid">
+            {% if 'relatorio_vendas' in request.session.allowed_items %}
             <!-- Vendas Realizadas -->
             <a href="{% url 'RelatorioVendas' %}" class="report-card">
                 <div class="report-icon-box">
@@ -125,7 +126,9 @@
                     <p>Detalhamento completo de todas as vendas diretas e por ticket em um determinado período.</p>
                 </div>
             </a>
+            {% endif %}
 
+            {% if 'custo_aluno_periodo' in request.session.allowed_items %}
             <!-- Custo Aluno Período -->
             <a href="{% url 'RelatorioCustoAlunoPeriodo' %}" class="report-card">
                 <div class="report-icon-box">
@@ -136,6 +139,20 @@
                     <p>Relatório sintético dos gastos agregados por aluno ou curso dentro de um intervalo de datas.</p>
                 </div>
             </a>
+            {% endif %}
+
+            {% if 'relatorio_servidores' in request.session.allowed_items %}
+            <!-- Vendas Servidores -->
+            <a href="{% url 'RelatorioVendasServidor' %}" class="report-card">
+                <div class="report-icon-box">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="report-info">
+                    <h3>Vendas Servidores</h3>
+                    <p>Relatório isolado de vendas realizadas para o perfil de servidores do sistema.</p>
+                </div>
+            </a>
+            {% endif %}
         </div>
     {% endif %}
 {% endblock %}

@@ -494,7 +494,8 @@ def GerenciarPermissoes(request):
         {'id': 'leitura_qr', 'label': 'Acesso: Leitura de QR Code', 'category': 'Vendas', 'parent': 'menu_vendas'},
 
         {'id': 'menu_relatorios', 'label': 'Módulo de Relatórios', 'category': 'Principal', 'parent': None},
-        {'id': 'relatorio_vendas', 'label': 'Relatório de Vendas', 'category': 'Relatórios', 'parent': 'menu_relatorios'},
+        {'id': 'relatorio_vendas', 'label': 'Relatório de Vendas (Geral)', 'category': 'Relatórios', 'parent': 'menu_relatorios'},
+        {'id': 'relatorio_servidores', 'label': 'Relatório de Vendas (Servidores)', 'category': 'Relatórios', 'parent': 'menu_relatorios'},
         {'id': 'custo_aluno_periodo', 'label': 'Custo do Aluno no Período', 'category': 'Relatórios', 'parent': 'menu_relatorios'},
 
         {'id': 'menu_admin', 'label': 'Módulo de Administração', 'category': 'Principal', 'parent': None},

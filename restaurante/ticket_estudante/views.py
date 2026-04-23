@@ -6,8 +6,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from decouple import config
 from restaurante.administracao.models import config as config_model
-from restaurante.core.models import prato, alunoscem, aluno, Adicional
-from restaurante.ticket_estudante.models import TicketAluno
+from restaurante.core.models import prato, alunoscem, aluno, servidor, Adicional
+from restaurante.ticket_estudante.models import TicketAluno, TicketServidor
 
 def get_config():
     """ Busca as configurações do sistema no banco de dados """
@@ -22,57 +22,79 @@ def get_sdk():
     token = getattr(conf, 'mp_access_token', None) or config('MP_ACCESS_TOKEN', default='YOUR_ACCESS_TOKEN_HERE')
     return mercadopago.SDK(token)
 
-def get_aluno(request):
-    """ Busca o objeto Aluno baseado na sessão atual com log de debug """
+def get_user_profile(request):
+    """ Identifica se o usuário logado é Aluno ou Servidor baseado no cadastro no banco de dados """
     userl = request.session.get('userl')
-    
-    # Log temporário para debug de sessão
-    try:
-        with open('debug_session.log', 'a') as f:
-            f.write(f"\n--- DEBUG {json.dumps(dict(request.session))} ---\n")
-            f.write(f"Userl na sessão: {userl}\n")
-    except:
-        pass
-
     if not userl:
-        return None, "Sessão expirada ou chave 'userl' não encontrada no request.session"
+        return None, None, "Usuário não logado"
     
+    from restaurante.core.models import servidor, aluno, pessoa
     try:
-        aluno_inst = aluno.objects.get(id_pessoa__usuario=userl)
-        return aluno_inst, None
-    except aluno.DoesNotExist:
-        return None, f"Aluno não encontrado no banco para o usuário: {userl}"
-    except Exception as e:
-        return None, f"Erro inesperado ao buscar aluno: {str(e)}"
+        p = pessoa.objects.get(usuario=userl)
+    except pessoa.DoesNotExist:
+        return None, None, "Cadastro básico não encontrado"
+
+    usertip = request.session.get('usertip')
+    access_types = request.session.get('access_types', [])
+
+    # 1. Prioridade para Servidor
+    if usertip == 'servidor' or (usertip == 'admin' and 'servidor' in access_types):
+        srv, created = servidor.objects.get_or_create(id_pessoa=p, defaults={'status': True})
+        if not created and not srv.status:
+            srv.status = True
+            srv.save()
+        return srv, 'servidor', None
+        
+    # 2. Se a sessão diz que é aluno
+    if usertip == 'aluno':
+        aln, created = aluno.objects.get_or_create(id_pessoa=p)
+        return aln, 'aluno', None
+
+    # 3. Fallback: Tenta qualquer perfil disponível (priorizando servidor)
+    srv = servidor.objects.filter(id_pessoa=p).first()
+    if srv: 
+        if not srv.status: 
+            srv.status = True
+            srv.save()
+        return srv, 'servidor', None
+    
+    aln, created = aluno.objects.get_or_create(id_pessoa=p)
+    return aln, 'aluno', None
+
+def get_ticket_model(user_type):
+    return TicketServidor if user_type == 'servidor' else TicketAluno
 
 def HomeEstudante(request):
-    aluno_obj, error = get_aluno(request)
-    if not aluno_obj:
+    user_obj, user_type, error = get_user_profile(request)
+    if not user_obj:
         return redirect('Login')
     return redirect('Home')
 
 def TicketsEstudante(request):
-    aluno_obj, error = get_aluno(request)
-    if not aluno_obj: return redirect('Login')
+    user_obj, user_type, error = get_user_profile(request)
+    if not user_obj: return redirect('Login')
+    
+    TicketModel = get_ticket_model(user_type)
+    filter_key = 'id_servidor' if user_type == 'servidor' else 'id_aluno'
     
     from django.utils import timezone
     from datetime import timedelta
     limite_pendentes = timezone.now() - timedelta(hours=24)
     
     # Tickets Pagos
-    tickets_pagos = TicketAluno.objects.filter(id_aluno=aluno_obj, usado=False, pago=True).order_by('-data_compra')
+    tickets_pagos = TicketModel.objects.filter(**{filter_key: user_obj}, usado=False, pago=True).order_by('-data_compra')
     
     # Tickets Pendentes (últimas 24h)
-    tickets_pendentes = TicketAluno.objects.filter(
-        id_aluno=aluno_obj, 
+    tickets_pendentes = TicketModel.objects.filter(
+        **{filter_key: user_obj}, 
         pago=False, 
         data_compra__gte=limite_pendentes
     ).order_by('-data_compra')
 
     # Tickets Validados recentemente (últimos 40 minutos)
     limite_recentes = timezone.now() - timedelta(minutes=40)
-    tickets_recentes = TicketAluno.objects.filter(
-        id_aluno=aluno_obj, 
+    tickets_recentes = TicketModel.objects.filter(
+        **{filter_key: user_obj}, 
         usado=True, 
         data_utilizacao__gte=limite_recentes
     ).order_by('-data_utilizacao')
@@ -90,32 +112,50 @@ def TicketsEstudante(request):
     })
 
 def ComprarTicket(request):
-    aluno_obj, error = get_aluno(request)
-    if not aluno_obj: return redirect('Login')
+    user_obj, user_type, error = get_user_profile(request)
+    if not user_obj: return redirect('Login')
     
-    almoco = prato.objects.filter(descricao="Almoço").first()
-    janta = prato.objects.filter(descricao="Janta").first()
+    from restaurante.venda.views import ExistePratoCadastrado
+    prato_ativo = ExistePratoCadastrado(user_obj.id_pessoa.usuario)
     
-    if not almoco and not janta:
+    if not prato_ativo:
         return render(request, 'ticket_estudante/comprar.html', {
-            'erro': 'Nenhum prato disponível no momento.',
+            'erro': 'Nenhum prato disponível ou atendimento encerrado.',
             'itemselec': 'COMPRAR'
         })
     
-    is_cem = alunoscem.objects.filter(id_pessoa=aluno_obj.id_pessoa).exists()
+    is_cem = False
+    if user_type == 'aluno':
+        from restaurante.core.models import alunoscem
+        is_cem = alunoscem.objects.filter(id_pessoa=user_obj.id_pessoa).exists()
+    
+    # Define o preço base de acordo com o tipo de usuário e o prato ativo
+    if user_type == 'servidor':
+        preco_base = prato_ativo.preco_servidor
+    else:
+        preco_base = 0.0 if is_cem else prato_ativo.preco_aluno
+
+    # Para compatibilidade com o template que espera almoco/janta:
+    # Se o nome não ajudar, assumimos Almoço se for antes das 15h, senão Janta
+    hora = timezone.now().hour
+    is_almoco_time = 'Almoço' in prato_ativo.descricao or ('Janta' not in prato_ativo.descricao and hora <= 14)
     
     context = {
         'title': 'Comprar Ticket',
         'itemselec': 'COMPRAR',
-        'almoco': almoco,
-        'janta': janta,
+        'prato': prato_ativo,
+        'almoco': prato_ativo if is_almoco_time else None,
+        'janta': prato_ativo if not is_almoco_time else None,
         'is_cem': is_cem,
+        'user_type': user_type,
         'adicionais': Adicional.objects.filter(status=True),
         'pix_fee': getattr(get_config(), 'pix_fee', 0.0),
         'pix_test_mode': getattr(get_config(), 'pix_test_mode', False),
-        'preco_almoco': 0.0 if is_cem else (almoco.preco_aluno if almoco else 0.0),
-        'preco_janta': 0.0 if is_cem else (janta.preco_aluno if janta else 0.0),
+        'preco_almoco': preco_base if is_almoco_time else 0.0,
+        'preco_janta': preco_base if not is_almoco_time else 0.0,
+        'preco_base': preco_base,
     }
+
     return render(request, 'ticket_estudante/comprar.html', context)
 
 @csrf_exempt
@@ -124,10 +164,13 @@ def SimularPagamento(request):
     Agora renomeado logicamente para ProcessarPagamento. 
     Lida com a criação do PIX real via Mercado Pago.
     """
-    aluno_obj, error = get_aluno(request)
-    if not aluno_obj: 
+    user_obj, user_type, error = get_user_profile(request)
+    if not user_obj: 
         return JsonResponse({'error': 'Não autorizado', 'detail': error}, status=401)
     
+    TicketModel = get_ticket_model(user_type)
+    filter_key = 'id_servidor' if user_type == 'servidor' else 'id_aluno'
+
     if request.method == 'POST':
         tipo = request.POST.get('tipo_refeicao', 'Almoço')
         prato_selecionado = prato.objects.filter(descricao=tipo).first()
@@ -142,8 +185,12 @@ def SimularPagamento(request):
         if not prato_selecionado:
             return JsonResponse({'error': 'Prato não encontrado'}, status=404)
 
-        is_cem = alunoscem.objects.filter(id_pessoa=aluno_obj.id_pessoa).exists()
-        valor = 0.0 if is_cem else prato_selecionado.preco_aluno
+        is_cem = False
+        if user_type == 'aluno':
+            is_cem = alunoscem.objects.filter(id_pessoa=user_obj.id_pessoa).exists()
+            valor = 0.0 if is_cem else prato_selecionado.preco_aluno
+        else:
+            valor = prato_selecionado.preco_servidor
         
         # Processar Adicionais (Valor unitário por ticket)
         adicionais_post = request.POST.get('adicionais_json', '[]')
@@ -168,8 +215,8 @@ def SimularPagamento(request):
         # SE FOR CEM, CRIA OS N TICKETS JÁ PAGOS E RETORNA SUCESSO DIRETO
         if is_cem or valor_total_sem_taxa <= 0:
             for _ in range(quantidade):
-                TicketAluno.objects.create(
-                    id_aluno=aluno_obj, 
+                TicketModel.objects.create(
+                    **{filter_key: user_obj}, 
                     valor=0.0, 
                     valor_adicionais=0.0,
                     tipo_refeicao=tipo,
@@ -185,8 +232,8 @@ def SimularPagamento(request):
             test_id = 'TESTE_' + str(uuid.uuid4())
             tickets_criados = []
             for i in range(quantidade):
-                t = TicketAluno.objects.create(
-                    id_aluno=aluno_obj, 
+                t = TicketModel.objects.create(
+                    **{filter_key: user_obj}, 
                     valor=valor, 
                     valor_adicionais=valor_unitario_adicionais,
                     valor_taxa=valor_unitario_taxa,
@@ -220,9 +267,9 @@ def SimularPagamento(request):
                 "description": f"{quantidade}x Ticket {tipo} - Cantina IFTO",
                 "payment_method_id": "pix",
                 "payer": {
-                    "email": f"{aluno_obj.id_pessoa.usuario}@ifto.edu.br",
-                    "first_name": aluno_obj.id_pessoa.nome.split()[0],
-                    "last_name": aluno_obj.id_pessoa.nome.split()[-1] if len(aluno_obj.id_pessoa.nome.split()) > 1 else "Aluno",
+                    "email": f"{user_obj.id_pessoa.usuario}@ifto.edu.br",
+                    "first_name": user_obj.id_pessoa.nome.split()[0],
+                    "last_name": user_obj.id_pessoa.nome.split()[-1] if len(user_obj.id_pessoa.nome.split()) > 1 else (user_type.capitalize()),
                 }
             }
             
@@ -243,8 +290,8 @@ def SimularPagamento(request):
             if payment.get('status') == 'pending' or payment.get('status') == 'approved':
                 tickets_criados = []
                 for i in range(quantidade):
-                    t = TicketAluno.objects.create(
-                        id_aluno=aluno_obj, 
+                    t = TicketModel.objects.create(
+                        **{filter_key: user_obj}, 
                         valor=valor, 
                         valor_adicionais=valor_unitario_adicionais,
                         valor_taxa=valor_unitario_taxa,
@@ -284,8 +331,10 @@ def StatusTicket(request, uuid):
     Polling inteligente: verifica no banco local e, caso pendente, 
     faz uma consulta ativa na API do Mercado Pago (Plano B).
     """
-    aluno_obj, error = get_aluno(request)
-    ticket = TicketAluno.objects.filter(uuid=uuid, id_aluno=aluno_obj).first()
+    user_obj, user_type, error = get_user_profile(request)
+    TicketModel = get_ticket_model(user_type)
+    filter_key = 'id_servidor' if user_type == 'servidor' else 'id_aluno'
+    ticket = TicketModel.objects.filter(uuid=uuid, **{filter_key: user_obj}).first()
     
     if not ticket:
         return JsonResponse({'error': 'Ticket não encontrado'}, status=404)
@@ -296,7 +345,7 @@ def StatusTicket(request, uuid):
         if ticket.id_pagamento_externo.startswith('TESTE_'):
             time_diff = (timezone.now() - ticket.data_compra).total_seconds()
             if time_diff >= 3:
-                TicketAluno.objects.filter(id_pagamento_externo=ticket.id_pagamento_externo).update(
+                TicketModel.objects.filter(id_pagamento_externo=ticket.id_pagamento_externo).update(
                     pago=True,
                     data_pagamento=timezone.now()
                 )
@@ -310,7 +359,7 @@ def StatusTicket(request, uuid):
             if payment_info["status"] in [200, 201]:
                 mp_status = payment_info["response"].get("status")
                 if mp_status == 'approved':
-                    TicketAluno.objects.filter(id_pagamento_externo=ticket.id_pagamento_externo).update(
+                    TicketModel.objects.filter(id_pagamento_externo=ticket.id_pagamento_externo).update(
                         pago=True,
                         data_pagamento=timezone.now()
                     )
@@ -339,7 +388,12 @@ def WebhookPix(request):
                 status = payment_info["response"].get("status")
                 
                 if status == 'approved':
+                    # Como o Webhook não tem sessão, tentamos atualizar em AMBAS as tabelas pelo ID externo
                     TicketAluno.objects.filter(id_pagamento_externo=id_pagamento).update(
+                        pago=True,
+                        data_pagamento=timezone.now()
+                    )
+                    TicketServidor.objects.filter(id_pagamento_externo=id_pagamento).update(
                         pago=True,
                         data_pagamento=timezone.now()
                     )
@@ -350,8 +404,10 @@ def WebhookPix(request):
     return JsonResponse({'status': 'method not allowed'}, status=405)
 
 def VisualizarTicket(request, uuid):
-    aluno_obj, error = get_aluno(request)
-    ticket = TicketAluno.objects.filter(uuid=uuid, id_aluno=aluno_obj).first()
+    user_obj, user_type, error = get_user_profile(request)
+    TicketModel = get_ticket_model(user_type)
+    filter_key = 'id_servidor' if user_type == 'servidor' else 'id_aluno'
+    ticket = TicketModel.objects.filter(uuid=uuid, **{filter_key: user_obj}).first()
     
     if not ticket or not ticket.pago:
         return redirect('TicketsEstudante')
@@ -396,8 +452,10 @@ def VisualizarTicket(request, uuid):
 
 def RevisarPagamento(request, uuid):
     """ Tela para retomar o pagamento de um ticket pendente """
-    aluno_obj, error = get_aluno(request)
-    ticket = TicketAluno.objects.filter(uuid=uuid, id_aluno=aluno_obj).first()
+    user_obj, user_type, error = get_user_profile(request)
+    TicketModel = get_ticket_model(user_type)
+    filter_key = 'id_servidor' if user_type == 'servidor' else 'id_aluno'
+    ticket = TicketModel.objects.filter(uuid=uuid, **{filter_key: user_obj}).first()
     
     if not ticket:
         return redirect('TicketsEstudante')

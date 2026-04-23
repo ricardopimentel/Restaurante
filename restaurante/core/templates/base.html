@@ -79,13 +79,33 @@
                                         <span class="user-role">Conectado</span>
                                     </div>
                                     <div class="dropdown-divider"></div>
-                                    {% if request.session.is_admin or request.session.can_switch %}
-                                        <a href="{% url 'TrocarDashboard' %}" class="dropdown-item">
-                                            <i class="fas fa-exchange-alt"></i> 
-                                            Visão {% if request.session.dashboard_mode == 'usuario' %}Funcionário{% else %}Usuário{% endif %}
+                                    
+                                    <!-- Perfil Ativo -->
+                                    <div class="dropdown-header" style="background: #f8fafc; padding: 10px 15px; border-radius: 4px; margin: 0 5px;">
+                                        <span style="font-size: 0.65em; text-transform: uppercase; color: var(--text-muted); font-weight: 800; letter-spacing: 0.5px;">Perfil Ativo</span><br>
+                                        <span style="font-size: 0.85em; font-weight: 700; color: var(--primary-dark);">{{ request.session.group_label }}</span>
+                                    </div>
+
+                                    <!-- Seletor de Perfil (Multiperfil) -->
+                                    {% if request.session.available_profiles|length > 1 %}
+                                        <a href="javascript:void(0)" class="dropdown-item" id="toggle-profiles" style="color: var(--primary-dark); font-weight: 700; background: rgba(16, 185, 129, 0.03);">
+                                            <i class="fas fa-user-friends"></i> Trocar Perfil
+                                            <i class="fas fa-chevron-down" style="float: right; margin-top: 4px; font-size: 0.8em; transition: transform 0.3s;" id="profile-chevron"></i>
                                         </a>
+                                        <div id="profiles-container" style="display: none; background: #fafafa; border-radius: 4px; margin: 0 5px; animation: slideDown 0.2s ease;">
+                                            {% for profile in request.session.available_profiles %}
+                                                <a href="{% url 'TrocarPerfil' perfil_type=profile.type %}" class="dropdown-item" style="font-size: 0.8em; padding: 10px 15px; {% if request.session.usertip == profile.type %}background: white; font-weight: 700; color: var(--primary-dark); border-left: 3px solid var(--primary);{% endif %}">
+                                                    <i class="fas {% if profile.type == 'admin' %}fa-user-shield{% elif profile.type == 'servidor' %}fa-users-cog{% elif profile.type == 'aluno' %}fa-graduation-cap{% else %}fa-user{% endif %}" style="width: 20px; color: {% if profile.type == 'admin' %}#ef4444{% elif profile.type == 'servidor' %}#8b5cf6{% elif profile.type == 'aluno' %}#10b981{% else %}var(--text-muted){% endif %};"></i>
+                                                    {{ profile.label }}
+                                                    {% if request.session.usertip == profile.type %}
+                                                        <i class="fas fa-check-circle" style="float: right; margin-top: 3px; color: var(--primary); font-size: 0.9em;"></i>
+                                                    {% endif %}
+                                                </a>
+                                            {% endfor %}
+                                        </div>
                                         <div class="dropdown-divider"></div>
                                     {% endif %}
+
                                     <a href="{% url 'Logout' %}" class="dropdown-item logout">
                                         <i class="fas fa-sign-out-alt"></i> Sair
                                     </a>
@@ -165,12 +185,30 @@
                             <span class="user-role" style="font-size: 0.85rem; color: #10b981; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">CONECTADO</span>
                         </div>
                         <div class="user-dropdown-mobile-content">
-                            {% if request.session.is_admin or request.session.can_switch %}
-                                <a href="{% url 'TrocarDashboard' %}" class="nav-link" style="color: var(--primary);">
-                                    <i class="fas fa-exchange-alt"></i> 
-                                    Visão {% if request.session.dashboard_mode == 'usuario' %}Funcionário{% else %}Usuário{% endif %}
+                            <!-- Perfil Ativo Mobile -->
+                            <div style="background: rgba(16, 185, 129, 0.05); padding: 10px 20px; margin-bottom: 10px;">
+                                <span style="font-size: 0.65em; text-transform: uppercase; color: #64748b; font-weight: 800;">Perfil Ativo</span><br>
+                                <span style="font-size: 0.95em; font-weight: 700; color: #059669;">{{ request.session.group_label }}</span>
+                            </div>
+
+                            <!-- Seletor de Perfil Mobile -->
+                            {% if request.session.available_profiles|length > 1 %}
+                                <a href="javascript:void(0)" class="nav-link" id="toggle-profiles-mobile" style="color: var(--primary-dark); font-weight: 700; background: rgba(0,0,0,0.02);">
+                                    <i class="fas fa-user-friends"></i> 
+                                    Trocar Perfil
+                                    <i class="fas fa-chevron-down" style="float: right; margin-top: 5px; font-size: 0.8em; transition: transform 0.3s;" id="profile-chevron-mobile"></i>
                                 </a>
+                                <div id="profiles-container-mobile" style="display: none; background: #fdfdfd; margin-bottom: 10px;">
+                                    {% for profile in request.session.available_profiles %}
+                                        <a href="{% url 'TrocarPerfil' perfil_type=profile.type %}" class="nav-link" style="padding: 12px 35px; font-size: 0.9em; {% if request.session.usertip == profile.type %}background: rgba(16, 185, 129, 0.05); font-weight: 700; color: var(--primary-dark);{% endif %}">
+                                            <i class="fas {% if profile.type == 'admin' %}fa-user-shield{% elif profile.type == 'servidor' %}fa-users-cog{% elif profile.type == 'aluno' %}fa-graduation-cap{% else %}fa-user{% endif %}" style="width: 25px; color: {% if profile.type == 'admin' %}#ef4444{% elif profile.type == 'servidor' %}#8b5cf6{% else %}var(--primary){% endif %};"></i>
+                                            {{ profile.label }}
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                                <div style="height: 1px; background: #eee; margin: 10px 20px;"></div>
                             {% endif %}
+
                             <a href="{% url 'Logout' %}" class="nav-link" style="color: #ef4444;">
                                 <i class="fas fa-sign-out-alt"></i> Sair
                             </a>
@@ -204,6 +242,25 @@
             $('#profile-trigger').on('click', function(e) {
                 e.stopPropagation();
                 $('#user-dropdown').toggleClass('active');
+            });
+
+            // Toggle Profiles List
+            $('#toggle-profiles, #toggle-profiles-mobile').on('click', function(e) {
+                e.stopPropagation();
+                const isMobile = $(this).attr('id').includes('mobile');
+                const container = isMobile ? $('#profiles-container-mobile') : $('#profiles-container');
+                const chevron = isMobile ? $('#profile-chevron-mobile') : $('#profile-chevron');
+                
+                container.slideToggle(200);
+                const isRotated = chevron.css('transform').includes('matrix(-1'); // Check if 180deg
+                chevron.css('transform', isRotated ? 'rotate(0deg)' : 'rotate(180deg)');
+            });
+
+            // Close dropdowns on click outside
+            $(document).on('click', function() {
+                $('#user-dropdown').removeClass('active');
+                $('#profiles-container, #profiles-container-mobile').hide();
+                $('#profile-chevron, #profile-chevron-mobile').css('transform', 'rotate(0deg)');
             });
 
             // Close dropdown when clicking outside

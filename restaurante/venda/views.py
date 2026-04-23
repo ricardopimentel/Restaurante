@@ -6,10 +6,10 @@ from django.views.decorators.csrf import csrf_exempt
 from restaurante.administracao.models import config
 from restaurante.core.libs.calendario import calendario
 from restaurante.core.libs.conexaoAD3 import conexaoAD
-from restaurante.core.models import pessoa, aluno, prato, usuariorestaurante, venda, alunoscem, alunoscolaboradores
+from restaurante.ticket_estudante.models import TicketAluno, TicketServidor
+from restaurante.core.models import pessoa, aluno, prato, usuariorestaurante, venda, VendaServidor, alunoscem, alunoscolaboradores, servidor
 import datetime
 from django.utils import timezone
-from restaurante.ticket_estudante.models import TicketAluno
 
 from restaurante.venda.forms import ConfirmacaoVendaForm
 
@@ -193,19 +193,23 @@ def SalvaAluno(cpf):
 
 
 def ExistePratoCadastrado(id_pessoa):
+    """
+    Busca o prato ativo no sistema. 
+    Prioriza o nome (Almoço/Janta/Cem) conforme o horário, mas aceita qualquer prato marcado como Ativo.
+    """
     hora = datetime.datetime.now().hour
-    id = False
+    tag_sugerida = "Almoço" if hora <= 14 else "Janta"
     if VerificarUsuarioCem(id_pessoa):
-        id = "Cem"
-    else:
-        if hora <= 14:
-            id = "Almoço"
-        else:
-            id = "Janta"
-    try:
-        return prato.objects.get(descricao=id)
-    except:
-        return False
+        tag_sugerida = "Cem"
+    
+    # 1. Tenta buscar o prato que corresponde à descrição sugerida E está ativo
+    prato_obj = prato.objects.filter(descricao__icontains=tag_sugerida, status=True).first()
+    
+    # 2. Se não achou por nome, pega o primeiro prato ativo que encontrar (mais resiliente)
+    if not prato_obj:
+        prato_obj = prato.objects.filter(status=True).first()
+        
+    return prato_obj if prato_obj else False
 
 
 def ExisteAlunoCadastrado(id_pessoa):
@@ -259,31 +263,33 @@ def VerificarUsuarioCem(id_pessoa):
 
 
 def Restricoes(id_aluno, id_prato):#tem que trazer a instacia nova da venda e comparar com a instancia antiga, pra saber se foi o mesmo prato
-    try:
+     hojetime = datetime.datetime.now().time()
+     hojedata = datetime.datetime.now()
+     try:
         horafechamento = config.objects.get(id=1).hora_fechamento_vendas
-        hoje = datetime.datetime.today()
-        if hoje.time() < horafechamento:#verifica a hora do fechamento das vendas
+        if hojetime < horafechamento:#verifica a hora do fechamento das vendas
             try:
-                vendaobj = venda.objects.get(data__year=hoje.year, data__month=hoje.month, data__day=hoje.day, id_aluno=id_aluno)#tenta encontrar uma venda para o aluno especifico na data de hoje
+                vendaobj = venda.objects.get(data__year=hojedata.year, data__month=hojedata.month, data__day=hojedata.day, id_aluno=id_aluno)#tenta encontrar uma venda para o aluno especifico na data de hoje
             except venda.DoesNotExist:
-                vendaobj = venda.objects.filter(data__year=hoje.year, data__month=hoje.month, data__day=hoje.day, id_aluno=id_aluno)#quando é a primeira venda do dia para esse aluno
+                vendaobj = None #quando é a primeira venda do dia para esse aluno
             except:
                 return {'status': True, 'erro': "Já existem duas vendas para esse aluno hoje"}
+            
             if vendaobj:#verifica se a venda existe
                 #verifica se o aluno é bolsista
                 try:
                     alunoobj = aluno.objects.get(id=id_aluno)
-                    alunocem = alunoscem.objects.get(id_pessoa=alunoobj.id_pessoa)
+                    alunocem_obj = alunoscem.objects.get(id_pessoa=alunoobj.id_pessoa)
                 except:
-                    alunocem = False
-                if alunocem:
+                    alunocem_obj = False
+                if alunocem_obj:
                     return {'status': True, 'erro': "O aluno é bolsista e já realizou a compra hoje"}
                 else:
                     #verifica se o aluno é colaborador
                     try:
                         alunoobj = aluno.objects.get(id=id_aluno)
                         alunocolaborador = alunoscolaboradores.objects.get(id_pessoa=alunoobj.id_pessoa)
-                    except Exception as e:
+                    except:
                         alunocolaborador = False
                     if alunocolaborador:#valida se o aluno é colaborador
                         #verifica o prato
@@ -294,15 +300,24 @@ def Restricoes(id_aluno, id_prato):#tem que trazer a instacia nova da venda e co
             return {'status': False, 'erro': "Não há restrições"}
         else:
             return {'status': True, 'erro': "O horário das vendas está encerrado"}
-    except Exception as e:
-        return {'status': True, 'erro': "Falha ao verificar o horário de fechamento"}
+     except Exception as e:
+        return {'status': True, 'erro': f"Falha ao verificar restrições: {str(e)}"}
 
 @csrf_exempt
 @permissao_requerida(item_id='leitura_qr')
 def ValidarTicket(request):
     if request.method == 'POST':
         uuid_str = request.POST.get('uuid')
+        
+        # 1. Tentar encontrar como Ticket de Aluno
         ticket = TicketAluno.objects.filter(uuid=uuid_str).first()
+        perfil = 'aluno'
+        
+        # 2. Se não achou, tentar como Ticket de Servidor
+        if not ticket:
+            ticket = TicketServidor.objects.filter(uuid=uuid_str).first()
+            perfil = 'servidor'
+            
         if not ticket:
             messages.error(request, "Ticket inválido ou não encontrado.")
             return redirect('ValidacaoQRCode')
@@ -311,33 +326,59 @@ def ValidarTicket(request):
             messages.error(request, "Ticket já foi utilizado!")
             return redirect('ValidacaoQRCode')
             
-        prato_ativo = ExistePratoCadastrado(ticket.id_aluno.id_pessoa.usuario)
+        # Busca prato ativo baseado no usuário do ticket
+        usuario_ticket = ticket.id_aluno.id_pessoa.usuario if perfil == 'aluno' else ticket.id_servidor.id_pessoa.usuario
+        prato_ativo = ExistePratoCadastrado(usuario_ticket)
+        
         if not prato_ativo:
             messages.error(request, "Não há prato ativo ou o horário não permite validar a venda.")
             return redirect('ValidacaoQRCode')
             
         # Validação de Tipo de Refeição e Valor
-        # Se o tipo do ticket for diferente do prato atual E os valores forem diferentes, bloqueia
         if ticket.tipo_refeicao and ticket.tipo_refeicao != prato_ativo.descricao:
-            if ticket.valor != prato_ativo.preco_aluno:
-                messages.error(request, f"O ticket de {ticket.tipo_refeicao} (R$ {ticket.valor:.2f}) não pode ser usado nessa refeição de {prato_ativo.descricao} (R$ {prato_ativo.preco_aluno:.2f}).")
+            preco_base = prato_ativo.preco_aluno if perfil == 'aluno' else prato_ativo.preco_servidor
+            if ticket.valor != preco_base:
+                messages.error(request, f"O ticket de {ticket.tipo_refeicao} (R$ {ticket.valor:.2f}) não pode ser usado nessa refeição de {prato_ativo.descricao} (R$ {preco_base:.2f}).")
+                return redirect('ValidacaoQRCode')
+        
+        # Restrições de Aluno
+        if perfil == 'aluno':
+            restricoes = Restricoes(ticket.id_aluno.id, prato_ativo.id)
+            if restricoes['status']:
+                messages.error(request, restricoes['erro'])
                 return redirect('ValidacaoQRCode')
             
-        restricoes = Restricoes(ticket.id_aluno.id, prato_ativo.id)
-        if restricoes['status']:
-            messages.error(request, restricoes['erro'])
-            return redirect('ValidacaoQRCode')
-            
         try:
-            sucesso = SalvarVenda(request, ticket.id_aluno.id, prato_ativo.id, ticket.id_aluno.id_pessoa.usuario, origem='TICKET')
+            if perfil == 'aluno':
+                # Fluxo de Aluno: Salva na tabela 'venda'
+                sucesso = SalvarVenda(request, ticket.id_aluno.id, prato_ativo.id, ticket.id_aluno.id_pessoa.usuario, origem='TICKET')
+            else:
+                # Fluxo de Servidor: Salva na tabela 'VendaServidor'
+                userl = str(request.session.get('userl', ''))
+                try:
+                    usuariorestauranteobj = usuariorestaurante.objects.select_related('id_pessoa').get(id_pessoa__usuario=userl)
+                except usuariorestaurante.DoesNotExist:
+                    pessoa_logged = pessoa.objects.get(usuario=userl)
+                    usuariorestauranteobj = usuariorestaurante.objects.create(id_pessoa=pessoa_logged)
+
+                VendaServidor.objects.create(
+                    valor_pago=ticket.valor + ticket.valor_adicionais,
+                    id_prato=prato_ativo,
+                    id_usuario_restaurante=usuariorestauranteobj,
+                    id_servidor=ticket.id_servidor,
+                    id_ticket_servidor=ticket
+                )
+                sucesso = True
+
             if sucesso:
                 ticket.usado = True
                 ticket.data_utilizacao = timezone.now()
                 ticket.tipo_refeicao = prato_ativo.descricao
                 ticket.save()
-                messages.success(request, f"Ticket de {ticket.id_aluno.id_pessoa.nome} validado com sucesso!")
+                nome_usuario = ticket.id_aluno.id_pessoa.nome if perfil == 'aluno' else ticket.id_servidor.id_pessoa.nome
+                messages.success(request, f"Ticket de {nome_usuario} ({perfil.upper()}) validado com sucesso!")
             else:
-                pass # SalvarVenda should have already added messages.error
+                pass 
         except Exception as e:
             messages.error(request, f"Falha ao validar: {str(e)}")
             

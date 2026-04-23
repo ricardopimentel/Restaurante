@@ -1,6 +1,27 @@
 from django import forms
 
 
+class RelatorioVendasServidorForm(forms.Form):
+    campo_data_inicial = forms.DateField(label="Data Inicial", widget=forms.DateInput(attrs={'type': 'date'}))
+    campo_data_final = forms.DateField(label="Data Final", widget=forms.DateInput(attrs={'type': 'date'}))
+    campo_servidor = forms.ChoiceField(label="Servidor")
+
+    def __init__(self, request, CHOICES, *args, **kwargs):
+        super(RelatorioVendasServidorForm, self).__init__(*args, **kwargs)
+        self.fields['campo_servidor'].choices = CHOICES
+
+    def clean(self):
+        cleaned_data = self.cleaned_data
+        campo_data_inicial = cleaned_data.get("campo_data_inicial")
+        campo_data_final = cleaned_data.get("campo_data_final")
+
+        if campo_data_inicial and campo_data_final:
+            if campo_data_final < campo_data_inicial:
+                raise forms.ValidationError("A data inicial deve ser menor que a data final", code='invalid')
+
+        return cleaned_data
+
+
 class RelatorioVendasForm(forms.Form):
     campo_data_inicial = forms.DateField(label="Data Inicial", widget=forms.DateInput(attrs={'type': 'date'}))
     campo_data_final = forms.DateField(label="Data Final", widget=forms.DateInput(attrs={'type': 'date'}))

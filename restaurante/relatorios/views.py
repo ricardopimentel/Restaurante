@@ -11,8 +11,8 @@ from django.shortcuts import render, resolve_url as r, redirect
 from django.http import HttpResponse
 from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_exempt
-from restaurante.core.models import venda, aluno, prato
-from restaurante.relatorios.forms import RelatorioVendasForm, RelatorioCustoAlunoForm
+from restaurante.core.models import venda, VendaServidor, aluno, servidor, prato
+from restaurante.relatorios.forms import RelatorioVendasForm, RelatorioCustoAlunoForm, RelatorioVendasServidorForm
 from django.core.cache import cache
 
 
@@ -482,7 +482,94 @@ def CsvVendas(request):
         #Adiciona linha ao arquivo
         writer.writerow([vend.data, vend.id_aluno.id_pessoa, vend.id_aluno.id_pessoa.usuario, str(vend.valor).replace('.', ',')])
 
-    return response
+@csrf_exempt
+@permissao_requerida(item_id='relatorio_servidores')
+def RelatorioVendasServidor(request):
+    soma = 0
+    datainicial = ''
+    datafinal = ''
+    vd = []
+
+    CHOICES = cache.get('lista_servidores_choices')
+    if not CHOICES:
+        CHOICES = [(-1, 'Todos')]
+        servidor_objs = servidor.objects.select_related('id_pessoa').all()
+        for s in servidor_objs:
+            CHOICES.append((s.id, str(s.id_pessoa.usuario).title()))
+        cache.set('lista_servidores_choices', CHOICES, 3600)
+
+    form = RelatorioVendasServidorForm(request, CHOICES, initial={
+        'campo_data_inicial': request.session.get('srv-data-inicial'),
+        'campo_data_final': request.session.get('srv-data-final'),
+        'campo_servidor': request.session.get('srv-selecionado'),
+    })
+
+    if request.method == 'POST':
+        form = RelatorioVendasServidorForm(request, CHOICES, request.POST)
+        if form.is_valid():
+            datainicial = request.POST['campo_data_inicial']
+            datafinal = request.POST['campo_data_final']
+            servidor_selecionado = form.cleaned_data['campo_servidor']
+
+            queryset = VendaServidor.objects.select_related().filter(
+                data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59']
+            )
+            
+            if servidor_selecionado != '-1':
+                queryset = queryset.filter(id_servidor=servidor_selecionado)
+
+            vd = queryset.order_by('data')
+
+            request.session['srv-data-inicial'] = datainicial
+            request.session['srv-data-final'] = datafinal
+            request.session['srv-selecionado'] = servidor_selecionado
+
+    for vend in vd:
+        soma += vend.valor_pago
+
+    return render(request, 'relatorios/relatorio_vendas_servidor.html', {
+        'soma': soma,
+        'datainicial': datainicial,
+        'datafinal': datafinal,
+        'itemselec': 'RELATÓRIOS',
+        'venda': vd,
+        'form': form,
+        'title': 'Relatórios Servidores',
+    })
+
+@permissao_requerida(item_id='relatorio_servidores')
+def PdfVendasServidor(request):
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    servidor_id = request.session.get('srv-selecionado')
+    datainicial = request.session.get('srv-data-inicial')
+    datafinal = request.session.get('srv-data-final')
+    soma = 0
+
+    queryset = VendaServidor.objects.select_related().filter(
+        data__range=[datainicial + ' 00:00:00', datafinal + ' 23:59:59']
+    )
+    
+    servidor_obj = None
+    if servidor_id and servidor_id != '-1':
+        queryset = queryset.filter(id_servidor=servidor_id)
+        servidor_obj = servidor.objects.get(id=servidor_id)
+
+    vd = queryset.order_by('data')
+    for item in vd:
+        soma += item.valor_pago
+
+    contexto = {
+        'title': 'Relatório Servidores PDF',
+        'pagesize': 'A4',
+        'venda': vd,
+        'soma': soma,
+        'datainicial': datainicial,
+        'datafinal': datafinal,
+        'servidor': servidor_obj,
+        'base_dir': BASE_DIR,
+    }
+
+    return render_to_pdf('relatorios/pdf_vendas_servidor.html', contexto)
 
 
     return response

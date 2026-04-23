@@ -33,15 +33,23 @@ class prato (models.Model):
     descricao = models.CharField('Descrição', max_length=200)
     preco = models.FloatField('Preço')
     preco_aluno = models.FloatField('Preço Aluno', default=0.0)
+    preco_servidor = models.FloatField('Preço Servidor', default=0.0)
     status = models.BooleanField('Ativo?', default=True)
 
 
 class aluno (models.Model):
     id_pessoa = models.ForeignKey(pessoa, on_delete=models.PROTECT)
 
+    def __str__(self):
+        return str(self.id_pessoa.nome)
+
+class servidor (models.Model):
+    id_pessoa = models.ForeignKey(pessoa, on_delete=models.PROTECT)
+    siap = models.CharField('SIAPE', max_length=20, null=True, blank=True)
+    status = models.BooleanField('Ativo?', default=True)
 
     def __str__(self):
-        return str(pessoa.nome)
+        return str(self.id_pessoa.nome)
 
 
 class venda (models.Model):
@@ -52,6 +60,14 @@ class venda (models.Model):
     id_usuario_restaurante = models.ForeignKey(usuariorestaurante, on_delete=models.PROTECT)
     id_aluno = models.ForeignKey(aluno, on_delete=models.PROTECT)
     origem = models.CharField(max_length=10, default='MANUAL')
+
+class VendaServidor(models.Model):
+    data = models.DateTimeField(auto_now_add=True)
+    valor_pago = models.FloatField()
+    id_prato = models.ForeignKey(prato, on_delete=models.PROTECT)
+    id_usuario_restaurante = models.ForeignKey(usuariorestaurante, on_delete=models.PROTECT)
+    id_servidor = models.ForeignKey(servidor, on_delete=models.PROTECT)
+    id_ticket_servidor = models.OneToOneField('ticket_estudante.TicketServidor', on_delete=models.SET_NULL, null=True, blank=True)
 
 
 class alunoscem (models.Model):
