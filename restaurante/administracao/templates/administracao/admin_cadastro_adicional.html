@@ -1,0 +1,314 @@
+<meta charset="UTF-8"/>
+{% extends "base.html" %}
+{% load static %}
+{% load restaurante_extras %}
+{%block titulo%}{{title}}{%endblock%}
+
+{%block conteudo%}
+    <style>
+        :root {
+            --admin-primary: #6366f1;
+            --admin-secondary: #4f46e5;
+        }
+
+        .admin-page-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 40px;
+            width: 100%;
+        }
+
+        .admin-breadcrumb {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .admin-breadcrumb a { color: var(--admin-primary); text-decoration: none; transition: color 0.2s; }
+        .admin-breadcrumb a:hover { opacity: 0.8; }
+        .admin-breadcrumb span { color: #ddd; }
+
+        /* Table Card */
+        .admin-table-card {
+            background: white;
+            border-radius: 24px;
+            padding: 30px;
+            border: 1px solid #e5e7eb;
+            box-shadow: var(--shadow-sm);
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f3f4f6;
+            gap: 20px;
+        }
+
+        .table-header h2 {
+            margin: 0;
+            font-size: 1.4em;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+        }
+
+        .btn-new-item {
+            background: var(--admin-primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 700;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-new-item:hover {
+            background: var(--admin-secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+
+        #minhaTabela { width: 100% !important; border-collapse: collapse; }
+        #minhaTabela thead th {
+            padding: 15px;
+            background: #f9fafb;
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            text-align: left;
+            border-bottom: 2px solid #f3f4f6;
+        }
+        #minhaTabela tbody td {
+            padding: 15px;
+            border-bottom: 1px solid #f3f4f6;
+            color: var(--text-main);
+        }
+
+        .btn-delete-action {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: transform 0.2s;
+        }
+        .btn-delete-action:hover { transform: scale(1.2); }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-container {
+            background: white;
+            border-radius: 28px;
+            width: 100%;
+            max-width: 550px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            position: relative;
+            animation: slideUp 0.4s cubic-bezier(0.17, 0.89, 0.32, 1.28);
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1.0); opacity: 1; } }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .modal-header h2 { margin: 0; font-size: 1.5em; font-weight: 800; color: var(--text-main); }
+        .btn-close-modal {
+            background: #f1f5f9;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+        .btn-close-modal:hover { background: #fee2e2; color: #ef4444; }
+
+        .form-row { margin-bottom: 20px; }
+        .form-row label {
+            display: block; font-weight: 700; font-size: 0.8em; color: var(--text-muted);
+            text-transform: uppercase; margin-bottom: 8px;
+        }
+        .form-row input, .form-row select {
+            width: 100%; padding: 12px 18px; border-radius: 14px; border: 1px solid #e2e8f0;
+            background: #f8fafc; font-family: inherit; outline: none; transition: all 0.2s; box-sizing: border-box;
+        }
+        .form-row input:focus { border-color: var(--admin-primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); background: white; }
+
+        .btn-save-modal {
+            width: 100%;
+            background: var(--admin-primary);
+            color: white;
+            padding: 16px;
+            border-radius: 14px;
+            border: none;
+            font-weight: 700;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 20px;
+        }
+        .btn-save-modal:hover { background: var(--admin-secondary); transform: translateY(-2px); box-shadow: 0 8px 15px rgba(99, 102, 241, 0.3); }
+
+    </style>
+
+    <div class="admin-page-header">
+        <div class="admin-breadcrumb">
+            <a href="{% url 'Administracao' %}">Administração</a>
+            <span>/</span>
+            <a href="{% url 'MenuCardapioHub' %}">Central de Cardápio</a>
+            <span>/</span>
+            <span>Adicionais</span>
+        </div>
+        <h1 style="margin: 0; font-size: 2em; color: var(--text-main); font-weight: 800;">Adicionais do Restaurante</h1>
+    </div>
+
+    <!-- Adicional List -->
+    <form id="frm" method="post" action="{% url 'ExcluirAdicionais' %}">
+        {% csrf_token %}
+        <div class="admin-table-card">
+            <div class="table-header">
+                <h2><i class="fas fa-plus-circle" style="color: var(--admin-primary);"></i> Adicionais Registrados</h2>
+                <div style="display: flex; gap: 15px;">
+                    <button type="button" class="btn-new-item" onclick="openModal()">
+                        <i class="fas fa-plus"></i> Novo Adicional
+                    </button>
+                    <button type="submit" class="btn-delete-action" title="Excluir Selecionados">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <table id="minhaTabela">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Valor</th>
+                        <th style="text-align: center;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for adicional in adicionais%}
+                        <tr>
+                            <td style="font-weight: 700;">
+                                <a href="{% url 'EditarAdicional' id_adicional=adicional.id %}" style="color: var(--admin-primary); text-decoration: none;">
+                                    {{ adicional.nome }}
+                                </a>
+                            </td>
+                            <td style="font-family: monospace; font-weight: 600;">R$ {{ adicional.valor }}</td>
+                            <td style="text-align: center;">
+                                <input type="checkbox" name="{{ adicional.id }}" style="width: 18px; height: 18px;">
+                            </td>
+                        </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+        </div>
+    </form>
+
+    <!-- Modal for Create/Edit -->
+    <div id="adicionalModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>{% if id %}Editar Adicional{% else %}Novo Adicional{% endif %}</h2>
+                <button type="button" class="btn-close-modal" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="formulario">
+                <form id="adicional-form" method="post" action="{% if id %}{% url 'EditarAdicional' id_adicional=id %}{% else %}{% url 'CadastroAdicional' %}{% endif %}">
+                    {% csrf_token %}
+                    <div class="form-body">
+                        {{ form.as_p }}
+                    </div>
+                    <button type="submit" name="commit" class="btn-save-modal">
+                        <i class="fas fa-save" style="margin-right: 8px;"></i> Salvar Alterações
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $('#minhaTabela').DataTable({
+                "bPaginate": true,
+                "bLengthChange": false,
+                "language": {
+                    "sEmptyTable": "Nenhum registro encontrado",
+                    "sSearch": "<i class='fas fa-search' style='color:#999'></i> ",
+                    "oPaginate": {
+                        "sNext": "<i class='fas fa-chevron-right'></i>",
+                        "sPrevious": "<i class='fas fa-chevron-left'></i>"
+                    }
+                }
+            });
+
+            // Check if we are in Edit mode (id exists)
+            {% if id %}
+                openModal();
+            {% endif %}
+        });
+
+        function openModal() {
+            document.getElementById('adicionalModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent scroll
+        }
+
+        function closeModal() {
+            // If we are in edit mode, redirect to the main registration page to clear the state
+            {% if id %}
+                window.location.href = "{% url 'CadastroAdicional' %}";
+            {% else %}
+                document.getElementById('adicionalModal').style.display = 'none';
+                document.body.style.overflow = 'auto';
+            {% endif %}
+        }
+
+        // Close modal on click outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('adicionalModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+{%endblock%}

@@ -293,11 +293,36 @@
                             <button type="button" class="quantity-btn" id="btn-plus"><i class="fas fa-plus"></i></button>
                         </div>
 
-                        <p style="text-align: left; font-size: 0.85em; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;">2. Resumo de Valor</p>
+                        <!-- ADICIONAIS -->
+                        {% if adicionais %}
+                        <p style="text-align: left; font-size: 0.85em; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;">2. Deseja algo a mais? (Adicionais)</p>
+                        <div id="adicionais-container" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px;">
+                            {% for add in adicionais %}
+                            <div class="adicional-row" style="display: flex; align-items: center; justify-content: space-between; background: white; padding: 12px 18px; border-radius: 16px; border: 1px solid #f1f5f9;">
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="font-weight: 700; font-size: 0.95em; color: var(--text-main);">{{ add.nome }}</span>
+                                    <span style="font-size: 0.85em; color: var(--primary); font-weight: 600;">+ R$ {{ add.valor|stringformat:'.2f' }}</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 12px; background: #f8fafc; padding: 5px; border-radius: 12px;">
+                                    <button type="button" class="btn-add-minus" onclick="changeAdd('{{ add.id }}', -1, '{{ add.valor|stringformat:'.2f' }}')" style="width: 28px; height: 28px; border-radius: 8px; border: none; background: white; cursor: pointer; color: var(--text-muted);"><i class="fas fa-minus" style="font-size: 0.8em;"></i></button>
+                                    <span id="add-qtd-{{ add.id }}" class="add-qtd-val" data-id="{{ add.id }}" data-price="{{ add.valor|stringformat:'.2f' }}" style="font-weight: 800; font-size: 1.1em; width: 20px; text-align: center;">0</span>
+                                    <button type="button" class="btn-add-plus" onclick="changeAdd('{{ add.id }}', 1, '{{ add.valor|stringformat:'.2f' }}')" style="width: 28px; height: 28px; border-radius: 8px; border: none; background: white; cursor: pointer; color: var(--primary);"><i class="fas fa-plus" style="font-size: 0.8em;"></i></button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="adicionais_json" id="adicionais_json" value="[]">
+                        {% endif %}
+
+                        <p style="text-align: left; font-size: 0.85em; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;">{% if adicionais %}3{% else %}2{% endif %}. Resumo de Valor</p>
                         <div class="price-section" style="align-items: stretch; gap: 12px; padding: 25px;">
                             <div style="display: flex; justify-content: space-between; font-size: 0.95em; color: var(--text-main);">
                                 <span style="font-weight: 500;">Valor do Prato:</span>
                                 <span style="font-weight: 700;" id="plate-price-display">R$ 0,00</span>
+                            </div>
+                            <div id="add-price-row" style="display: none; justify-content: space-between; font-size: 0.95em; color: var(--text-main);">
+                                <span style="font-weight: 500;">Adicionais:</span>
+                                <span style="font-weight: 700;" id="add-price-display">R$ 0,00</span>
                             </div>
                             <div style="display: flex; justify-content: space-between; font-size: 0.9em; color: #64748b;">
                                 <span style="display: flex; align-items: center; gap: 5px;">
@@ -378,28 +403,63 @@
             // Atualizar preço
             const pixFeePercent = parseFloat("{{ pix_fee|stringformat:'.2f'|default:'0' }}".replace(',', '.'));
 
+            let valorTotalAdicionais = 0;
+
+            window.changeAdd = function(id, delta, valor) {
+                const valNumeric = parseFloat(valor.toString().replace(',', '.'));
+                const el = $('#add-qtd-' + id);
+                let current = parseInt(el.text()) || 0;
+                let next = current + delta;
+                if (next < 0) next = 0;
+                if (next > 10) next = 10;
+                
+                el.text(next);
+                updatePriceDisplay();
+            };
+
             function updatePriceDisplay() {
                 const checkedOption = $('input[name="tipo_refeicao"]:checked');
                 if (!checkedOption.length) return;
 
                 let qtd = parseInt($('#quantidade').val()) || 1;
-                if (qtd < 1) qtd = 1;
-                if (qtd > 20) qtd = 20;
-
                 const basePlatePrice = parseFloat(checkedOption.data('price').toString().replace(',', '.'));
                 const platePrice = basePlatePrice * qtd;
-                const feeAmount = platePrice > 0 ? (platePrice * (pixFeePercent / 100)) : 0;
-                const totalPrice = platePrice + feeAmount;
+
+                // Calcular Adicionais (Valor Bruto Unitário)
+                let valorAddsUnitario = 0;
+                const adds = [];
+                $('.add-qtd-val').each(function() {
+                    const q = parseInt($(this).text());
+                    if (q > 0) {
+                        const id = $(this).data('id');
+                        // Ler o preço direto do atributo data-price (mais seguro que o texto da tela)
+                        const price = parseFloat($(this).attr('data-price').toString().replace(',', '.'));
+                        valorAddsUnitario += price * q;
+                        adds.push({id: id, qtd: q});
+                    }
+                });
+                $('#adicionais_json').val(JSON.stringify(adds));
+
+                // Valor Adicionais Geral (Bruto)
+                const valorTotalAdicionaisGeral = valorAddsUnitario * qtd;
+
+                if (valorTotalAdicionaisGeral > 0) {
+                    $('#add-price-row').css('display', 'flex');
+                    $('#add-price-display').text('R$ ' + valorTotalAdicionaisGeral.toFixed(2).replace('.', ','));
+                } else {
+                    $('#add-price-row').hide();
+                }
+
+                // CÁLCULO DA TAXA ÚNICA SOBRE O TOTAL BRUTO
+                const totalBruto = platePrice + valorTotalAdicionaisGeral;
+                const feeAmount = totalBruto > 0 ? (totalBruto * (pixFeePercent / 100)) : 0;
+                const totalPrice = totalBruto + feeAmount;
 
                 $('#plate-price-display').text('R$ ' + platePrice.toFixed(2).replace('.', ','));
                 $('#fee-value-display').text('R$ ' + feeAmount.toFixed(2).replace('.', ','));
                 
                 const displayPrice = $('#display-price');
-                displayPrice.css('opacity', '0.5');
-                setTimeout(() => {
-                    displayPrice.text('R$ ' + totalPrice.toFixed(2).replace('.', ','));
-                    displayPrice.css('opacity', '1');
-                }, 100);
+                displayPrice.text('R$ ' + totalPrice.toFixed(2).replace('.', ','));
             }
 
             $('#btn-minus').on('click', function() {

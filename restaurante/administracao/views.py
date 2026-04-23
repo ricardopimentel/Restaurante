@@ -8,10 +8,10 @@ from functools import wraps
 
 # Create your views here.
 from restaurante.administracao.forms import AdForm, CadastroPratoForm, ConfigHorarioLimiteVendasForm, \
-    CadastroAlunosBolsistasForm, CadastroAlunosColaboradoresForm, ConfigPixForm
+    CadastroAlunosBolsistasForm, CadastroAlunosColaboradoresForm, ConfigPixForm, CadastroAdicionalForm
 from restaurante.administracao.models import config
 from restaurante.core.libs.conexaoAD3 import conexaoAD
-from restaurante.core.models import prato, alunoscem, pessoa, alunoscolaboradores, CardapioDia, OpcaoAlimento
+from restaurante.core.models import prato, alunoscem, pessoa, alunoscolaboradores, CardapioDia, OpcaoAlimento, Adicional
 from restaurante.core.constants import FOOD_OPTIONS
 from restaurante.venda.views import ExisteAlunoCadastrado, SalvaAluno
 
@@ -119,6 +119,60 @@ def EditarPrato(request, id_prato):
         'form': form,
         'pratos': pratos,
         'id': id_prato,
+    })
+
+@permissao_requerida(item_id='adicionais')
+def CadastroAdicional(request):
+    form = CadastroAdicionalForm()
+    adicionais = Adicional.objects.all()
+    if request.method == 'POST':
+        form = CadastroAdicionalForm(data=request.POST)
+        if form.is_valid():
+            messages.success(request, 'Adicional Cadastrado Com Sucesso!!')
+            return redirect(r('CadastroAdicional'))
+    return render(request, 'administracao/admin_cadastro_adicional.html', {
+        'title': 'Cadastro de Adicional',
+        'itemselec': 'ADMINISTRAÇÃO',
+        'form': form,
+        'adicionais': adicionais,
+    })
+
+@permissao_requerida(item_id='adicionais')
+def ExcluirAdicionais(request):
+    check = False
+    adicionais = Adicional.objects.all()
+    for item in adicionais:
+        if request.POST.get(str(item.id)):
+            check = True
+            try:
+                item.delete()
+                messages.success(request, f'Adicional {item.nome} excluído')
+            except:
+                messages.error(request, f'Erro ao excluir adicional {item.nome}')
+    if not check:
+        messages.error(request, 'Selecione pelo menos 1 adicional para excluir')
+    return redirect(r('CadastroAdicional'))
+
+@permissao_requerida(item_id='adicionais')
+def EditarAdicional(request, id_adicional):
+    adicionais = Adicional.objects.all()
+    obj = adicionais.get(pk=id_adicional)
+    form = CadastroAdicionalForm(initial={'nome': obj.nome, 'valor': obj.valor, 'status': obj.status, 'id': id_adicional})
+    
+    if request.method == 'POST':
+        form = CadastroAdicionalForm(data=request.POST)
+        if form.is_valid():
+            messages.success(request, 'Adicional editado com sucesso!!')
+            return redirect(r('CadastroAdicional'))
+        else:
+            messages.error(request, 'Erro ao editar adicional. Verifique os campos.')
+
+    return render(request, 'administracao/admin_cadastro_adicional.html', {
+        'title': 'Cadastro de Adicional',
+        'itemselec': 'ADMINISTRAÇÃO',
+        'form': form,
+        'adicionais': adicionais,
+        'id': id_adicional,
     })
 
 @permissao_requerida(item_id='horario_vendas')
@@ -451,6 +505,7 @@ def GerenciarPermissoes(request):
         
         {'id': 'cardapio_dia', 'label': 'Cardápio do Dia', 'category': 'Cardápio', 'parent': 'cardapio_hub'},
         {'id': 'pratos_precos', 'label': 'Pratos & Preços', 'category': 'Cardápio', 'parent': 'cardapio_hub'},
+        {'id': 'adicionais', 'label': 'Adicionais', 'category': 'Cardápio', 'parent': 'cardapio_hub'},
         {'id': 'opcoes_alimento', 'label': 'Opções de Alimentos', 'category': 'Cardápio', 'parent': 'cardapio_hub'},
         
         {'id': 'config_ad', 'label': 'Configuração do AD/LDAP', 'category': 'Administração', 'parent': 'menu_admin'},
@@ -498,13 +553,25 @@ def GerenciarPermissoes(request):
             return redirect(r('GerenciarPermissoes'))
             
         instance = MenuPermission.objects.filter(id=id_perm).first() if id_perm else None
-        if instance and instance.ad_group == ADMIN_GROUP:
-            messages.error(request, "O perfil de Administradores é automático.")
-            return redirect(r('GerenciarPermissoes'))
-
+        
         form = MenuPermissionForm(data=request.POST, instance=instance)
         if form.is_valid():
-            form.save()
+            new_instance = form.save(commit=False)
+            
+            # Proteção especial para o grupo de Administradores
+            if instance and instance.ad_group == ADMIN_GROUP:
+                # Garante que não se pode remover permissões, apenas adicionar
+                old_allowed = set(instance.get_allowed_list())
+                new_allowed = set(new_instance.allowed_menus.split(','))
+                final_allowed = old_allowed.union(new_allowed)
+                new_instance.allowed_menus = ','.join(filter(None, final_allowed))
+                
+                old_quick = set(instance.get_quick_list())
+                new_quick = set(new_instance.quick_access.split(','))
+                final_quick = old_quick.union(new_quick)
+                new_instance.quick_access = ','.join(filter(None, final_quick))
+
+            new_instance.save()
             messages.success(request, "Salvo com sucesso!")
             return redirect(r('GerenciarPermissoes'))
 

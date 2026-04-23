@@ -5,7 +5,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from restaurante.administracao.models import config
 from restaurante.core.libs.conexaoAD3 import conexaoAD
-from restaurante.core.models import prato, alunoscem, pessoa
+from restaurante.core.models import prato, alunoscem, pessoa, Adicional
 
 
 class AdForm(forms.ModelForm):
@@ -192,4 +192,42 @@ class MenuPermissionForm(forms.ModelForm):
         self.fields['ad_group'].label = "Grupo do AD"
         self.fields['default_dashboard'].label = "Visão Padrão"
         self.fields['can_switch_dashboard'].label = "Pode trocar de Dashboard?"
-        self.fields['can_sell'].label = "Pode realizar venda?"
+        self.fields['can_sell'].label = "Pode realizar venda?"
+
+
+class CadastroAdicionalForm(forms.ModelForm):
+    id = forms.CharField(required=False, widget=forms.HiddenInput())
+
+    class Meta:
+        model = Adicional
+        fields = ('nome', 'valor', 'status')
+
+    def __init__(self, *args, **kwargs):
+        super(CadastroAdicionalForm, self).__init__(*args, **kwargs)
+        self.fields['nome'].widget = forms.TextInput(attrs={
+            'placeholder': 'Nome do Adicional',
+            'title': 'Nome'})
+        self.fields['nome'].label = ''
+        self.fields['valor'].widget = forms.TextInput(attrs={
+            'placeholder': 'Valor',
+            'title': 'Valor do Adicional'})
+        self.fields['valor'].label = ''
+
+    def clean(self):
+        cleaned_data = self.cleaned_data
+        Nome = cleaned_data.get("nome")
+        Valor = cleaned_data.get("valor")
+        Status = cleaned_data.get("status")
+        Id = cleaned_data.get("id")
+
+        try:
+            if Id:
+                obj = Adicional.objects.get(id=Id)
+                obj.nome = Nome; obj.valor = Valor; obj.status = Status
+                obj.save()
+            else:
+                obj = Adicional(nome=Nome, valor=Valor, status=Status)
+                obj.save()
+        except:
+            raise forms.ValidationError("Não foi possível salvar o adicional", code='invalid')
+        return cleaned_data

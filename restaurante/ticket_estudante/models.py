@@ -5,7 +5,10 @@ import uuid
 class TicketAluno(models.Model):
     id_aluno = models.ForeignKey(aluno, on_delete=models.PROTECT)
     data_compra = models.DateTimeField(auto_now_add=True)
-    valor = models.FloatField('Valor Pago')
+    valor = models.FloatField('Valor do Prato') # Valor base do prato para a venda
+    valor_adicionais = models.FloatField('Valor Adicionais', default=0.0) # Valor total dos extras
+    valor_taxa = models.FloatField('Valor da Taxa', default=0.0) # Valor da taxa de conveniência
+    detalhe_adicionais = models.TextField('Detalhe Adicionais', null=True, blank=True) # JSON com itens
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     pago = models.BooleanField('Pago?', default=False)
     usado = models.BooleanField('Usado?', default=False)

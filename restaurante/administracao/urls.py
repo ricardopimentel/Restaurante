@@ -8,6 +8,9 @@ urlpatterns = [
     re_path(r'^cadastroprato/$', views.CadastroPrato, name='CadastroPrato'),
     re_path(r'^excluirpratos/$', views.ExcluirPratos, name='ExcluirPratos'),
     re_path(r'^editarpratos/(?P<id_prato>.+)$', views.EditarPrato, name='EditarPrato'),
+    re_path(r'^cadastroadicional/$', views.CadastroAdicional, name='CadastroAdicional'),
+    re_path(r'^excluiradicionais/$', views.ExcluirAdicionais, name='ExcluirAdicionais'),
+    re_path(r'^editaradicionais/(?P<id_adicional>.+)$', views.EditarAdicional, name='EditarAdicional'),
     re_path(r'^horariolimitevendas/$', views.HorarioLimiteVendas, name='HorarioLimiteVendas'),
     re_path(r'^tutoriais/(?P<action>.+)$', views.Tutoriais, name='Tutoriais'),
 

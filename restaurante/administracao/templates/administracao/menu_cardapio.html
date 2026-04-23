@@ -166,6 +166,19 @@
             </a>
             {% endif %}
 
+            <!-- Cadastro de Adicionais -->
+            {% if 'adicionais' in request.session.allowed_items %}
+            <a href="{% url 'CadastroAdicional' %}" class="hub-card">
+                <div class="hub-icon-box">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <div class="hub-info">
+                    <h3>Adicionais</h3>
+                    <p>Cadastre itens extras que podem ser adicionados ao pedido com valores específicos.</p>
+                </div>
+            </a>
+            {% endif %}
+
             <!-- Opções de Alimentos -->
             {% if 'opcoes_alimento' in request.session.allowed_items %}
             <a href="{% url 'GerenciarOpcoesAlimento' %}" class="hub-card">

@@ -100,3 +100,16 @@ class OpcaoAlimento(models.Model):
 
     def __str__(self):
         return f"{self.nome} ({self.categoria})"
+
+
+class Adicional(models.Model):
+    nome = models.CharField('Nome', max_length=100)
+    valor = models.DecimalField('Valor', max_digits=10, decimal_places=2)
+    status = models.BooleanField('Ativo?', default=True)
+
+    class Meta:
+        verbose_name = 'Adicional'
+        verbose_name_plural = 'Adicionais'
+
+    def __str__(self):
+        return f"{self.nome} - R$ {self.valor}"

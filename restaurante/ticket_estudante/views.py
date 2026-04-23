@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from decouple import config
 from restaurante.administracao.models import config as config_model
-from restaurante.core.models import prato, alunoscem, aluno
+from restaurante.core.models import prato, alunoscem, aluno, Adicional
 from restaurante.ticket_estudante.models import TicketAluno
 
 def get_config():
@@ -110,6 +110,7 @@ def ComprarTicket(request):
         'almoco': almoco,
         'janta': janta,
         'is_cem': is_cem,
+        'adicionais': Adicional.objects.filter(status=True),
         'pix_fee': getattr(get_config(), 'pix_fee', 0.0),
         'pix_test_mode': getattr(get_config(), 'pix_test_mode', False),
         'preco_almoco': 0.0 if is_cem else (almoco.preco_aluno if almoco else 0.0),
@@ -144,12 +145,25 @@ def SimularPagamento(request):
         is_cem = alunoscem.objects.filter(id_pessoa=aluno_obj.id_pessoa).exists()
         valor = 0.0 if is_cem else prato_selecionado.preco_aluno
         
+        # Processar Adicionais (Valor unitário por ticket)
+        adicionais_post = request.POST.get('adicionais_json', '[]')
+        adicionais_lista = json.loads(adicionais_post)
+        valor_unitario_adicionais = 0.0
+        for item in adicionais_lista:
+            try:
+                obj = Adicional.objects.get(id=item['id'])
+                valor_unitario_adicionais += float(obj.valor) * int(item['qtd'])
+            except: pass
+
         # BUSCA TAXA PIX (%)
         conf = get_config()
         pix_fee_percent = float(getattr(conf, 'pix_fee', 0.0))
         
-        valor_total_sem_taxa = valor * quantidade
-        valor_com_taxa = float(valor_total_sem_taxa) * (1 + (pix_fee_percent / 100)) if valor_total_sem_taxa > 0 else 0.0
+        # Valor total = (Prato + Adicionais) * Quantidade
+        valor_total_sem_taxa = (valor + valor_unitario_adicionais) * quantidade
+        valor_total_taxa = float(valor_total_sem_taxa) * (pix_fee_percent / 100) if valor_total_sem_taxa > 0 else 0.0
+        valor_com_taxa = valor_total_sem_taxa + valor_total_taxa
+        valor_unitario_taxa = valor_total_taxa / quantidade
 
         # SE FOR CEM, CRIA OS N TICKETS JÁ PAGOS E RETORNA SUCESSO DIRETO
         if is_cem or valor_total_sem_taxa <= 0:
@@ -157,6 +171,7 @@ def SimularPagamento(request):
                 TicketAluno.objects.create(
                     id_aluno=aluno_obj, 
                     valor=0.0, 
+                    valor_adicionais=0.0,
                     tipo_refeicao=tipo,
                     pago=True,
                     data_pagamento=timezone.now()
@@ -169,10 +184,13 @@ def SimularPagamento(request):
             import uuid
             test_id = 'TESTE_' + str(uuid.uuid4())
             tickets_criados = []
-            for _ in range(quantidade):
+            for i in range(quantidade):
                 t = TicketAluno.objects.create(
                     id_aluno=aluno_obj, 
                     valor=valor, 
+                    valor_adicionais=valor_unitario_adicionais,
+                    valor_taxa=valor_unitario_taxa,
+                    detalhe_adicionais=adicionais_post,
                     tipo_refeicao=tipo,
                     pago=False,
                     data_pagamento=None,
@@ -224,10 +242,13 @@ def SimularPagamento(request):
 
             if payment.get('status') == 'pending' or payment.get('status') == 'approved':
                 tickets_criados = []
-                for _ in range(quantidade):
+                for i in range(quantidade):
                     t = TicketAluno.objects.create(
                         id_aluno=aluno_obj, 
                         valor=valor, 
+                        valor_adicionais=valor_unitario_adicionais,
+                        valor_taxa=valor_unitario_taxa,
+                        detalhe_adicionais=adicionais_post,
                         tipo_refeicao=tipo,
                         pago=(payment.get('status') == 'approved'),
                         data_pagamento=timezone.now() if payment.get('status') == 'approved' else None,
@@ -346,11 +367,31 @@ def VisualizarTicket(request, uuid):
         
         # Adiciona flag e tempo de expiração para o comprovante
         ticket.expira_em = (ticket.data_utilizacao + timedelta(minutes=40)).isoformat()
+
+    # Processar adicionais para exibição
+    adicionais_list = []
+    if ticket.detalhe_adicionais:
+        try:
+            items = json.loads(ticket.detalhe_adicionais)
+            for item in items:
+                adicional_obj = Adicional.objects.filter(id=item['id']).first()
+                if adicional_obj:
+                    adicionais_list.append({
+                        'nome': adicional_obj.nome,
+                        'qtd': item['qtd'],
+                        'valor_unit': adicional_obj.valor,
+                        'total': float(adicional_obj.valor) * int(item['qtd'])
+                    })
+        except:
+            pass
         
+    ticket.valor_total_pago = float(ticket.valor) + float(ticket.valor_adicionais) + float(ticket.valor_taxa)
+    
     return render(request, 'ticket_estudante/ver_ticket.html', {
         'title': 'Meu Ticket', 
         'itemselec': 'TICKETS', 
-        'ticket': ticket
+        'ticket': ticket,
+        'adicionais_comprados': adicionais_list
     })
 
 def RevisarPagamento(request, uuid):
