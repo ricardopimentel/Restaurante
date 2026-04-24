@@ -208,29 +208,32 @@ def CadastroBolsistas(request):
         ListaAlunosAD = GetListaEstudantesAD()
         form = CadastroAlunosBolsistasForm(data=request.POST)
         if form.is_valid():
-            usuarios = form.cleaned_data['usuarios']
-            ListaCPFsDigitados = list(map(str, usuarios.split('\n'))) 
-            for cpf in ListaCPFsDigitados:
-                cpf = str(cpf.replace('\r', '').strip())
-                if not cpf: continue
-                if (cpf in ListaAlunosAD):
-                    try:
-                        alunoobj = ExisteAlunoCadastrado(cpf)
-                        if alunoobj:
-                            pessoaobj = pessoa.objects.get(usuario=cpf)
-                        else:
-                            retorno = SalvaAluno(cpf)
-                            pessoaobj = retorno['pessoa']
-                        
-                        cem, created = alunoscem.objects.get_or_create(id_pessoa=pessoaobj)
-                        if created:
-                            ListaAcertos.append(f"O CPF: {cpf} Foi adicionado com sucesso!")
-                        else:
-                            ListaErros.append(f"O CPF: {cpf} já é bolsista.")
-                    except:
-                        ListaErros.append(f"Erro ao processar o CPF: {cpf}")
-                else:
-                    ListaErros.append(f"O CPF: {cpf} Não é de um aluno do IFTO")
+            if ListaAlunosAD is False:
+                messages.error(request, "Falha ao conectar ao servidor AD. Verifique as configurações.")
+            else:
+                usuarios = form.cleaned_data['usuarios']
+                ListaCPFsDigitados = list(map(str, usuarios.split('\n'))) 
+                for cpf in ListaCPFsDigitados:
+                    cpf = str(cpf.replace('\r', '').strip())
+                    if not cpf: continue
+                    if (cpf in ListaAlunosAD):
+                        try:
+                            alunoobj = ExisteAlunoCadastrado(cpf)
+                            if alunoobj:
+                                pessoaobj = pessoa.objects.get(usuario=cpf)
+                            else:
+                                retorno = SalvaAluno(cpf)
+                                pessoaobj = retorno['pessoa']
+                            
+                            cem, created = alunoscem.objects.get_or_create(id_pessoa=pessoaobj)
+                            if created:
+                                ListaAcertos.append({'nome': pessoaobj.nome, 'matricula': cpf})
+                            else:
+                                ListaErros.append({'nome': pessoaobj.nome, 'matricula': cpf, 'erro': 'Já é bolsista.'})
+                        except:
+                            ListaErros.append({'matricula': cpf, 'erro': f'Erro ao processar (verifique se o aluno existe).'})
+                    else:
+                        ListaErros.append({'matricula': cpf, 'erro': 'Não é um aluno do IFTO.'})
             
     return render(request, 'administracao/admin_cadastro_bolsistas.html', {
         'title': 'Cadastro de Bolsistas',
@@ -272,29 +275,32 @@ def CadastroColaboradores(request):
         ListaAlunosAD = GetListaEstudantesAD()
         form = CadastroAlunosColaboradoresForm(data=request.POST)
         if form.is_valid():
-            usuarios = form.cleaned_data['usuarios']
-            ListaCPFsDigitados = list(map(str, usuarios.split('\n'))) 
-            for cpf in ListaCPFsDigitados:
-                cpf = str(cpf.replace('\r', '').strip())
-                if not cpf: continue
-                if (cpf in ListaAlunosAD):
-                    try:
-                        alunoobj = ExisteAlunoCadastrado(cpf)
-                        if alunoobj:
-                            pessoaobj = pessoa.objects.get(usuario=cpf)
-                        else:
-                            retorno = SalvaAluno(cpf)
-                            pessoaobj = retorno['pessoa']
-                        
-                        colab, created = alunoscolaboradores.objects.get_or_create(id_pessoa=pessoaobj)
-                        if created:
-                            ListaAcertos.append(f"O CPF: {cpf} Foi adicionado com sucesso!")
-                        else:
-                            ListaErros.append(f"O CPF: {cpf} já é colaborador.")
-                    except:
-                        ListaErros.append(f"Erro ao processar o CPF: {cpf}")
-                else:
-                    ListaErros.append(f"O CPF: {cpf} Não é de um aluno do IFTO")
+            if ListaAlunosAD is False:
+                messages.error(request, "Falha ao conectar ao servidor AD. Verifique as configurações.")
+            else:
+                usuarios = form.cleaned_data['usuarios']
+                ListaCPFsDigitados = list(map(str, usuarios.split('\n'))) 
+                for cpf in ListaCPFsDigitados:
+                    cpf = str(cpf.replace('\r', '').strip())
+                    if not cpf: continue
+                    if (cpf in ListaAlunosAD):
+                        try:
+                            alunoobj = ExisteAlunoCadastrado(cpf)
+                            if alunoobj:
+                                pessoaobj = pessoa.objects.get(usuario=cpf)
+                            else:
+                                retorno = SalvaAluno(cpf)
+                                pessoaobj = retorno['pessoa']
+                            
+                            colab, created = alunoscolaboradores.objects.get_or_create(id_pessoa=pessoaobj)
+                            if created:
+                                ListaAcertos.append({'nome': pessoaobj.nome, 'matricula': cpf})
+                            else:
+                                ListaErros.append({'nome': pessoaobj.nome, 'matricula': cpf, 'erro': 'Já é colaborador.'})
+                        except:
+                            ListaErros.append({'matricula': cpf, 'erro': f'Erro ao processar (verifique se o aluno existe).'})
+                    else:
+                        ListaErros.append({'matricula': cpf, 'erro': 'Não é um aluno do IFTO.'})
                     
     return render(request, 'administracao/admin_cadastro_colaboradores.html', {
         'title': 'Cadastro de Colaboradores',
@@ -340,7 +346,7 @@ def GetListaEstudantesAD():
     con = conexaoAD(usuario, senha, ou, filter)
     retorno = con.ListaAlunos()
 
-    if str(retorno) == 'i':
+    if retorno is None or isinstance(retorno, str):
         return False
     else:
         for lista in retorno:
@@ -348,7 +354,7 @@ def GetListaEstudantesAD():
                 if lista.get('raw_attributes'):
                     ListaAlunos.append((lista['raw_attributes']['sAMAccountName'][0]).decode('UTF-8'))
             except:
-                return False
+                pass
         return ListaAlunos
 
 @permissao_requerida(item_id='config_pix')

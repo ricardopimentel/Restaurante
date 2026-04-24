@@ -51,11 +51,9 @@ class conexaoAD(object):
             if 'invalidCredentials' in str(sys.exc_info()):
                 return 'i'  # Credenciais Invalidas
             elif 'LDAPSocketOpenError' in str(sys.exc_info()):
-                print(sys.exc_info())
                 return 'n'  # Servidor não encotrado
             else:
-                print(sys.exc_info())
-                print("\n\n\nto aki\n\n\n")
+                return 'n'
 
 
     def ListaAlunos(self):
@@ -76,8 +74,9 @@ class conexaoAD(object):
             if 'invalidCredentials' in str(sys.exc_info()):
                 return 'i'  # Credenciais Invalidas
             elif 'LDAPSocketOpenError' in str(sys.exc_info()):
-                print(sys.exc_info())
                 return 'n'  # Servidor não encotrado
+            else:
+                return 'n'
 
     def DadosAluno(self, cpf):
         try:
@@ -99,8 +98,9 @@ class conexaoAD(object):
             if 'invalidCredentials' in str(sys.exc_info()):
                 return 'i'  # Credenciais Invalidas
             elif 'LDAPSocketOpenError' in str(sys.exc_info()):
-                print(sys.exc_info())
                 return 'n'  # Servidor não encotrado
+            else:
+                return 'n'
 
     def PrimeiroLogin(self, Username, Password, Dominio, Endservidor, Filtro):
         # servidor ad
@@ -129,8 +129,9 @@ class conexaoAD(object):
             if 'invalidCredentials' in str(sys.exc_info()):
                 return 'i'  # Credenciais Invalidas
             elif 'LDAPSocketOpenError' in str(sys.exc_info()):
-                print(sys.exc_info())
                 return 'n'  # Servidor não encotrado
+            else:
+                return 'n'
     
     #def TestarCredenciais(self): # desconsiderar metodo, apenas testes
         #try:
