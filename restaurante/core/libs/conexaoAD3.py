@@ -114,7 +114,7 @@ class conexaoAD(object):
                             read_only=True,
                             check_names=True,
                             user=LDAP_USERNAME, password=Password) as c:
-                user_filter = '(&' + Filtro + '(name=%s)' % Username
+                user_filter = '(&' + Filtro + '(name=%s))' % Username
                 c.search(search_base=self.base, search_filter=user_filter, search_scope=SUBTREE,
                          attributes=['displayName', 'memberof'], get_operational_attributes=False)
 
