@@ -293,8 +293,8 @@
                             <button type="button" class="quantity-btn" id="btn-plus"><i class="fas fa-plus"></i></button>
                         </div>
 
-                        <!-- ADICIONAIS -->
-                        {% if adicionais %}
+                        <!-- ADICIONAIS (Apenas para Servidores) -->
+                        {% if adicionais and user_type == 'servidor' %}
                         <p style="text-align: left; font-size: 0.85em; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;">2. Deseja algo a mais? (Adicionais)</p>
                         
                         <div id="selected-addons-container" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
@@ -323,7 +323,7 @@
                         <input type="hidden" name="adicionais_json" id="adicionais_json" value="[]">
                         {% endif %}
 
-                        <p style="text-align: left; font-size: 0.85em; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;">{% if adicionais %}3{% else %}2{% endif %}. Resumo de Valor</p>
+                        <p style="text-align: left; font-size: 0.85em; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;">{% if adicionais and user_type == 'servidor' %}3{% else %}2{% endif %}. Resumo de Valor</p>
                         <div class="price-section" style="align-items: stretch; gap: 12px; padding: 25px;">
                             <div style="display: flex; justify-content: space-between; font-size: 0.95em; color: var(--text-main);">
                                 <span style="font-weight: 500;">Valor do Prato:</span>

@@ -9,6 +9,8 @@
         :root {
             --admin-primary: #6366f1;
             --admin-secondary: #4f46e5;
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            --bg-card: rgba(255, 255, 255, 0.95);
         }
 
         .admin-page-header {
@@ -16,8 +18,14 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 35px;
             width: 100%;
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .admin-breadcrumb {
@@ -26,200 +34,248 @@
             gap: 10px;
             font-size: 0.85em;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
-        .admin-breadcrumb a { color: var(--admin-primary); text-decoration: none; transition: color 0.2s; }
-        .admin-breadcrumb a:hover { opacity: 0.8; }
-        .admin-breadcrumb span { color: #ddd; }
+        .admin-breadcrumb a { color: var(--admin-primary); text-decoration: none; transition: all 0.3s; }
+        .admin-breadcrumb a:hover { color: var(--admin-secondary); text-decoration: underline; }
+        .admin-breadcrumb span { color: #ccc; }
 
-        /* Form Card */
-        .admin-form-card {
-            background: white;
-            border-radius: 24px;
-            padding: 30px;
-            border: 1px solid #e5e7eb;
-            margin-bottom: 30px;
-            box-shadow: var(--shadow-sm);
-            max-width: 600px;
-            margin: 0 auto 30px auto;
+        /* Modern Form Container */
+        .premium-container {
+            max-width: 700px;
+            margin: 0 auto 50px auto;
+            position: relative;
         }
 
-        .admin-form-card h2 {
-            margin: 0 0 25px 0;
-            font-size: 1.3em;
+        .premium-form-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            padding: 45px;
+            border: 1px solid rgba(229, 231, 235, 0.8);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .premium-form-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 6px;
+            background: linear-gradient(90deg, var(--admin-primary), var(--admin-secondary));
+        }
+
+        .form-header {
+            margin-bottom: 35px;
+            text-align: left;
+        }
+
+        .form-header h2 {
+            margin: 0;
+            font-size: 1.6em;
             color: var(--text-main);
+            font-weight: 800;
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-weight: 800;
+            gap: 15px;
+        }
+        
+        .form-header p {
+            color: var(--text-muted);
+            margin: 10px 0 0 0;
+            font-size: 0.95em;
+            line-height: 1.5;
         }
 
-        .formulario form p { margin-bottom: 20px; }
+        .formulario form {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
         .formulario label {
             display: block;
             font-weight: 700;
-            font-size: 0.8em;
-            color: var(--text-muted);
+            font-size: 0.85em;
+            color: var(--text-main);
             text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-        .formulario input[type="text"], .formulario input[type="number"], .formulario select {
-            width: 100%;
-            padding: 12px 15px;
-            border-radius: 12px;
-            border: 1px solid #e5e7eb;
-            background: #f9fafb;
-            font-family: inherit;
-            outline: none;
-            transition: all 0.2s;
-            box-sizing: border-box;
-        }
-        .formulario input:focus {
-            border-color: var(--admin-primary);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-            background: white;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
         }
 
-        .btn-save {
+        .formulario textarea {
             width: 100%;
-            background: var(--admin-primary);
+            padding: 20px;
+            border-radius: 20px;
+            border: 2px solid #f1f5f9;
+            background: #f8fafc;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95em;
+            outline: none;
+            transition: all 0.3s;
+            min-height: 180px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+
+        .formulario textarea:focus {
+            border-color: var(--admin-primary);
+            background: white;
+            box-shadow: 0 0 0 5px var(--accent-glow);
+        }
+
+        .btn-submit-premium {
+            background: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary));
             color: white;
-            padding: 14px;
-            border-radius: 12px;
+            padding: 18px 30px;
+            border-radius: 18px;
             border: none;
-            font-weight: 700;
+            font-weight: 800;
+            font-size: 1.05em;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
             margin-top: 10px;
         }
-        .btn-save:hover {
-            background: var(--admin-secondary);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+
+        .btn-submit-premium:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 24px rgba(99, 102, 241, 0.3);
         }
 
-        .btn-action.active {
-            background: var(--admin-primary);
-            color: white;
-            border-color: var(--admin-primary);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        /* Results Visualization */
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-top: 40px;
         }
 
-        /* Results Section */
-        .admin-results-card {
-            background: white; border-radius: 24px; padding: 30px; border: 1px solid #e5e7eb;
-            margin-bottom: 30px; box-shadow: var(--shadow-sm); max-width: 800px; margin: 30px auto;
+        .result-card {
+            background: white;
+            border-radius: 24px;
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #f1f5f9;
+            transition: all 0.3s;
         }
-        .admin-results-card h2 {
-            margin: 0 0 20px 0; font-size: 1.2em; color: var(--text-main); font-weight: 800;
-            display: flex; align-items: center; gap: 10px;
-        }
-        .results-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .results-table th { 
-            text-align: left; padding: 12px; border-bottom: 2px solid #f3f4f6; 
-            color: var(--text-muted); font-size: 0.8em; text-transform: uppercase; 
-        }
-        .results-table td { padding: 12px; border-bottom: 1px solid #f3f4f6; font-size: 0.9em; }
-        
-        .status-badge {
-            padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 0.75em;
-            text-transform: uppercase; display: inline-flex; align-items: center; gap: 5px;
-        }
-        .status-success { background: #dcfce7; color: #166534; }
-        .status-error { background: #fee2e2; color: #991b1b; }
+        .result-card:hover { transform: translateX(5px); border-color: var(--admin-primary); }
 
-        .results-footer {
-            margin-top: 30px; display: flex; gap: 15px; justify-content: center;
+        .result-info { display: flex; flex-direction: column; gap: 4px; }
+        .result-name { font-weight: 800; color: var(--text-main); font-size: 1.05em; }
+        .result-sub { font-family: monospace; color: var(--text-muted); font-size: 0.9em; }
+
+        .badge-status {
+            padding: 8px 16px;
+            border-radius: 14px;
+            font-weight: 800;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .btn-secondary {
-            background: #f1f5f9; color: var(--text-main); padding: 12px 20px;
-            border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 0.9em;
-            display: flex; align-items: center; gap: 8px; transition: all 0.2s;
-            border: 1px solid #e2e8f0;
+        .badge-success { background: #ecfdf5; color: #059669; border: 1px solid #d1fae5; }
+        .badge-error { background: #fef2f2; color: #dc2626; border: 1px solid #fee2e2; }
+
+        .sync-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #f1f5f9;
+            border-radius: 10px;
+            font-size: 0.8em;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
         }
-        .btn-secondary:hover { background: #e2e8f0; transform: translateY(-2px); }
+        .sync-badge:hover { background: #e2e8f0; color: var(--admin-primary); }
     </style>
 
     <div class="admin-page-header">
-        <div style="width: 100%; text-align: center;">
-            <div class="admin-breadcrumb" style="justify-content: center;">
-                <a href="{% url 'Administracao' %}">
-                    Administração
-                </a>
-                <span>/</span>
-                <a href="{% url 'ExcluirBolsistas' %}">Bolsistas</a>
-                <span>/</span>
-                <span>Novo Cadastro</span>
+        <div class="admin-breadcrumb">
+            <a href="{% url 'Administracao' %}">Administração</a>
+            <span>/</span>
+            <a href="{% url 'ExcluirBolsistas' %}">Bolsistas</a>
+            <span>/</span>
+            <span>Novo Cadastro</span>
+        </div>
+        <h1 style="margin: 0; font-size: 2.2em; color: var(--text-main); font-weight: 900; letter-spacing: -1px;">
+            Auxílio Alimentação
+        </h1>
+    </div>
+
+    <div class="premium-container">
+        {% if not ListaAcertos and not ListaErros %}
+        <div class="premium-form-card">
+            <div class="form-header">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h2><i class="fas fa-id-card" style="color: var(--admin-primary);"></i> Inscrição em Lote</h2>
+                    <a href="?refresh=1" class="sync-badge">
+                        <i class="fas fa-sync"></i> Atualizar Base AD
+                    </a>
+                </div>
+                <p>Insira a lista de matrículas/CPFs dos estudantes (um por linha) para conceder o benefício de alimentação.</p>
             </div>
-            <h1 style="margin: 0; font-size: 1.8em; color: var(--text-main); font-weight: 800;">Cadastro de Estudantes Bolsistas</h1>
-        </div>
-    </div>
 
-    {% if not ListaAcertos and not ListaErros %}
-    <!-- Registration Form -->
-    <div class="admin-form-card">
-        <h2><i class="fas fa-user-graduate" style="color: var(--admin-primary);"></i> Registrar Bolsista (100%)</h2>
-        <div class="formulario">
-            <form method="post" action="{% url 'CadastroBolsistas' %}">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" name="commit" class="btn-save">
-                    <i class="fas fa-save" style="margin-right: 8px;"></i> Efetivar Cadastro
-                </button>
-            </form>
+            <div class="formulario">
+                <form method="post" action="{% url 'CadastroBolsistas' %}">
+                    {% csrf_token %}
+                    <div>
+                        <label>Lista de Matrículas</label>
+                        {{ form.usuarios }}
+                    </div>
+                    <button type="submit" class="btn-submit-premium">
+                        <i class="fas fa-user-plus"></i> Efetivar Novos Beneficiários
+                    </button>
+                </form>
+            </div>
         </div>
-    </div>
-    {% endif %}
-
-    <!-- Results Section -->
-    {% if ListaAcertos or ListaErros %}
-    <div class="admin-results-card">
-        <h2><i class="fas fa-clipboard-list" style="color: var(--admin-primary);"></i> Resultados do Processamento</h2>
+        {% else %}
         
-        <table class="results-table">
-            <thead>
-                <tr>
-                    <th>Estudante</th>
-                    <th>Matrícula</th>
-                    <th>Status / Info</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in ListaAcertos %}
-                <tr>
-                    <td style="font-weight: 700; color: var(--text-main);">{{ item.nome }}</td>
-                    <td style="font-family: monospace; color: var(--text-muted);">{{ item.matricula }}</td>
-                    <td>
-                        <span class="status-badge status-success">
-                            <i class="fas fa-check-circle"></i> Adicionado
-                        </span>
-                    </td>
-                </tr>
-                {% endfor %}
-                
-                {% for item in ListaErros %}
-                <tr>
-                    <td style="font-weight: 700; color: var(--text-main);">{{ item.nome|default:"---" }}</td>
-                    <td style="font-family: monospace; color: var(--text-muted);">{{ item.matricula }}</td>
-                    <td>
-                        <span class="status-badge status-error" title="{{ item.erro }}">
-                            <i class="fas fa-times-circle"></i> {{ item.erro }}
-                        </span>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="form-header" style="text-align: center;">
+            <h2 style="justify-content: center;"><i class="fas fa-check-double" style="color: #10b981;"></i> Processamento Concluído</h2>
+            <p>Foram processados {{ ListaAcertos|length|add:ListaErros|length }} registros.</p>
+        </div>
 
-        <div class="results-footer">
-            <a href="{% url 'ExcluirBolsistas' %}" class="btn-secondary">
-                <i class="fas fa-list"></i> Ver Lista de Bolsistas
+        <div class="results-grid">
+            {% for item in ListaAcertos %}
+            <div class="result-card">
+                <div class="result-info">
+                    <span class="result-name">{{ item.nome }}</span>
+                    <span class="result-sub">{{ item.matricula }}</span>
+                </div>
+                <span class="badge-status badge-success">Adicionado</span>
+            </div>
+            {% endfor %}
+
+            {% for item in ListaErros %}
+            <div class="result-card" style="border-left: 4px solid #ef4444;">
+                <div class="result-info">
+                    <span class="result-name">{{ item.nome|default:"Registro Inválido" }}</span>
+                    <span class="result-sub">{{ item.matricula }}</span>
+                    <span style="font-size: 0.8em; color: #ef4444; font-weight: 600;">{{ item.erro }}</span>
+                </div>
+                <span class="badge-status badge-error">Falha</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div style="margin-top: 40px; display: flex; gap: 20px; justify-content: center;">
+            <a href="{% url 'ExcluirBolsistas' %}" class="sync-badge" style="padding: 12px 25px; font-size: 0.95em;">
+                <i class="fas fa-list-ul"></i> Ver Todos os Beneficiários
             </a>
-            <a href="{% url 'CadastroBolsistas' %}" class="btn-save" style="width: auto; margin-top: 0; padding: 12px 25px; text-decoration: none;">
-                <i class="fas fa-plus"></i> Adicionar Mais
+            <a href="{% url 'CadastroBolsistas' %}" class="btn-submit-premium" style="width: auto; margin-top: 0; padding: 12px 30px;">
+                <i class="fas fa-plus"></i> Novo Cadastro
             </a>
         </div>
+        {% endif %}
     </div>
-    {% endif %}
 {%endblock%}
 k%}

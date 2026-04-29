@@ -131,13 +131,26 @@ div.bar-top{
     display: none; /* Hidden on desktop by default */
 }
 
-/* NAVBAR MENU HOMES */
-.navbar-menu {
+/* DESKTOP MENU - Horizontal */
+.navbar-desktop .navbar-menu {
     display: flex;
+    flex-direction: row;
     align-items: center;
-    gap: 10px;
-    flex: 1;
+    gap: 15px;
     justify-content: center;
+}
+
+.navbar-desktop .nav-link {
+    width: auto;
+}
+
+/* PWA Install Buttons Visibility */
+.pwa-install-btn {
+    display: none !important;
+}
+
+body.pwa-ready .pwa-install-btn {
+    display: flex !important;
 }
 
 .nav-link {
@@ -370,17 +383,18 @@ body.menu-open {
         gap: 10px;
     }
 
-    .navbar-menu {
+    /* MOBILE MENU - Vertical */
+    .navbar-mobile .navbar-menu {
+        display: flex;
         flex-direction: column;
         align-items: stretch;
-        gap: 5px;
+        gap: 8px;
         margin-bottom: 30px;
     }
 
-    .nav-link {
-        padding: 15px 20px;
-        font-size: 1.1em;
+    .navbar-mobile .nav-link {
         width: 100%;
+        padding: 15px 20px;
     }
 
     .navbar-user {

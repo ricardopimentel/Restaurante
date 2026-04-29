@@ -16,8 +16,12 @@ Including another URLconf
 """
 from django.conf.urls import include
 from django.urls import re_path
+from django.views.generic import TemplateView
 
 urlpatterns = [
+    re_path(r'^restaurante/manifest.json$', TemplateView.as_view(template_name='manifest.json', content_type='application/json'), name='manifest.json'),
+    re_path(r'^restaurante/sw.js$', TemplateView.as_view(template_name='sw.js', content_type='application/javascript'), name='sw.js'),
+    
     re_path(r'^restaurante/', include('restaurante.core.urls')),
     re_path(r'^restaurante/relatorios/', include('restaurante.relatorios.urls')),
     re_path(r'^restaurante/acesso/', include('restaurante.acesso.urls')),

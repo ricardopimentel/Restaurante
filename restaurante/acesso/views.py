@@ -84,17 +84,7 @@ def Login(request):
 
 
 def Logout(request):
-    try:
-        del request.session['nome']
-        del request.session['mail']
-        del request.session['curso']
-        del request.session['userl']
-        del request.session['menu']
-        del request.session['url']
-        del request.session['phone']
-
-    except KeyError:
-        print(sys.exc_info())
+    request.session.flush()
     return redirect(r("Login"))
 
 

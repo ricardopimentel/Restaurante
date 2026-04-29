@@ -201,6 +201,13 @@ def Tutoriais(request, action):
 
 @permissao_requerida(item_id='bolsistas')
 def CadastroBolsistas(request):
+    from django.core.cache import cache
+    if 'refresh' in request.GET:
+        cache.delete('admin_lista_cpfs_ad')
+        cache.delete('venda_lista_alunos_ad')
+        messages.success(request, 'Lista de estudantes sincronizada com o AD.')
+        return redirect('CadastroBolsistas')
+
     ListaErros = []
     ListaAcertos = []
     form = CadastroAlunosBolsistasForm()
@@ -236,7 +243,7 @@ def CadastroBolsistas(request):
                         ListaErros.append({'matricula': cpf, 'erro': 'Não é um aluno do IFTO.'})
             
     return render(request, 'administracao/admin_cadastro_bolsistas.html', {
-        'title': 'Cadastro de Bolsistas',
+        'title': 'Estudantes com Auxílio Alimentação',
         'itemselec': 'ADMINISTRAÇÃO',
         'form': form,
         'ListaErros': ListaErros,
@@ -261,13 +268,20 @@ def ExcluirBolsistas(request):
             messages.error(request, 'Selecione pelo menos 1 aluno para excluir')
         return redirect(r('ExcluirBolsistas'))
     return render(request, 'administracao/admin_conferir_cadastro_bolsistas.html', {
-        'title': 'Lista de Bolsistas 100%',
+        'title': 'Estudantes com Auxílio Alimentação',
         'itemselec': 'ADMINISTRAÇÃO',
         'bolsistas': bolsistas,
     })
 
 @permissao_requerida(item_id='colaboradores')
 def CadastroColaboradores(request):
+    from django.core.cache import cache
+    if 'refresh' in request.GET:
+        cache.delete('admin_lista_cpfs_ad')
+        cache.delete('venda_lista_alunos_ad')
+        messages.success(request, 'Lista de estudantes sincronizada com o AD.')
+        return redirect('CadastroColaboradores')
+
     ListaErros = []
     ListaAcertos = []
     form = CadastroAlunosColaboradoresForm()
@@ -334,28 +348,47 @@ def ExcluirColaboradores(request):
     })
 
 def GetListaEstudantesAD():
+    from django.core.cache import cache
+    
+    # Tenta buscar no cache primeiro
+    lista_cache = cache.get('admin_lista_cpfs_ad')
+    if lista_cache is not None:
+        return lista_cache
+
     ou = ''
-    filter = ''
+    filter_str = ''
     try:
         conf = config.objects.get(id=1)
         ou = conf.ou
-        filter = conf.filter
+        filter_str = conf.filter
     except:
         pass
+        
     ListaAlunos = []
-    con = conexaoAD(usuario, senha, ou, filter)
-    retorno = con.ListaAlunos()
+    try:
+        con = conexaoAD(usuario, senha, ou, filter_str)
+        retorno = con.ListaAlunos()
 
-    if retorno is None or isinstance(retorno, str):
+        if retorno is None or isinstance(retorno, str):
+            print(f"DEBUG AD: Retorno inválido ou erro: {retorno}")
+            return False
+        else:
+            for lista in retorno:
+                try:
+                    if lista.get('raw_attributes'):
+                        cpf = (lista['raw_attributes']['sAMAccountName'][0]).decode('UTF-8')
+                        ListaAlunos.append(cpf)
+                except Exception as e:
+                    print(f"DEBUG AD: Erro ao processar item: {e}")
+            
+            # Armazena no cache por 1 hora se houver resultados
+            if ListaAlunos:
+                cache.set('admin_lista_cpfs_ad', ListaAlunos, timeout=3600)
+            
+            return ListaAlunos
+    except Exception as e:
+        print(f"DEBUG AD: Exceção crítica: {e}")
         return False
-    else:
-        for lista in retorno:
-            try:
-                if lista.get('raw_attributes'):
-                    ListaAlunos.append((lista['raw_attributes']['sAMAccountName'][0]).decode('UTF-8'))
-            except:
-                pass
-        return ListaAlunos
 
 @permissao_requerida(item_id='config_pix')
 def ConfigPix(request):

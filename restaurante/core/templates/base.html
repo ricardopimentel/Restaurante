@@ -8,7 +8,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
 		<link rel="icon" href="{% static 'images/favicon.ico' %}" />
-		<link rel="manifest" href="{% static 'manifest.json' %}">
+		<link rel="manifest" href="{% url 'manifest.json' %}?v=4">
 		<title>{%block titulo%}{%endblock%}</title>
 		
         <!-- Premium Typography: Google Fonts (Outfit) -->
@@ -60,8 +60,8 @@
                             {% endfor %}
                         {% endif %}
                         
-                        <!-- PWA Install Button (Hidden by default) -->
-                        <a href="javascript:void(0)" id="pwa-install-btn" class="nav-link" style="display: none; color: #f59e0b;">
+                        <!-- PWA Install Button (Desktop) -->
+                        <a href="javascript:void(0)" id="pwa-install-btn-desktop" class="nav-link pwa-install-btn" style="color: #f59e0b;">
                             <i class="fas fa-download"></i>
                             Instalar App
                         </a>
@@ -159,6 +159,12 @@
                 <i class="fas fa-times"></i>
             </button>
             <div class="navbar-menu">
+                <!-- PWA Install Button (Mobile) -->
+                <a href="javascript:void(0)" id="pwa-install-btn-mobile" class="nav-link pwa-install-btn" style="color: #f59e0b; background: white; margin-bottom: 15px; border-radius: 15px; box-shadow: var(--shadow-sm); border: 1px solid rgba(245, 158, 11, 0.2); font-weight: 700;">
+                    <i class="fas fa-download"></i>
+                    Instalar Aplicativo
+                </a>
+
                 {% if request.session.menu %}
                     {% for item in request.session.menu %}
                         {% if item != 'logo' and item != 'sair' %}
@@ -169,12 +175,6 @@
                         {% endif %}
                     {% endfor %}
                 {% endif %}
-                
-                <!-- PWA Install Button (Hidden by default) -->
-                <a href="javascript:void(0)" id="pwa-install-btn" class="nav-link" style="display: none; color: #f59e0b;">
-                    <i class="fas fa-download"></i>
-                    Instalar App
-                </a>
             </div>
             
             <div class="navbar-user">
@@ -221,6 +221,29 @@
 
     <script>
 		$(function(){
+            // PWA Install Logic
+            let deferredPrompt;
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                document.body.classList.add('pwa-ready');
+            });
+
+            document.querySelectorAll('.pwa-install-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.body.classList.remove('pwa-ready');
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        deferredPrompt.userChoice.then((choiceResult) => {
+                            if (choiceResult.outcome === 'accepted') {
+                                console.log('User accepted the A2HS prompt');
+                            }
+                            deferredPrompt = null;
+                        });
+                    }
+                });
+            });
+
 			var nav = $('#navbar');
 			$(window).scroll(function () {
 				if ($(this).scrollTop() > 50) {
@@ -303,41 +326,11 @@
             setInterval(updateCountdowns, 1000);
             updateCountdowns();
 
-            // PWA Install Logic
-            let deferredPrompt;
-            const installBtn = document.getElementById('pwa-install-btn');
-
-            window.addEventListener('beforeinstallprompt', (e) => {
-                // Prevent Chrome 67 and earlier from automatically showing the prompt
-                e.preventDefault();
-                // Stash the event so it can be triggered later.
-                deferredPrompt = e;
-                // Update UI notify the user they can install the PWA
-                if (installBtn) installBtn.style.display = 'flex';
-            });
-
-            if (installBtn) {
-                installBtn.addEventListener('click', (e) => {
-                    // hide our user interface that shows our A2HS button
-                    installBtn.style.display = 'none';
-                    // Show the prompt
-                    deferredPrompt.prompt();
-                    // Wait for the user to respond to the prompt
-                    deferredPrompt.userChoice.then((choiceResult) => {
-                        if (choiceResult.outcome === 'accepted') {
-                            console.log('User accepted the A2HS prompt');
-                        } else {
-                            console.log('User dismissed the A2HS prompt');
-                        }
-                        deferredPrompt = null;
-                    });
-                });
-            }
 
             // Register Service Worker
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('{% static "sw.js" %}', { scope: '/restaurante/' })
+                    navigator.serviceWorker.register('{% url "sw.js" %}?v=4', { scope: '/restaurante/' })
                         .then(reg => console.log('SW Registered!', reg))
                         .catch(err => console.log('SW Registration failed:', err));
                 });

@@ -9,6 +9,8 @@
         :root {
             --admin-primary: #6366f1;
             --admin-secondary: #4f46e5;
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            --bg-card: rgba(255, 255, 255, 0.95);
         }
 
         .admin-page-header {
@@ -16,8 +18,14 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 35px;
             width: 100%;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .admin-breadcrumb {
@@ -26,163 +34,218 @@
             gap: 10px;
             font-size: 0.85em;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
-        .admin-breadcrumb a { color: var(--admin-primary); text-decoration: none; transition: color 0.2s; }
-        .admin-breadcrumb a:hover { opacity: 0.8; }
-        .admin-breadcrumb span { color: #ddd; }
+        .admin-breadcrumb a { color: var(--admin-primary); text-decoration: none; transition: all 0.3s; }
+        .admin-breadcrumb a:hover { opacity: 0.7; }
+        .admin-breadcrumb span { color: #ccc; }
 
-        /* Form Card */
-        .admin-form-card {
-            background: white; border-radius: 24px; padding: 30px; border: 1px solid #e5e7eb;
-            margin-bottom: 30px; box-shadow: var(--shadow-sm); max-width: 600px; margin: 0 auto 30px auto;
-        }
-        .admin-form-card h2 {
-            margin: 0 0 25px 0; font-size: 1.3em; color: var(--text-main); display: flex;
-            align-items: center; gap: 12px; font-weight: 800;
+        .premium-container {
+            max-width: 700px;
+            margin: 0 auto 50px auto;
         }
 
-        .formulario form p { margin-bottom: 20px; }
-        .formulario label {
-            display: block; font-weight: 700; font-size: 0.8em; color: var(--text-muted);
-            text-transform: uppercase; margin-bottom: 8px;
-        }
-        .formulario input[type="text"], .formulario select {
-            width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid #e5e7eb;
-            background: #f9fafb; font-family: inherit; outline: none; transition: all 0.2s; box-sizing: border-box;
-        }
-        .formulario input:focus {
-            border-color: var(--admin-primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); background: white;
+        .premium-form-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border-radius: 32px;
+            padding: 45px;
+            border: 1px solid rgba(229, 231, 235, 0.8);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+            position: relative;
         }
 
-        .btn-save {
-            width: 100%; background: var(--admin-primary); color: white; padding: 14px;
-            border-radius: 12px; border: none; font-weight: 700; cursor: pointer; transition: all 0.2s; margin-top: 10px;
+        .premium-form-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 80%; height: 4px;
+            background: linear-gradient(90deg, transparent, var(--admin-primary), transparent);
+            border-radius: 2px;
         }
-        .btn-save:hover { background: var(--admin-secondary); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
 
-        .btn-action.active {
+        .form-header {
+            margin-bottom: 35px;
+        }
+
+        .form-header h2 {
+            margin: 0;
+            font-size: 1.6em;
+            color: var(--text-main);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .form-header p {
+            color: var(--text-muted);
+            margin: 10px 0 0 0;
+            font-size: 0.95em;
+        }
+
+        .formulario textarea {
+            width: 100%;
+            padding: 22px;
+            border-radius: 20px;
+            border: 2px solid #f1f5f9;
+            background: #f8fafc;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95em;
+            outline: none;
+            transition: all 0.3s;
+            min-height: 180px;
+            box-sizing: border-box;
+        }
+
+        .formulario textarea:focus {
+            border-color: var(--admin-primary);
+            background: white;
+            box-shadow: 0 0 0 5px var(--accent-glow);
+        }
+
+        .btn-submit-premium {
             background: var(--admin-primary);
             color: white;
-            border-color: var(--admin-primary);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+            padding: 18px 30px;
+            border-radius: 18px;
+            border: none;
+            font-weight: 800;
+            font-size: 1.05em;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            margin-top: 25px;
         }
 
-        /* Results Section */
-        .admin-results-card {
-            background: white; border-radius: 24px; padding: 30px; border: 1px solid #e5e7eb;
-            margin-bottom: 30px; box-shadow: var(--shadow-sm); max-width: 800px; margin: 30px auto;
+        .btn-submit-premium:hover {
+            background: var(--admin-secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
         }
-        .admin-results-card h2 {
-            margin: 0 0 20px 0; font-size: 1.2em; color: var(--text-main); font-weight: 800;
-            display: flex; align-items: center; gap: 10px;
-        }
-        .results-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .results-table th { 
-            text-align: left; padding: 12px; border-bottom: 2px solid #f3f4f6; 
-            color: var(--text-muted); font-size: 0.8em; text-transform: uppercase; 
-        }
-        .results-table td { padding: 12px; border-bottom: 1px solid #f3f4f6; font-size: 0.9em; }
-        
-        .status-badge {
-            padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 0.75em;
-            text-transform: uppercase; display: inline-flex; align-items: center; gap: 5px;
-        }
-        .status-success { background: #dcfce7; color: #166534; }
-        .status-error { background: #fee2e2; color: #991b1b; }
 
-        .results-footer {
-            margin-top: 30px; display: flex; gap: 15px; justify-content: center;
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 35px;
         }
-        .btn-secondary {
-            background: #f1f5f9; color: var(--text-main); padding: 12px 20px;
-            border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 0.9em;
-            display: flex; align-items: center; gap: 8px; transition: all 0.2s;
-            border: 1px solid #e2e8f0;
+
+        .result-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #f1f5f9;
         }
-        .btn-secondary:hover { background: #e2e8f0; transform: translateY(-2px); }
+
+        .badge-status {
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.75em;
+            text-transform: uppercase;
+        }
+        .badge-success { background: #ecfdf5; color: #059669; }
+        .badge-error { background: #fef2f2; color: #dc2626; }
+
+        .sync-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #f1f5f9;
+            border-radius: 10px;
+            font-size: 0.8em;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+        }
     </style>
 
     <div class="admin-page-header">
-        <div style="width: 100%; text-align: center;">
-            <div class="admin-breadcrumb" style="justify-content: center;">
-                <a href="{% if request.session.usertip == 'admin' %}{% url 'Administracao' %}{% else %}{% url 'Administracao' %}{% endif %}">
-                    {% if request.session.usertip == 'admin' %}Administração{% else %}Administração{% endif %}
-                </a>
-                <span>/</span>
-                <a href="{% url 'ExcluirColaboradores' %}">Colaboradores</a>
-                <span>/</span>
-                <span>Novo Cadastro</span>
+        <div class="admin-breadcrumb">
+            <a href="{% url 'Administracao' %}">Administração</a>
+            <span>/</span>
+            <a href="{% url 'ExcluirColaboradores' %}">Colaboradores</a>
+            <span>/</span>
+            <span>Novo Cadastro</span>
+        </div>
+        <h1 style="margin: 0; font-size: 2.2em; color: var(--text-main); font-weight: 900; letter-spacing: -1px;">
+            Alunos Colaboradores
+        </h1>
+    </div>
+
+    <div class="premium-container">
+        {% if not ListaAcertos and not ListaErros %}
+        <div class="premium-form-card">
+            <div class="form-header">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h2><i class="fas fa-users-cog" style="color: var(--admin-primary);"></i> Cadastro de Equipe</h2>
+                    <a href="?refresh=1" class="sync-badge">
+                        <i class="fas fa-sync"></i> Atualizar Base AD
+                    </a>
+                </div>
+                <p>Insira as matrículas dos alunos que atuarão como colaboradores no restaurante.</p>
             </div>
-            <h1 style="margin: 0; font-size: 1.8em; color: var(--text-main); font-weight: 800;">Cadastro de Alunos Colaboradores</h1>
-        </div>
-    </div>
 
-    {% if not ListaAcertos and not ListaErros %}
-    <!-- Registration Form -->
-    <div class="admin-form-card">
-        <h2><i class="fas fa-user-tie" style="color: var(--admin-primary);"></i> Registrar Colaborador</h2>
-        <div class="formulario">
-            <form method="post" action="{% url 'CadastroColaboradores' %}">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" name="commit" class="btn-save">
-                    <i class="fas fa-save" style="margin-right: 8px;"></i> Efetivar Cadastro
-                </button>
-            </form>
+            <div class="formulario">
+                <form method="post" action="{% url 'CadastroColaboradores' %}">
+                    {% csrf_token %}
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 10px; font-size: 0.85em; color: var(--text-main); text-transform: uppercase;">Lista de Matrículas</label>
+                        {{ form.usuarios }}
+                    </div>
+                    <button type="submit" class="btn-submit-premium">
+                        <i class="fas fa-check-circle"></i> Confirmar Cadastro
+                    </button>
+                </form>
+            </div>
         </div>
-    </div>
-    {% endif %}
-
-    <!-- Results Section -->
-    {% if ListaAcertos or ListaErros %}
-    <div class="admin-results-card">
-        <h2><i class="fas fa-clipboard-list" style="color: var(--admin-primary);"></i> Resultados do Processamento</h2>
+        {% else %}
         
-        <table class="results-table">
-            <thead>
-                <tr>
-                    <th>Estudante</th>
-                    <th>Matrícula</th>
-                    <th>Status / Info</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in ListaAcertos %}
-                <tr>
-                    <td style="font-weight: 700; color: var(--text-main);">{{ item.nome }}</td>
-                    <td style="font-family: monospace; color: var(--text-muted);">{{ item.matricula }}</td>
-                    <td>
-                        <span class="status-badge status-success">
-                            <i class="fas fa-check-circle"></i> Adicionado
-                        </span>
-                    </td>
-                </tr>
-                {% endfor %}
-                
-                {% for item in ListaErros %}
-                <tr>
-                    <td style="font-weight: 700; color: var(--text-main);">{{ item.nome|default:"---" }}</td>
-                    <td style="font-family: monospace; color: var(--text-muted);">{{ item.matricula }}</td>
-                    <td>
-                        <span class="status-badge status-error" title="{{ item.erro }}">
-                            <i class="fas fa-times-circle"></i> {{ item.erro }}
-                        </span>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="form-header" style="text-align: center;">
+            <h2 style="justify-content: center;"><i class="fas fa-clipboard-check" style="color: #10b981;"></i> Cadastro Processado</h2>
+            <p>{{ ListaAcertos|length|add:ListaErros|length }} registros analisados.</p>
+        </div>
 
-        <div class="results-footer">
-            <a href="{% url 'ExcluirColaboradores' %}" class="btn-secondary">
-                <i class="fas fa-list"></i> Ver Lista de Colaboradores
+        <div class="results-grid">
+            {% for item in ListaAcertos %}
+            <div class="result-card">
+                <div style="display: flex; flex-direction: column;">
+                    <span style="font-weight: 800; color: var(--text-main);">{{ item.nome }}</span>
+                    <span style="font-family: monospace; color: var(--text-muted); font-size: 0.9em;">{{ item.matricula }}</span>
+                </div>
+                <span class="badge-status badge-success">Ativado</span>
+            </div>
+            {% endfor %}
+
+            {% for item in ListaErros %}
+            <div class="result-card" style="border-left: 4px solid #ef4444;">
+                <div style="display: flex; flex-direction: column;">
+                    <span style="font-weight: 800; color: var(--text-main);">{{ item.nome|default:"Erro" }}</span>
+                    <span style="font-family: monospace; color: var(--text-muted); font-size: 0.9em;">{{ item.matricula }}</span>
+                    <span style="font-size: 0.8em; color: #ef4444; font-weight: 600;">{{ item.erro }}</span>
+                </div>
+                <span class="badge-status badge-error">Falha</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div style="margin-top: 40px; display: flex; gap: 20px; justify-content: center;">
+            <a href="{% url 'ExcluirColaboradores' %}" class="sync-badge" style="padding: 12px 25px; font-size: 0.95em;">
+                <i class="fas fa-users"></i> Lista de Colaboradores
             </a>
-            <a href="{% url 'CadastroColaboradores' %}" class="btn-save" style="width: auto; margin-top: 0; padding: 12px 25px; text-decoration: none;">
-                <i class="fas fa-plus"></i> Adicionar Mais
+            <a href="{% url 'CadastroColaboradores' %}" class="btn-submit-premium" style="width: auto; margin-top: 0; padding: 12px 30px;">
+                <i class="fas fa-plus"></i> Novo Cadastro
             </a>
         </div>
+        {% endif %}
     </div>
-    {% endif %}
 {%endblock%}
-ock%}

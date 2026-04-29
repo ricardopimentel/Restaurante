@@ -9,6 +9,7 @@
         :root {
             --admin-primary: #6366f1;
             --admin-secondary: #4f46e5;
+            --bg-glass: rgba(255, 255, 255, 0.7);
         }
 
         .admin-page-header {
@@ -16,7 +17,7 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             width: 100%;
         }
 
@@ -26,103 +27,181 @@
             gap: 10px;
             font-size: 0.85em;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
-        .admin-breadcrumb a { color: var(--admin-primary); text-decoration: none; transition: color 0.2s; }
-        .admin-breadcrumb a:hover { opacity: 0.8; }
-        .admin-breadcrumb span { color: #ddd; }
+        .admin-breadcrumb a { color: var(--admin-primary); text-decoration: none; }
+        .admin-breadcrumb span { color: #ccc; }
 
-        /* Table Card */
-        .admin-table-card {
+        /* Stats Bar */
+        .stats-bar {
             background: white;
             border-radius: 24px;
-            padding: 30px;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
             border: 1px solid #e5e7eb;
             box-shadow: var(--shadow-sm);
-            width: 100%;
-            box-sizing: border-box;
         }
 
-        .table-header {
+        .stats-info { display: flex; align-items: center; gap: 15px; }
+        .stats-count {
+            background: var(--admin-primary);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 1.1em;
+        }
+        .stats-label { font-weight: 700; color: var(--text-main); font-size: 0.95em; }
+
+        /* Card Grid */
+        .student-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .student-card {
+            background: white;
+            border-radius: 24px;
+            padding: 25px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .student-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+            border-color: var(--admin-primary);
+        }
+
+        .card-checkbox {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        .card-checkbox input {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: var(--admin-primary);
+        }
+
+        .student-avatar {
+            width: 60px;
+            height: 60px;
+            background: #f1f5f9;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--admin-primary);
+            font-size: 1.5em;
+        }
+
+        .student-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .student-name {
+            font-weight: 800;
+            color: var(--text-main);
+            font-size: 1.1em;
+            line-height: 1.2;
+            margin-right: 25px;
+        }
+
+        .student-id {
+            font-family: monospace;
+            color: var(--text-muted);
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        /* Floating Actions */
+        .floating-actions {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 100;
+        }
+
+        .btn-floating {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+            text-decoration: none;
+            font-size: 1.4em;
+        }
+
+        .btn-add { background: var(--admin-primary); }
+        .btn-delete { background: #ef4444; display: none; } /* Show only when items selected */
+
+        .btn-floating:hover { transform: scale(1.1); }
+
+        /* Controls */
+        .controls-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #f3f4f6;
-            gap: 20px;
         }
 
-        .table-header h2 {
-            margin: 0;
-            font-size: 1.4em;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 800;
+        .search-box {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            border-radius: 15px;
+            border: 1px solid #e5e7eb;
+            outline: none;
+            font-size: 0.95em;
+        }
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
         }
 
-        .btn-new-admin {
-            background: var(--admin-primary);
-            color: white !important;
-            padding: 10px 25px;
+        .select-all-btn {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 8px 16px;
             border-radius: 12px;
-            border: none;
-            font-weight: 700;
-            font-size: 0.9em;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.2s;
-            text-decoration: none !important;
-        }
-        .btn-new-admin:hover {
-            background: var(--admin-secondary);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-        }
-
-        .btn-delete-action {
-            background: none;
-            border: none;
-            color: #ef4444;
-            cursor: pointer;
-            font-size: 1.1em;
-            transition: transform 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-delete-action:hover { transform: scale(1.2); }
-
-        #minhaTabela { width: 100% !important; border-collapse: collapse; }
-        #minhaTabela thead th {
-            padding: 15px;
-            background: #f9fafb;
-            color: var(--text-muted);
             font-weight: 700;
             font-size: 0.85em;
-            text-transform: uppercase;
-            text-align: left;
-            border-bottom: 2px solid #f3f4f6;
-        }
-        #minhaTabela tbody td {
-            padding: 15px;
-            border-bottom: 1px solid #f3f4f6;
             color: var(--text-main);
-        }
-        
-        .select-all-box {
-            margin-top: 20px;
+            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 0.9em;
-            font-weight: 600;
-            color: var(--text-muted);
-            cursor: pointer;
+            gap: 8px;
         }
     </style>
 
@@ -130,75 +209,113 @@
         <div class="admin-breadcrumb">
             <a href="{% url 'Administracao' %}">Administração</a>
             <span>/</span>
-            <span>Bolsistas</span>
+            <span>Auxílio Alimentação</span>
         </div>
-        <h1 style="margin: 0; font-size: 1.8em; color: var(--text-main); font-weight: 800;">Estudantes Bolsistas (100%)</h1>
+        <h1 style="margin: 0; font-size: 2.2em; color: var(--text-main); font-weight: 900; letter-spacing: -1px;">
+            Estudantes com Auxílio Alimentação
+        </h1>
     </div>
 
-    <form id="frm" method="post" action="{% url 'ExcluirBolsistas' %}">
-        {% csrf_token %}
-        
-        <div class="admin-table-card">
-            <div class="table-header">
-                <h2><i class="fas fa-user-graduate" style="color: var(--admin-primary);"></i> Alunos Cadastrados</h2>
-                <div style="display: flex; gap: 15px; align-items: center;">
-                    <a href="{% url 'CadastroBolsistas' %}" class="btn-new-admin">
-                        <i class="fas fa-plus"></i> Novo Cadastro
-                    </a>
-                    <button type="submit" class="btn-delete-action" title="Excluir Selecionados">
-                        <i class="fas fa-trash-alt"></i>
+    <div style="display: flex; flex-direction: column; gap: 30px; width: 100%; align-items: center;">
+        <div class="stats-bar" style="flex-direction: column; align-items: stretch; gap: 20px; width: 100%; max-width: 1000px; box-sizing: border-box;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="stats-info">
+                    <div class="stats-count">{{ bolsistas|length }}</div>
+                    <div class="stats-label">Estudantes Beneficiários</div>
+                </div>
+                <div style="display: flex; gap: 15px;">
+                    <button type="button" class="select-all-btn" id="toggleAll">
+                        <i class="far fa-check-square"></i>
+                        <span>Selecionar Todos</span>
                     </button>
                 </div>
             </div>
-
-            <table id="minhaTabela">
-                <thead>
-                    <tr>
-                        <th style="width: 40px; text-align: center;">Marcar</th>
-                        <th>Nome Completo</th>
-                        <th>CPF / Matrícula</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {%for aluno in bolsistas%}
-                        <tr>
-                            <td style="text-align: center;">
-                                <input type="checkbox" name="{{ aluno.id }}" style="width: 18px; height: 18px;">
-                            </td>
-                            <td style="font-weight: 700; color: var(--text-main);">{{ aluno.id_pessoa.nome|title }}</td>
-                            <td style="font-family: monospace; color: var(--text-muted);">{{ aluno.id_pessoa.usuario }}</td>
-                        </tr>
-                    {%endfor%}
-                </tbody>
-            </table>
-
-            <label class="select-all-box">
-                <input type="checkbox" id="all" style="width: 18px; height: 18px;">
-                <span>Marcar / Desmarcar Todos</span>
-            </label>
+            <div class="search-box" style="max-width: none;">
+                <i class="fas fa-search"></i>
+                <input type="text" id="studentSearch" placeholder="Buscar por nome ou matrícula...">
+            </div>
         </div>
-    </form>
+
+        <form id="frm" method="post" action="{% url 'ExcluirBolsistas' %}" style="width: 100%; max-width: 1000px;">
+            {% csrf_token %}
+            
+            <div class="student-grid" id="grid">
+                {% for aluno in bolsistas %}
+                <div class="student-card" data-name="{{ aluno.id_pessoa.nome|lower }}" data-id="{{ aluno.id_pessoa.usuario }}">
+                    <div class="card-checkbox">
+                        <input type="checkbox" name="{{ aluno.id }}" class="item-checkbox">
+                    </div>
+                    <div class="student-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="student-info">
+                        <span class="student-name">{{ aluno.id_pessoa.nome|title }}</span>
+                        <span class="student-id">{{ aluno.id_pessoa.usuario }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <div style="grid-column: 1/-1; text-align: center; padding: 100px 0; color: #94a3b8;">
+                    <i class="fas fa-user-slash" style="font-size: 4em; margin-bottom: 20px; display: block; opacity: 0.3;"></i>
+                    <p style="font-size: 1.2em; font-weight: 600;">Nenhum estudante cadastrado nesta lista.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="floating-actions">
+                <button type="submit" class="btn-floating btn-delete" id="deleteBtn" title="Excluir Selecionados">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <a href="{% url 'CadastroBolsistas' %}" class="btn-floating btn-add" title="Novo Cadastro">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
+        </form>
+    </div>
 
     <script>
-        $(document).ready(function () {
-            $('#minhaTabela').DataTable({
-                "bPaginate": true,
-                "bLengthChange": true,
-                "language": {
-                    "sEmptyTable": "Nenhum registro encontrado",
-                    "sSearch": "<i class='fas fa-search' style='color:#999'></i> ",
-                    "oPaginate": {
-                        "sNext": "<i class='fas fa-chevron-right'></i>",
-                        "sPrevious": "<i class='fas fa-chevron-left'></i>"
+        $(document).ready(function() {
+            // Search functionality
+            $('#studentSearch').on('input keyup change', function() {
+                var term = $(this).val().toLowerCase().trim();
+                $('.student-card').each(function() {
+                    var name = $(this).attr('data-name') || '';
+                    var id = $(this).attr('data-id') || '';
+                    
+                    if (name.toLowerCase().includes(term) || id.toLowerCase().includes(term)) {
+                        $(this).fadeIn(100).css('display', 'flex');
+                    } else {
+                        $(this).hide();
                     }
-                },
-                "dom": '<"top"f>rt<"bottom"p><"clear">'
+                });
             });
 
-            $('#all').on('click', function() {
-                var isChecked = $(this).is(':checked');
-                $('input[type="checkbox"]').not('#all').prop('checked', isChecked);
+            // Selection and Delete Button visibility
+            function updateActions() {
+                var checkedCount = $('.item-checkbox:checked').length;
+                if (checkedCount > 0) {
+                    $('#deleteBtn').fadeIn(200).css('display', 'flex');
+                } else {
+                    $('#deleteBtn').fadeOut(200);
+                }
+            }
+
+            $('.item-checkbox').on('change', function() {
+                updateActions();
+                if ($(this).is(':checked')) {
+                    $(this).closest('.student-card').css('border-color', 'var(--admin-primary)');
+                    $(this).closest('.student-card').css('background', 'var(--accent-glow)');
+                } else {
+                    $(this).closest('.student-card').css('border-color', '#e5e7eb');
+                    $(this).closest('.student-card').css('background', 'white');
+                }
+            });
+
+            // Toggle All
+            $('#toggleAll').on('click', function() {
+                var allChecked = $('.item-checkbox:not(:checked)').length === 0;
+                $('.item-checkbox').prop('checked', !allChecked).trigger('change');
             });
         });
     </script>
 {%endblock%}
+k%}

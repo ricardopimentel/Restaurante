@@ -192,8 +192,11 @@ def SimularPagamento(request):
         else:
             valor = prato_selecionado.preco_servidor
         
-        # Processar Adicionais (Valor unitário por ticket)
+        # Processar Adicionais (Apenas Servidores podem comprar adicionais)
         adicionais_post = request.POST.get('adicionais_json', '[]')
+        if user_type != 'servidor':
+            adicionais_post = '[]'
+        
         adicionais_lista = json.loads(adicionais_post)
         valor_unitario_adicionais = 0.0
         for item in adicionais_lista:

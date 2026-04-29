@@ -6,22 +6,22 @@ from restaurante.administracao.models import config
 
 class conexaoAD(object):
 
-    def __init__(self, username, password, base, filter):
+    def __init__(self, username, password, base=None, filter_str=None):
         try:
             conf = config.objects.get(id=1)
             self.username = username
             self.password = password
-            self.base = base
+            self.base = base if base else conf.ou
             self.dominio = conf.dominio
             self.endservidor = conf.endservidor
-            self.filter = conf.filter
+            self.filter = filter_str if filter_str else conf.filter
         except:
             self.username = username
             self.password = password
             self.base = base
             self.dominio = ''
             self.endservidor = ''
-            self.felter = ''
+            self.filter = filter_str
 
         # servidor ad
         self.LDAP_SERVER = 'ldap://%s' % self.endservidor
