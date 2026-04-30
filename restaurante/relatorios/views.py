@@ -32,18 +32,23 @@ def link_callback(uri, rel):
     media_url = settings.MEDIA_URL
     media_root = settings.MEDIA_ROOT
 
+    # If the URI is already an absolute path and exists, just return it
+    if os.path.isabs(uri) and os.path.isfile(uri):
+        return uri
+
     # convert URIs to absolute system paths
-    if uri.startswith(media_url):
-        path = os.path.join(media_root, uri.replace(media_url, ""))
-    elif uri.startswith(static_url):
-        path = os.path.join(static_root, uri.replace(static_url, ""))
+    # prioritize static_url over media_url as media_url is often less specific (e.g. '/')
+    if static_url and uri.startswith(static_url):
+        path = os.path.join(static_root, uri.replace(static_url, "", 1))
+    elif media_url and uri.startswith(media_url):
+        path = os.path.join(media_root, uri.replace(media_url, "", 1))
     else:
         return uri
 
     # make sure that file exists
     if not os.path.isfile(path):
         raise Exception(
-            'media URI must start with %s or %s' % (static_url, media_url)
+            'Arquivo não encontrado: %s (URI: %s). O URI deve começar com %s ou %s' % (path, uri, static_url, media_url)
         )
     return path
 
