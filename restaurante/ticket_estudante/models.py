@@ -22,6 +22,10 @@ class TicketAluno(models.Model):
     def __str__(self):
         return f"{self.id_aluno} - {self.data_compra} ({'Pago' if self.pago else 'Pendente'})"
 
+    @property
+    def valor_total(self):
+        return (self.valor or 0.0) + (self.valor_adicionais or 0.0) + (self.valor_taxa or 0.0)
+
 class TicketServidor(models.Model):
     id_servidor = models.ForeignKey(servidor, on_delete=models.PROTECT)
     data_compra = models.DateTimeField(auto_now_add=True)
@@ -41,3 +45,7 @@ class TicketServidor(models.Model):
 
     def __str__(self):
         return f"{self.id_servidor} - {self.data_compra} ({'Pago' if self.pago else 'Pendente'})"
+
+    @property
+    def valor_total(self):
+        return (self.valor or 0.0) + (self.valor_adicionais or 0.0) + (self.valor_taxa or 0.0)

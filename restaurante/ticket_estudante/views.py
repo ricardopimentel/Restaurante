@@ -444,7 +444,6 @@ def VisualizarTicket(request, uuid):
         except:
             pass
         
-    ticket.valor_total_pago = float(ticket.valor) + float(ticket.valor_adicionais) + float(ticket.valor_taxa)
     
     return render(request, 'ticket_estudante/ver_ticket.html', {
         'title': 'Meu Ticket', 
