@@ -91,8 +91,8 @@ def TicketsEstudante(request):
         data_compra__gte=limite_pendentes
     ).order_by('-data_compra')
 
-    # Tickets Validados recentemente (últimos 40 minutos)
-    limite_recentes = timezone.now() - timedelta(minutes=40)
+    # Tickets Validados recentemente (últimos 5 minutos)
+    limite_recentes = timezone.now() - timedelta(minutes=5)
     tickets_recentes = TicketModel.objects.filter(
         **{filter_key: user_obj}, 
         usado=True, 
@@ -101,7 +101,7 @@ def TicketsEstudante(request):
 
     # Adiciona tempo de expiração para o frontend
     for t in tickets_recentes:
-        t.expira_em = (t.data_utilizacao + timedelta(minutes=40)).isoformat()
+        t.expira_em = (t.data_utilizacao + timedelta(minutes=5)).isoformat()
     
     return render(request, 'ticket_estudante/tickets.html', {
         'title': 'Meus Tickets', 
@@ -415,17 +415,17 @@ def VisualizarTicket(request, uuid):
     if not ticket or not ticket.pago:
         return redirect('TicketsEstudante')
     
-    # Se já foi usado, verificar se ainda está no prazo dos 40 minutos
+    # Se já foi usado, verificar se ainda está no prazo dos 5 minutos
     if ticket.usado:
         from django.utils import timezone
         from datetime import timedelta
-        limite = timezone.now() - timedelta(minutes=40)
+        limite = timezone.now() - timedelta(minutes=5)
         if ticket.data_utilizacao < limite:
-            # Se passou de 40 minutos, não pode mais ver o ticket usado
+            # Se passou de 5 minutos, não pode mais ver o ticket usado
             return redirect('TicketsEstudante')
         
         # Adiciona flag e tempo de expiração para o comprovante
-        ticket.expira_em = (ticket.data_utilizacao + timedelta(minutes=40)).isoformat()
+        ticket.expira_em = (ticket.data_utilizacao + timedelta(minutes=5)).isoformat()
 
     # Processar adicionais para exibição
     adicionais_list = []
