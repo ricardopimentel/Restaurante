@@ -29,7 +29,7 @@
                             </div>
                             <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
                                 <span style="font-size: 0.75em; color: var(--accent-dark); font-weight: 700;">EXPIRA EM</span>
-                                <span class="countdown-timer" data-expire="{{ ticket.expira_em }}" style="font-weight: 800; color: var(--accent-dark); font-size: 1.3em; font-family: 'Outfit', sans-serif;">--:--</span>
+                                <span class="countdown-timer" data-expire="{{ ticket.expira_em }}" data-seconds="{{ ticket.segundos_restantes|floatformat:0 }}" style="font-weight: 800; color: var(--accent-dark); font-size: 1.3em; font-family: 'Outfit', sans-serif;">--:--</span>
                             </div>
                         </div>
                     </a>

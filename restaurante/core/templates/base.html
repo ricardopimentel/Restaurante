@@ -304,15 +304,24 @@
             // Lógica Global de Countdown
             function updateCountdowns() {
                 $('.countdown-timer').each(function() {
-                    const expireTime = new Date($(this).data('expire')).getTime();
-                    const now = new Date().getTime();
+                    let expireTime = $(this).data('target-time');
+                    
+                    if (!expireTime) {
+                        const secondsLeft = $(this).data('seconds');
+                        if (secondsLeft !== undefined && secondsLeft !== "") {
+                            expireTime = Date.now() + parseFloat(secondsLeft) * 1000;
+                        } else {
+                            expireTime = new Date($(this).data('expire')).getTime();
+                        }
+                        $(this).data('target-time', expireTime);
+                    }
+
+                    const now = Date.now();
                     const diff = expireTime - now;
 
                     if (diff <= 0) {
                         $(this).text('EXPIRADO');
                         $(this).css('color', '#ef4444');
-                        // Se estiver na tela de listagem, pode ser interessante recarregar
-                        // Mas para evitar loops, apenas deixamos como expirado
                     } else {
                         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                         const seconds = Math.floor((diff % (1000 * 60)) / 1000);

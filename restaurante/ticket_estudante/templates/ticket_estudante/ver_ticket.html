@@ -15,7 +15,7 @@
                 <div style="display: flex; gap: 12px; margin-bottom: 20px;">
                     <div style="flex: 1.2; background: rgba(139, 92, 246, 0.03); border-radius: 16px; padding: 15px; border: 1px dashed var(--accent-light); text-align: center;">
                         <p style="color: var(--text-muted); font-size: 10px; margin-bottom: 5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Retirada em</p>
-                        <div class="countdown-timer" data-expire="{{ ticket.expira_em }}" style="font-size: 2.2em; font-weight: 800; color: var(--accent-dark); line-height: 1;">--:--</div>
+                        <div class="countdown-timer" data-expire="{{ ticket.expira_em }}" data-seconds="{{ ticket.segundos_restantes|floatformat:0 }}" style="font-size: 2.2em; font-weight: 800; color: var(--accent-dark); line-height: 1;">--:--</div>
                     </div>
 
                     <div style="flex: 1; background: #f8fafc; border-radius: 16px; padding: 15px; border: 1px solid #f1f5f9; text-align: center; display: flex; flex-direction: column; justify-content: center;">

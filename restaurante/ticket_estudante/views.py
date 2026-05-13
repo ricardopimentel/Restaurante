@@ -102,6 +102,7 @@ def TicketsEstudante(request):
     # Adiciona tempo de expiração para o frontend
     for t in tickets_recentes:
         t.expira_em = (t.data_utilizacao + timedelta(minutes=5)).isoformat()
+        t.segundos_restantes = max(0, (t.data_utilizacao + timedelta(minutes=5) - timezone.now()).total_seconds())
     
     return render(request, 'ticket_estudante/tickets.html', {
         'title': 'Meus Tickets', 
@@ -426,6 +427,7 @@ def VisualizarTicket(request, uuid):
         
         # Adiciona flag e tempo de expiração para o comprovante
         ticket.expira_em = (ticket.data_utilizacao + timedelta(minutes=5)).isoformat()
+        ticket.segundos_restantes = max(0, (ticket.data_utilizacao + timedelta(minutes=5) - timezone.now()).total_seconds())
 
     # Processar adicionais para exibição
     adicionais_list = []
